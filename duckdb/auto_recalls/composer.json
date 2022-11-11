@@ -1,0 +1,10 @@
+{
+  "datasets": [
+    {
+      "name": "Auto Recalls",
+      "tables":  ["auto_recalls.csv"],
+      "model": "./auto_recalls.malloy",
+      "readme": "./composer.md"
+    }
+  ]
+}

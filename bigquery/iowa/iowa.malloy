@@ -2,6 +2,7 @@
 
 source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
 
+  rename: _vendor_name is vendor_name
   // dimensions
   dimension:
     gross_margin is 100 * (state_bottle_retail - state_bottle_cost) / nullif(state_bottle_retail, 0)
@@ -23,6 +24,7 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
       pick 'liter-ish' when >= 750
       else 'small or mini (under 750ml)'
 
+    vendor_name is upper(_vendor_name)
   // measures
   measure:
     total_sale_dollars is sale_dollars.sum()
@@ -99,20 +101,20 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
       total_sale_dollars
       total_bottles
     nest:
-      // by_month
-      // by_class
-      // by_vendor_bar_chart
+      by_month
+      by_class
+      by_vendor_bar_chart
       top_sellers_by_revenue
-  //     most_expensive_products
-  //     by_vendor_dashboard is {
-  //       top: 10
-  //       group_by: vendor_name
-  //       aggregate: total_sale_dollars
-  //       nest:
-  //         by_month,
-  //         top_sellers_by_revenue,
-  //         most_expensive_products
-  //    }
+      most_expensive_products
+      by_vendor_dashboard is {
+        top: 10
+        group_by: vendor_name
+        aggregate: total_sale_dollars
+        nest:
+          by_month,
+          top_sellers_by_revenue,
+          most_expensive_products
+     }
   }
 }
 
@@ -130,4 +132,13 @@ query: luxco_dashboard is iowa->vendor_dashboard {
 
 query: jim_beam_dashboard is iowa->vendor_dashboard {
   where: vendor_name ? ~ r'Jim Beam'
+}
+query: iowa-> {
+  nest: by_class
+  nest: by_vendor_bar_chart
+  nest: by_month
+  nest: by_county is {
+    group_by: county
+    aggregate: total_sale_dollars
+  }
 }

@@ -1,0 +1,9 @@
+{
+  "datasets": [
+    {
+      "name": "Hackernews",
+      "model": "./hackernews.malloy",
+      "readme": "./hackernews.md"
+    }
+  ]
+}
