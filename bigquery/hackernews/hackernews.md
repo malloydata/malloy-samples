@@ -13,7 +13,7 @@ See the [Malloy source code](https://github.com/malloydata/malloy-samples/tree/m
 <!-- malloy-query
 name="Term Dashboard - BigQuery"
 description="Stories about Biguery over time"
-model="Hackernews"
+model="./hackernews.malloy"
 renderer="dashboard"
 -->
 ```malloy
@@ -25,7 +25,7 @@ query: stories -> term_dashboard {
 <!-- malloy-query
 name="Posts over Time"
 description="Graph of of post over time"
-model="Hackernews"
+model="./hackernews.malloy"
 renderer="line_chart"
 -->
 ```malloy
@@ -37,7 +37,7 @@ query: stories -> posts_over_time + {
 <!-- malloy-query
 name="Interesting or Not"
 description="Most posts get no traction.  is_interesting is a post with traction"
-model="Hackernews"
+model="./hackernews.malloy"
 -->
 ```malloy
 query: stories ->  { 
@@ -49,7 +49,7 @@ query: stories ->  {
 <!-- malloy-query
 name="Facebook, Apple, Amaxon, Netflix and Google over time"
 description="Gralph of the FAANG companies"
-model="Hackernews"
+model="./hackernews.malloy"
 renderer="line_chart"
 -->
 ```malloy

@@ -14,7 +14,7 @@ The query below will give you a feel for the market as a whole.  Notice that som
 
 <!-- malloy-query 
   name="Overview"
-  model="Iowa Liquor"
+  model="./iowa.malloy"
   renderer="dashboard"
 -->
 ```malloy
@@ -37,7 +37,7 @@ Examine the market for a particular class of alcohol.
 
 <!-- malloy-query 
   name="Vodka Dashboard"
-  model="Iowa Liquor"
+  model="./iowa.malloy"
   renderer="dashboard"
 -->
 ```malloy
@@ -48,7 +48,7 @@ query: iowa->vendor_dashboard {
 
 <!-- malloy-query 
   name="Tequila Dashboard"
-  model="Iowa Liquor"
+  model="./iowa.malloy"
   renderer="dashboard"
 -->
 ```malloy
@@ -59,7 +59,7 @@ query: iowa->vendor_dashboard {
 
 <!-- malloy-query 
   name="Whisky Dashboard"
-  model="Iowa Liquor"
+  model="./iowa.malloy"
   renderer="dashboard"
 -->
 ```malloy
@@ -70,7 +70,7 @@ query: iowa->vendor_dashboard {
 
 <!-- malloy-query 
   name="Rum Dashboard"
-  model="Iowa Liquor"
+  model="./iowa.malloy"
   renderer="dashboard"
 -->
 ```malloy
@@ -81,7 +81,7 @@ query: iowa->vendor_dashboard {
 
 <!-- malloy-query 
   name="Gim Dashboard"
-  model="Iowa Liquor"
+  model="./iowa.malloy"
   renderer="dashboard"
 -->
 ```malloy
@@ -95,7 +95,7 @@ Examine the sales of a particular vendor.
 
 <!-- malloy-query 
   name="Jim Beam Vendor Dashboard"
-  model="Iowa Liquor"
+  model="./iowa.malloy"
   renderer="dashboard"
 -->
 ```malloy
@@ -106,7 +106,7 @@ query: iowa->vendor_dashboard {
 
 <!-- malloy-query 
   name="Luxco Vendor Dashboard"
-  model="Iowa Liquor"
+  model="./iowa.malloy"
   renderer="dashboard"
 -->
 ```malloy

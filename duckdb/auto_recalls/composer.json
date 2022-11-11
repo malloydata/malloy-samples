@@ -1,10 +1,10 @@
 {
-  "datasets": [
+  "readme": "./composer.md",
+  "title": "Automobile Recalls",
+  "models": [
     {
-      "name": "Auto Recalls",
-      "tables":  ["auto_recalls.csv"],
-      "model": "./auto_recalls.malloy",
-      "readme": "./composer.md"
+      "id": "recalls",
+      "modelPath": "./auto_recalls.malloy"
     }
   ]
 }

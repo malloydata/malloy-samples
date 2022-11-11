@@ -1,9 +1,10 @@
 {
-  "datasets": [
+  "readme": "./hackernews.md",
+  "title": "Hacker New Posts",
+  "models": [
     {
-      "name": "Hackernews",
-      "model": "./hackernews.malloy",
-      "readme": "./hackernews.md"
+      "id": "stories",
+      "modelPath": "./hackernews.malloy"
     }
   ]
 }

@@ -16,7 +16,7 @@ See the [Malloy source code](auto_recalls.malloy) for this data set, source for 
 <!-- malloy-query  
   name="Recall Dashboard"
   description="by manufacturer, look at recall history."
-  model="Auto Recalls"
+  model="./auto_recalls.malloy"
   renderer="dashboard"
 -->
 ```malloy
@@ -26,7 +26,7 @@ See the [Malloy source code](auto_recalls.malloy) for this data set, source for 
 
 <!-- malloy-query  
   name="Most Recent Recalls"
-  model="Auto Recalls"
+  model="./auto_recalls.malloy"
 -->
 ```malloy
   query: recalls -> recent_recalls + {limit: 100}
@@ -34,7 +34,7 @@ See the [Malloy source code](auto_recalls.malloy) for this data set, source for 
 
 <!-- malloy-query  
   name="Largest Recalls"
-  model="Auto Recalls"
+  model="./auto_recalls.malloy"
   description="There have been some historically large recalls, from Honda airbags, to Firestone Tires with separating treads.  Here is a list of the largest recalls of all time."
 -->
 ```malloy
@@ -43,7 +43,7 @@ See the [Malloy source code](auto_recalls.malloy) for this data set, source for 
 
 <!-- malloy-query  
   name="Manufacturer's Recalls over Time"
-  model="Auto Recalls"
+  model="./auto_recalls.malloy"
   description="Line chart of the top manufactuers over time"
   renderer="line_chart"
 -->

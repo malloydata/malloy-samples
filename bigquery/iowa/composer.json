@@ -1,9 +1,10 @@
 {
-  "datasets": [
+  "readme": "./iowa.md",
+  "title": "Iowa Liquor",
+  "models": [
     {
-      "name": "Iowa Liquor",
-      "model": "./iowa.malloy",
-      "readme": "./iowa.md"
+      "id": "iowa",
+      "modelPath": "./iowa.malloy"
     }
   ]
 }
