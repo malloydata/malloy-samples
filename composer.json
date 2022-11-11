@@ -1,0 +1,17 @@
+{
+  "apps": [
+    {
+      "id": "hackernews",
+      "configPath": "./bigquery/hackernews/composer.json"
+    },
+    {
+      "id": "iowa",
+      "configPath": "./bigquery/iowa/composer.json"
+    },
+    {
+      "id": "recalls",
+      "configPath": "./duckdb/auto_recalls/composer.json"
+    }
+  ],
+  "readme": "./apps.md"
+}
