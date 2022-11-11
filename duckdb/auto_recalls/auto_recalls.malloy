@@ -1,67 +1,78 @@
-// Autombile Recalls
-// 
-//  Run the dashboards below.
-// 
-// Works directly against a CSV file.
-//
-// Data Source data.gov 
-//    https://catalog.data.gov/tr/dataset/recalls-data
-//
-// Raw Data
-//  https://data.transportation.gov/api/views/6axg-epim/rows.csv
-
-
-
-source: auto_recalls is table('duckdb:auto_recalls.csv') {
+// Auto Recalls: CSV example
+source: recalls is table('duckdb:auto_recalls.csv') {
   declare:
     recall_count is count()
     percent_of_recalls is recall_count/all(recall_count)*100
+    total_defects is `Potentially Affected`.sum()
 
+    recall_url is concat(
+      'https://www.nhtsa.gov/recalls?nhtsaId=',
+      `NHTSA ID`
+    )
   query: by_manufacturer is {
     group_by: `Manufacturer`
-    aggregate: 
+    aggregate:
       recall_count
+      total_defects
       percent_of_recalls
   }
 
   query: by_type is {
     group_by: `Recall Type`
-    aggregate: 
+    aggregate:
       recall_count
       percent_of_recalls
   }
 
   query: by_year is {
-    group_by: recall_year is `Report Received Date`.year
-    aggregate: 
+    group_by: recall_year is year(`Report Received Date`)
+    aggregate:
       recall_count
     order_by: recall_year
   }
 
-  query: `By_Action` is {
-    group_by: `Corrective Action`
-    aggregate: recall_count
+  query: by_year_manufacturer_line_chart is {
+    nest: top_manufacturers is {
+      group_by: Manufacturer
+      aggregate: recall_count
+      limit: 5
+    }
+    nest: x is {
+      group_by: Manufacturer, recall_year is year(`Report Received Date`)
+      aggregate:
+        recall_count
+    }
+  }
+  -> {
+    where: top_manufacturers.Manufacturer = x.Manufacturer
+    group_by: x.recall_year, x.recall_count, x.Manufacturer,
+    limit: 100000
+    order_by: 1, 3
   }
 
-  query: detail is {
-    group_by: 
-      `NHTSA ID`, 
-      `Report Received Date`
-      Manufacturer,
-      Subject, 
-      `Recall Type`
-      `Recall Description`
+  query: recent_recalls is {
+    group_by:
+      recall_date is `Report Received Date`::string
+      `NHTSA ID`
+      recall_url
+      Manufacturer
+      Subject
+      `Potentially Affected`
+    order_by: 1 desc
+    limit: 10
+  }
+
+  query: biggest_recalls is recent_recalls + {
+    order_by: `Potentially Affected` desc
   }
 
   query: recall_dashboard is by_manufacturer + {
-    nest: by_year_line_chart is by_year + {group_by: `Recall Type`}   
+    nest: by_year_line_chart is by_year + {group_by: `Recall Type`}
     nest: by_type
-    nest: recent_recalls is detail +{
-      order_by: `Report Received Date` desc
-      limit: 10
-    }
+    nest: recent_recalls + {limit: 6}
+    nest: biggest_recalls + {limit: 6}
   }
-
+  
   query: brakes_dashboard 
     is recall_dashboard {? `Recall Description` ~r'brake'}
 }

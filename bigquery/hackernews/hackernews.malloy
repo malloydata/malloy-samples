@@ -18,15 +18,24 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
       pick 'oooh' when < 100
       else 'wow'
 
-
   dimension:
     threshold is 10
-    is_good is score >= threshold
+    is_interesting is ifnull(score, 0) >= threshold
+
+  dimension:
+    faang is title ?
+      pick 'Facebook' when ~ r'(Facebook|Instagram|Whatsapp)'
+      pick 'Apple' when ~ r'(Apple|iPhone|IOS|Macbook)'
+      pick 'Amazon' when ~ r'(Amazon|AWS)'
+      pick 'Netflix' when ~ r'Netflix'
+      pick 'Google' when ~ r'(Google|GOOG|Alphabet|GCloud|Chrome)'
+      else 'OTHER'
+
 
   measure:
     post_count is count()
-    good_post_count is post_count { where: is_good }
-    percent_good is floor(good_post_count / post_count * 100)
+    interesting_post_count is post_count { where: is_interesting }
+    percent_interesting is floor(interesting_post_count / post_count * 100)
     first_post_date is min(post_time).day
 
   query: by_date is {
@@ -39,9 +48,9 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
     aggregate: post_count
   }
 
-  query: percent_good_over_time is {
+  query: percent_interesting_over_time is {
     group_by: posted_year is post_time.year
-    aggregate: percent_good
+    aggregate: percent_interesting
   }
 
   query: stories_by_month is {
@@ -68,7 +77,7 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
     top: 10
     where: poster != null
     group_by: poster
-    aggregate: good_post_count, post_count
+    aggregate: interesting_post_count, post_count
   }
 
   query: top_sites is {
@@ -106,11 +115,11 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
   query: poster_dashboard is top_posters {        -- reuses and refines the top_posters query
     where: post_type = 'story'
     aggregate:
-      percent_good
+      percent_interesting
       first_post_date
     nest:
       posts_over_time
-      percent_good_over_time
+      percent_interesting_over_time
       by_score_class
       top_sites
     nest: best_stories is recent_stories {               -- reuses and refines the stories query
@@ -121,3 +130,10 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
 }
 
 query: data_stories is stories -> term_dashboard {where: title ~ '%Data%' | '% data%'}
+
+
+query: stories -> posts_over_time + { 
+  where: is_interesting and faang != 'OTHER'
+  group_by: faang
+  limit: 100000 
+}
