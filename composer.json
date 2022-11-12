@@ -11,6 +11,10 @@
     {
       "id": "recalls",
       "configPath": "./duckdb/auto_recalls/composer.json"
+    },
+    {
+      "id": "ecommerce",
+      "configPath": "./bigquery/ecommerce/composer.json"
     }
   ],
   "readme": "./apps.md"

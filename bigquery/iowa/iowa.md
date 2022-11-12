@@ -80,7 +80,7 @@ query: iowa->vendor_dashboard {
 ```
 
 <!-- malloy-query 
-  name="Gim Dashboard"
+  name="Gin Dashboard"
   model="./iowa.malloy"
   renderer="dashboard"
 -->

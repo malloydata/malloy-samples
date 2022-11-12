@@ -1,0 +1,10 @@
+{
+  "readme": "./ecommerce.md",
+  "title": "eCommerce",
+  "models": [
+    {
+      "id": "ecommerce",
+      "modelPath": "./ecommerce.malloy"
+    }
+  ]
+}
