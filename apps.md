@@ -1,6 +1,8 @@
 # Welcome to Malloy Composer
 
-Explore Datasets
+Explore Datasets 
+
+## Big Query Datasets
 
 <!-- malloy-app 
   app="hackernews" 
@@ -15,13 +17,16 @@ Explore Datasets
 -->
 
 <!-- malloy-app 
+  app="ecommerce" 
+  name="eCommerce" 
+  description="Transactional data for an eCommerce business" 
+-->
+
+## DuckDB Datasets
+
+<!-- malloy-app 
   app="recalls" 
   name="Automobile Recalls" 
   description="Public data from data.gov on automobile recalls" 
 -->
 
-<!-- malloy-app 
-  app="ecommerce" 
-  name="eCommerce" 
-  description="Transactional data for an eCommerce business" 
--->
