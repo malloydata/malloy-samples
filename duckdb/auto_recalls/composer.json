@@ -4,7 +4,8 @@
   "models": [
     {
       "id": "recalls",
-      "modelPath": "./auto_recalls.malloy"
+      "modelPath": "./auto_recalls.malloy",
+      "tables": ["./auto_recalls.csv"]
     }
   ]
 }

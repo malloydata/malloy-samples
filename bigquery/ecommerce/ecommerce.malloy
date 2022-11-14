@@ -168,5 +168,8 @@ source: order_items is table('malloy-data.ecomm.order_items'){
   }
 
 
-  query: search_index is {index: * }
+  query: search_index is {
+    index: *, users.*, inventory_items.* 
+    sample: true
+  }
 }
