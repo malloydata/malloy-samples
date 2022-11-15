@@ -1,16 +1,37 @@
 --! styles ecommerce.styles.json
-source: users is table('malloy-data.ecomm.users'){
+
+// bigquery sources
+
+source: users_table is table('malloy-data.ecomm.users'){}
+source: product_table is table('malloy-data.ecomm.products'){}
+source: inventory_items_table is table('malloy-data.ecomm.inventory_items'){}
+source: order_items_table is table('malloy-data.ecomm.order_items')
+
+
+// // duckdb sources
+// source: users_table is table('duckdb:./users.parquet'){}
+// source: product_table is table('duckdb:./products.parquet'){}
+// source: inventory_items_table is table('duckdb:./inventory_items.parquet'){}
+// source: order_items_table is table('duckdb:./order_items.parquet')
+
+
+source: users is users_table + {
   primary_key: id
-  dimension: full_name is INITCAP(CONCAT(first_name,' ',last_name))
+  //dimension: full_name is INITCAP(CONCAT(first_name,' ',last_name))
+  dimension: full_name is CONCAT(
+      upper(left(first_name,1)),lower(substr(first_name,2)),
+      ' ',
+      upper(left(last_name,1)),lower(substr(last_name,2))
+    )
   measure: user_count is count()
 }
 
-source: product is table('malloy-data.ecomm.products'){
+source: product is product_table{
   primary_key: id
   measure: product_count is count()
 }
 
-source: inventory_items is table('malloy-data.ecomm.inventory_items'){
+source: inventory_items is inventory_items_table + {
   primary_key: id
 
   join_one: product with product_id
@@ -21,7 +42,7 @@ source: inventory_items is table('malloy-data.ecomm.inventory_items'){
 }
 
 source: user_order_facts is from(
-  table('malloy-data.ecomm.order_items') ->  {
+  order_items_table ->  {
     group_by: user_id
     aggregate: first_order is min(created_at)
     aggregate: most_recent_order is max(created_at)
@@ -46,7 +67,7 @@ source: user_order_facts is from(
     else null
 }
 
-source: order_items is table('malloy-data.ecomm.order_items'){
+source: order_items is order_items_table + {
   primary_key: id
 
   join_one:
