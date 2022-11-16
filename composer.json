@@ -2,19 +2,19 @@
   "apps": [
     {
       "id": "hackernews",
-      "configPath": "./bigquery/hackernews/composer.json"
+      "path": "./bigquery/hackernews/composer.json"
     },
     {
       "id": "iowa",
-      "configPath": "./bigquery/iowa/composer.json"
+      "path": "./bigquery/iowa/composer.json"
     },
     {
       "id": "recalls",
-      "configPath": "./duckdb/auto_recalls/composer.json"
+      "path": "./duckdb/auto_recalls/composer.json"
     },
     {
       "id": "ecommerce",
-      "configPath": "./bigquery/ecommerce/composer.json"
+      "path": "./bigquery/ecommerce/composer.json"
     }
   ],
   "readme": "./apps.md"
