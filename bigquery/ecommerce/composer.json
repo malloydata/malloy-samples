@@ -4,7 +4,7 @@
   "models": [
     {
       "id": "ecommerce",
-      "modelPath": "./ecommerce.malloy"
+      "path": "./ecommerce.malloy"
     }
   ]
 }
