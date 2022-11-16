@@ -4,7 +4,7 @@
   "models": [
     {
       "id": "stories",
-      "modelPath": "./hackernews.malloy"
+      "path": "./hackernews.malloy"
     }
   ]
 }
