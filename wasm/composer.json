@@ -1,0 +1,17 @@
+{
+  "apps": [
+    {
+      "id": "names",
+      "path": "../duckdb/names/composer.json"
+    },
+    {
+      "id": "recalls",
+      "path": "../duckdb/auto_recalls/composer.json"
+    },
+    {
+      "id": "hackernews",
+      "path": "./bigquery/hackernews/composer.json"
+    }
+  ],
+  "readme": "./apps.md"
+}

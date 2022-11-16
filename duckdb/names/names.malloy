@@ -1,0 +1,188 @@
+//  Github: https://github.com/lloydtabb/name_fiddle
+//  About Fiddles: https://github.com/lloydtabb/malloy_fiddle_dist
+
+source: names is table('duckdb:usa_names.parquet') {
+  rename: year_born is `year`
+  measure: population is `number`.sum()
+  dimension: decade is floor(year_born/10)*10
+  measure: births_per_100k is floor(population/all(population)*100000)
+  query: by_name is {
+    group_by: name
+    aggregate: population
+    limit: 10
+  }
+  query: by_state is {
+    group_by: state
+    aggregate: births_per_100k
+  }
+  query: by_gender is {
+    group_by: gender
+    aggregate: population
+  }
+  query: by_decade is {
+    group_by: decade
+    aggregate: births_per_100k
+    order_by: 1 asc
+  }
+}
+
+// how big are the populations...
+source: cohort is from(names->{
+  group_by: gender, state, year_born
+  aggregate: cohort_size is population 
+}) + {
+  measure: population is cohort_size.sum()
+}
+
+source: names2 is names +  {
+  join_one: cohort on 
+    gender = cohort.gender 
+    and state = cohort.state 
+    and year_born = cohort.year_born
+  query: names_chart is {
+    group_by: name
+    aggregate: births_per_100k
+    nest: by_year_line_chart is {
+      group_by: year_born
+      aggregate: population
+    }
+    nest: by_state_shape_map is {
+      group_by: state
+      aggregate: per_100k is population/exclude(population,name)*100000
+    }
+    limit: 30
+  }
+
+  query: x is {
+    group_by: name
+    aggregate: population, all_pop is all(population)
+      percent_of_totall is population/all(population)
+  }
+
+  query: iconic_names_by_state is {
+    group_by: name, state, gender
+    aggregate: 
+      all_name is all(population, name)
+      name_popularity is all(population, name) / all(population)
+      state_popularity is population / all(population, state)
+      // popularity is (population / all(population, state))/ ( population / all(population, state))
+  } 
+  // -> {
+  //   where: all_name > 3000 
+  //   group_by: state
+  //   nest: by_gender is {
+  //     group_by: gender
+  //     nest: name_list_detail is {
+  //       group_by: 
+  //         name, 
+  //         popularity is state_popularity / name_popularity   
+  //       limit: 20
+  //       order_by: 2 desc
+  //     }
+  //   }
+  //   order_by: 1
+  //   limit: 50
+  // }
+
+  query: gender_year_line_chart is {
+    group_by: year_born
+    aggregate: population
+    group_by: gender is gender ? pick 'Female' when 'F' else 'Male'
+  }
+
+   query: gender_by_state_shape_map is {
+      group_by: state
+      aggregate: percent_female is population{? gender='M'}/population
+    }
+
+  query: gender_neutral_names is {
+    group_by: name
+    aggregate: population
+    nest: gender_year_line_chart 
+    nest: gender_by_state_shape_map
+    having: population{? gender='F'}/population ? > .10 & < .9
+    limit: 50
+  }
+
+  query: kelly_time_space_dashboard is {
+    where: name = 'Kelly'
+    group_by: name
+    aggregate: population
+    nest: gender_year_line_chart
+    nest: gender_by_state_shape_map 
+    nest: by_decade is {
+      group_by: decade
+      nest: gender_by_state_shape_map
+    }
+    nest: by_state is {
+      group_by: state
+      nest: gender_year_line_chart
+    }
+  }
+
+  // --
+  // Name: Resurgent Names top 2 decades (step 2)
+  // The first stage to the query finds the top two decades
+  //  (see the previous example)
+  // The second stage computes the difference between years
+  //  and the total percentage in both decades (good for filtering)
+  query:  resurgent_names is {
+    group_by: name
+    aggregate: population
+    nest: by_decade is {
+      group_by: decade
+      aggregate: percent_in_decade is population/all(population)
+      order_by: 2 desc
+      limit: 2
+    }
+  }
+  -> {
+    where: population > 3000 
+    group_by: 
+      name
+      population
+      years_apart is max(by_decade.decade)-min(by_decade.decade)
+      total_percentage is by_decade.percent_in_decade.sum()
+      max_percentage is max(by_decade.percent_in_decade)
+      nest: by_decade is {
+        project: by_decade.decade, by_decade.percent_in_decade
+      }
+    limit: 50
+  }
+
+  query: name_dashboard is {
+    where: name = 'Lloyd' | 'Anika' | 'Jessie' | 'Kelly' | 'Todd' | 'Chris'
+    nest: by_name_line_chart is {
+      group_by: decade
+      aggregate: births_per_100k
+      group_by: name
+    }
+    nest: by_name_bar_chart is {
+      group_by: name
+      aggregate: births_per_100k
+      group_by: gender
+    }
+    nest: name_dashboard is {
+      group_by: name
+      aggregate: population
+      nest: by_year_line_chart is {
+        group_by: year_born
+        aggregate: population
+      }
+      nest: by_state_shape_map is {
+        group_by: state
+        aggregate: per_100k is population/cohort.population * 100000
+      }
+      peak_decade_state is {
+        group_by: state, decade
+        aggregate: per_100k is population/cohort.population * 100000
+        limit: 5
+      }
+    }
+  }
+
+  query: search_index is {
+    index: name, state by population
+  }
+  // these should move into the markdown file
+}
