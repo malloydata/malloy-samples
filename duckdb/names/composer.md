@@ -5,7 +5,7 @@ data contains the number of births for each state, year and gender.
 
 [Malloy Composer](https://github.com/malloydata/malloy-composer) is an open source tool for viewing and exploring data sets.  Data models are created in the  [Malloy](https://github.com/looker-open-source/malloy/) language.  Data can be served from a simple webserver or from a SQL database.  
 
-See the [Malloy source code](http://github.com/malloydata/malloy-samples) for this data set.
+See the [Malloy source code](https://github.com/malloydata/malloy-samples/tree/main/duckdb/names) for this data set.
 
 ## Explore Names
 

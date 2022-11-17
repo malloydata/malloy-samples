@@ -67,22 +67,22 @@ source: names2 is names +  {
       state_popularity is population / all(population, state)
       // popularity is (population / all(population, state))/ ( population / all(population, state))
   } 
-  // -> {
-  //   where: all_name > 3000 
-  //   group_by: state
-  //   nest: by_gender is {
-  //     group_by: gender
-  //     nest: name_list_detail is {
-  //       group_by: 
-  //         name, 
-  //         popularity is state_popularity / name_popularity   
-  //       limit: 20
-  //       order_by: 2 desc
-  //     }
-  //   }
-  //   order_by: 1
-  //   limit: 50
-  // }
+  -> {
+    where: all_name > 3000 
+    group_by: state
+    nest: by_gender is {
+      group_by: gender
+      nest: name_list_detail is {
+        group_by: 
+          name, 
+          popularity is state_popularity / name_popularity   
+        limit: 20
+        order_by: 2 desc
+      }
+    }
+    order_by: 1
+    limit: 50
+  }
 
   query: gender_year_line_chart is {
     group_by: year_born
