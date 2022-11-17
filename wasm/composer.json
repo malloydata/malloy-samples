@@ -9,8 +9,16 @@
       "path": "../duckdb/auto_recalls/composer.json"
     },
     {
-      "id": "hackernews",
-      "path": "./bigquery/hackernews/composer.json"
+      "id": "ecommerce",
+      "path": "../duckdb/ecommerce/composer.json"
+    },
+    {
+      "id": "faa",
+      "path": "../duckdb/faa/composer.json"
+    },
+    {
+      "id": "wordle",
+      "path": "../duckdb/wordle/composer.json"
     }
   ],
   "readme": "./apps.md"

@@ -1,6 +1,6 @@
 # Welcome to Malloy Composer
 
-Explore Datasets
+Explore these data sets.
 
 <!-- malloy-app 
   app="names" 
@@ -20,3 +20,6 @@ Explore Datasets
   description="Public data from data.gov on automobile recalls" 
 -->
 
+## Additional Datasets on the web using Malloy Composer.
+
+[IMDB Data](https://lloydtabb.github.io/imdb_fiddle/composer.html?model=IMDB&page=about) - Explore the most popular movies.

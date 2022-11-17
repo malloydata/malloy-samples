@@ -4,8 +4,8 @@
   "models": [
     {
       "id": "recalls",
-      "path": "./auto_recalls.malloy",
-      "tables": ["./auto_recalls.csv"]
+      "path": "auto_recalls.malloy",
+      "tables": ["auto_recalls.csv"]
     }
   ]
 }
