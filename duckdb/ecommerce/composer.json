@@ -1,0 +1,11 @@
+{
+  "readme": "./ecommerce.md",
+  "title": "eCommerce",
+  "models": [
+    {
+      "id": "ecommerce",
+      "path": "ecommerce.malloy",
+      "tables": ["users.parquet","order_items.parquet","inventory_items.parquet","products.parquet"]
+    }
+  ]
+}
