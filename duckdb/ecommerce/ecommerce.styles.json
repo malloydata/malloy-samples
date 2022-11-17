@@ -23,6 +23,9 @@
       "unit": "dollars"
     }
   },
+  "percent_of_sales" : {
+    "renderer": "percent"
+  },
   "by_month": {
     "renderer": "line_chart"
   },

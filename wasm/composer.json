@@ -15,10 +15,6 @@
     {
       "id": "faa",
       "path": "../duckdb/faa/composer.json"
-    },
-    {
-      "id": "wordle",
-      "path": "../duckdb/wordle/composer.json"
     }
   ],
   "readme": "./apps.md"
