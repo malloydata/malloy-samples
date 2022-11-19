@@ -141,6 +141,14 @@ source: flights is table('duckdb:data/flights.parquet') + {
       nest: top_routes_map
     }
   }
+
+  query: search_index is {
+    index: 
+      *, 
+      origin.*, 
+      carriers.*, 
+      destination.*
+  }
   
 }
 
