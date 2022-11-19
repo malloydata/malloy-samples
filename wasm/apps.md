@@ -9,6 +9,12 @@ Explore these data sets.
 -->
 
 <!-- malloy-app 
+  app="faa" 
+  name="FAA" 
+  description="A subset of the NTSB Flights Dataset, with information about flights, carriers, aircrafts, and more." 
+-->
+
+<!-- malloy-app 
   app="ecommerce" 
   name="eCommerce" 
   description="Example Transactional data for an eCommerce business" 
