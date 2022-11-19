@@ -7,7 +7,7 @@ https://catalog.data.gov/dataset/recalls-data
 
 [Malloy Composer](https://github.com/malloydata/malloy-composer) is an open source tool for viewing and exploring data sets.  Data models are created in the  [Malloy](https://github.com/looker-open-source/malloy/) language.  Data can be served from a simple webserver or from a SQL database.  
 
-See the [Malloy source code](auto_recalls.malloy) for this data set, source for [this document](composer.md), the [configuration](composer.json).
+See the [Malloy source code](https://github.com/malloydata/malloy-samples/tree/main/duckdb/auto_recalls) for this data set.
 
 
 ## Explore Auto Recalls

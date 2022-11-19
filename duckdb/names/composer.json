@@ -4,8 +4,8 @@
   "models": [
     {
       "id": "names2",
-      "path": "./names.malloy",
-      "tables": ["./usa_names.parquet"]
+      "path": "names.malloy",
+      "tables": ["usa_names.parquet"]
     }
   ]
 }
