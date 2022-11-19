@@ -4,7 +4,7 @@ All the Hacker News (news.ycombinator.com) posts, ever.
 
 ## What is this?
 
-[Malloy Composer](https://github.com/malloydata/malloy-composer) is an open source tool for viewing and exploring data sets.  Data models are created in the  [Malloy](https://github.com/looker-open-source/malloy/) language.  Data can be served from a simple webserver or from a SQL database.  
+[Malloy Composer](https://github.com/malloydata/malloy-composer) is an open source tool for viewing and exploring data sets.  Data models are created in the  [Malloy](https://github.com/looker-open-source/malloy/) language.  Data can be served from a simple web server or from a SQL database.  
 
 See the [Malloy source code](https://github.com/malloydata/malloy-samples/tree/main/bigquery/hackernews) for this data set.
 
@@ -12,7 +12,7 @@ See the [Malloy source code](https://github.com/malloydata/malloy-samples/tree/m
 
 <!-- malloy-query
 name="Term Dashboard - BigQuery"
-description="Stories about Biguery over time"
+description="Stories about BigQuery over time"
 model="./hackernews.malloy"
 renderer="dashboard"
 -->
@@ -47,14 +47,14 @@ query: stories ->  {
 ```
 
 <!-- malloy-query
-name="Facebook, Apple, Amaxon, Netflix and Google over time"
-description="Gralph of the FAANG companies"
+name="Facebook, Apple, Amazon, Netflix and Google over time"
+description="Graph of the FAANG companies"
 model="./hackernews.malloy"
 renderer="line_chart"
 -->
 ```malloy
 query: stories -> posts_over_time + { 
-  where: is_interesting and faang != 'OTHER'
+  where: is_interesting, faang != 'OTHER'
   group_by: faang
   limit: 100000 
 }

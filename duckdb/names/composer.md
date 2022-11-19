@@ -3,7 +3,7 @@ This data comes form the Social Security Administration Names data.  The
 data contains the number of births for each state, year and gender.
 
 
-[Malloy Composer](https://github.com/malloydata/malloy-composer) is an open source tool for viewing and exploring data sets.  Data models are created in the  [Malloy](https://github.com/looker-open-source/malloy/) language.  Data can be served from a simple webserver or from a SQL database.  
+[Malloy Composer](https://github.com/malloydata/malloy-composer) is an open source tool for viewing and exploring data sets.  Data models are created in the  [Malloy](https://github.com/looker-open-source/malloy/) language.  Data can be served from a simple web server or from a SQL database.  
 
 See the [Malloy source code](https://github.com/malloydata/malloy-samples/tree/main/duckdb/names) for this data set.
 
@@ -107,7 +107,7 @@ query: names2 -> iconic_names_by_state
 Some names are gender neutral or gender specific by time or region.  
 
  <!-- malloy-query  
-  name="Gender Neutral Name"
+  name="Gender Neutral Names"
   description="Some names can be are common for both female and male genders.  This query investigates gender neutral names and their use over time and location."
   model="names.malloy"
 -->
@@ -116,7 +116,7 @@ query: names2 -> gender_neutral_names
 ```
 
  <!-- malloy-query  
-  name="Kelly in Space and Time`"
+  name="Kelly in Space and Time"
   description="Examine the name 'Kelly' over time and location (in fine detail)."
   model="names.malloy"
   renderer="dashboard"
@@ -126,7 +126,7 @@ query: names2 -> kelly_time_space_dashboard
 ```
 
  <!-- malloy-query  
-  name="Resurgent Names`"
+  name="Resurgent Names"
   description="Names, once popular, lose popularity and then, sometime later, re-gain popularity.  This query finds those names.  We find the two most popular decades for a given name and the time difference between them"
   model="names.malloy"
 -->
