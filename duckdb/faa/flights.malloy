@@ -149,6 +149,5 @@ source: flights is table('duckdb:data/flights.parquet') + {
       carriers.*, 
       destination.*
   }
-  
 }
 
