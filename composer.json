@@ -9,6 +9,10 @@
       "path": "./bigquery/ecommerce/composer.json"
     },
     {
+      "id": "faa",
+      "path": "./duckdb/faa/composer.json"
+    },
+    {
       "id": "recalls",
       "path": "./duckdb/auto_recalls/composer.json"
     },

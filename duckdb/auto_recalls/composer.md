@@ -44,7 +44,7 @@ See the [Malloy source code](auto_recalls.malloy) for this data set, source for 
 <!-- malloy-query  
   name="Manufacturer's Recalls over Time"
   model="./auto_recalls.malloy"
-  description="Line chart of the top manufactuers over time"
+  description="Line chart of the top manufacturers over time"
   renderer="line_chart"
 -->
 ```malloy
@@ -54,7 +54,7 @@ See the [Malloy source code](auto_recalls.malloy) for this data set, source for 
 ## About Malloy Composer
 
 Composer is implemented using Malloy, DuckDB and WASM and runs completely
-in your browser.  Javascript code is compled from here:
+in your browser.  Javascript code is compiled from here:
 
   https://github.com/malloydata/malloy-composer
   

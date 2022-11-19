@@ -1,0 +1,11 @@
+{
+  "by_month" : {
+    "renderer" : "line_chart"
+  },
+  "top_routes_map" : {
+    "renderer" : "segment_map"
+  },
+  "carriers_over_time" : {
+    "renderer" : "line_chart"
+  }
+}

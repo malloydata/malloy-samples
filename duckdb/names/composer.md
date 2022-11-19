@@ -22,7 +22,7 @@ query: names2 -> name_dashboard
 
 ## Names by Generation
 
-See each generation's most popular names and which states they are most popular in.  Scaning these results I noticed that in many of these names, Colorado is over represented.  Do you have any theories as to why these names are more popular in Colorado?
+See each generation's most popular names and which states they are most popular in.  Scanning these results I noticed that in many of these names, Colorado is over represented.  Do you have any theories as to why these names are more popular in Colorado?
 
 <!-- malloy-query  
   name="Current: Most popular female names on or after 2010"
@@ -69,7 +69,7 @@ See each generation's most popular names and which states they are most popular 
 ```
 
 <!-- malloy-query  
-  name="Millenial: Most popular female names between 1980 and 1995"
+  name="Millennial: Most popular female names between 1980 and 1995"
   model="names.malloy"
 -->
 ```malloy
@@ -80,7 +80,7 @@ See each generation's most popular names and which states they are most popular 
 ```
 
 <!-- malloy-query  
-  name="Millenial: Most popular male names  between 1980 and 1995"
+  name="Millennial: Most popular male names  between 1980 and 1995"
   model="names.malloy"
 -->
 ```malloy
@@ -92,7 +92,7 @@ See each generation's most popular names and which states they are most popular 
 
 ## Iconic Names
 
-For each state, which names are the most Iconic (unusally popular)?
+For each state, which names are the most Iconic (unusually popular)?
  
  <!-- malloy-query  
   name="Iconic Names by State"
@@ -138,7 +138,7 @@ query: names2 -> resurgent_names
 ## About Malloy Composer
 
 Composer is implemented using Malloy, DuckDB and WASM and runs completely
-in your browser.  Javascript code is compled from here:
+in your browser.  Javascript code is compiled from here:
 
   https://github.com/malloydata/malloy-composer
   
