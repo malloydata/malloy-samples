@@ -6,7 +6,7 @@ The NTSB FAA Dataset includes information about flights, airports, carriers, and
 
 ## What is this?
 
-[Malloy Composer](https://github.com/malloydata/malloy-composer) is an open source tool for viewing and exploring data sets.  Data models are created in the  [Malloy](https://github.com/looker-open-source/malloy/) language.  Data can be served from a simple web server or from a SQL database.  
+[Malloy Composer](https://github.com/malloydata/malloy-composer) is an open source tool for viewing and exploring data sets.  Data models are created in the  [Malloy](https://github.com/malloydata/malloy/) language.  Data can be served from a simple web server or from a SQL database.  
 
 See the [Malloy source code](flights.malloy) for this data set, source for [this document](composer.md), the [configuration](composer.json).
 
