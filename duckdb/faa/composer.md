@@ -160,10 +160,10 @@ query: sessionize is flights -> {
       flight2003 is flight_count {? dep_time: @2003}  //  also
     group_by: destination.name
     aggregate: 
-      flight2004
-      flight2003
-      delta is flight2004 - flight2003
-      growth is (flight2004 - flight2003)/flight2004*100
+      flight2004 is flight_count {? dep_time: @2004}
+      flight2003 is flight_count {? dep_time: @2003}
+      delta is (flight_count {? dep_time: @2004}) - (flight_count {? dep_time: @2003})
+      growth is ((flight_count {? dep_time: @2004}) - (flight_count {? dep_time: @2003}))/(flight_count {? dep_time: @2004})*100
   }
 ```
 

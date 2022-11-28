@@ -62,7 +62,7 @@ source: names is table('bigquery-public-data.usa_names.usa_1910_current') {
     nest: by_gender is {
       group_by: gender
       nest: iconic_name_list is {
-        top: 50; order_by: 2 desc
+        top: 15; order_by: 2 desc
         group_by: name
         aggregate: popularity is (by_decade.births_per_100k - births_per_100k) / births_per_100k
       }
