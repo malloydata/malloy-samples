@@ -6,7 +6,7 @@
     },
     {
       "id": "ecommerce",
-      "path": "./bigquery/ecommerce/composer.json"
+      "path": "./duckdb/ecommerce/composer.json"
     },
     {
       "id": "faa",
