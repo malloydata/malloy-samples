@@ -14,6 +14,16 @@ See the [Malloy source code](https://github.com/malloydata/malloy-samples/tree/m
 ## Carrier-ed Away
 
 <!-- malloy-query  
+  name="Top Carriers"
+  model="./flights.malloy"
+  description="Top ten carriers by count of flights"
+  renderer="table"
+-->
+```
+query: flights -> top_carriers
+```
+
+<!-- malloy-query  
   name="Flights Over Time by Carrier"
   model="./flights.malloy"
   renderer="line_chart"
