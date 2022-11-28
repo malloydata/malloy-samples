@@ -155,9 +155,6 @@ query: sessionize is flights -> {
 -->
 ```
   query: by_destination_growth_rate is flights -> {
-    declare: 
-      flight2004 is flight_count {? dep_time: @2004}  // can use relative declarations
-      flight2003 is flight_count {? dep_time: @2003}  //  also
     group_by: destination.name
     aggregate: 
       flight2004 is flight_count {? dep_time: @2004}
