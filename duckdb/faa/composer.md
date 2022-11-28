@@ -6,12 +6,22 @@ The NTSB FAA Dataset includes information about flights, airports, carriers, and
 
 ## What is this?
 
-[Malloy Composer](https://github.com/malloydata/malloy-composer) is an open source tool for viewing and exploring data sets.  Data models are created in the  [Malloy](https://github.com/looker-open-source/malloy/) language.  Data can be served from a simple web server or from a SQL database.  
+[Malloy Composer](https://github.com/malloydata/malloy-composer) is an open source tool for viewing and exploring data sets.  Data models are created in the  [Malloy](https://github.com/malloydata/malloy/) language.  Data can be served from a simple web server or from a SQL database.  
 
-See the [Malloy source code](flights.malloy) for this data set, source for [this document](composer.md), the [configuration](composer.json).
+See the [Malloy source code](https://github.com/malloydata/malloy-samples/tree/main/duckdb/faa) for this data set.
 
 
 ## Carrier-ed Away
+
+<!-- malloy-query  
+  name="Top Carriers"
+  model="./flights.malloy"
+  description="Top ten carriers by count of flights"
+  renderer="table"
+-->
+```
+query: flights -> top_carriers
+```
 
 <!-- malloy-query  
   name="Flights Over Time by Carrier"
@@ -155,15 +165,12 @@ query: sessionize is flights -> {
 -->
 ```
   query: by_destination_growth_rate is flights -> {
-    declare: 
-      flight2004 is flight_count {? dep_time: @2004}  // can use relative declarations
-      flight2003 is flight_count {? dep_time: @2003}  //  also
     group_by: destination.name
     aggregate: 
-      flight2004
-      flight2003
-      delta is flight2004 - flight2003
-      growth is (flight2004 - flight2003)/flight2004*100
+      flight2004 is flight_count {? dep_time: @2004}
+      flight2003 is flight_count {? dep_time: @2003}
+      delta is (flight_count {? dep_time: @2004}) - (flight_count {? dep_time: @2003})
+      growth is ((flight_count {? dep_time: @2004}) - (flight_count {? dep_time: @2003}))/(flight_count {? dep_time: @2004})*100
   }
 ```
 

@@ -50,7 +50,7 @@ source: names2 is names +  {
       group_by: state
       aggregate: per_100k is population/exclude(population,name)*100000
     }
-    limit: 30
+    limit: 10
   }
 
   query: x is {
@@ -81,7 +81,7 @@ source: names2 is names +  {
       }
     }
     order_by: 1
-    limit: 50
+    limit: 20
   }
 
   query: gender_year_line_chart is {
@@ -101,7 +101,7 @@ source: names2 is names +  {
     nest: gender_year_line_chart 
     nest: gender_by_state_shape_map
     having: population{? gender='F'}/population ? > .10 & < .9
-    limit: 50
+    limit: 10
   }
 
   query: kelly_time_space_dashboard is {
@@ -147,7 +147,7 @@ source: names2 is names +  {
       nest: by_decade is {
         project: by_decade.decade, by_decade.percent_in_decade
       }
-    limit: 50
+    limit: 10
   }
 
   query: name_dashboard is {

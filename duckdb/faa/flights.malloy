@@ -19,7 +19,7 @@ source: aircraft_models is table('duckdb:data/aircraft_models.parquet') + {
 source: aircraft is table('duckdb:data/aircraft.parquet') + {
   primary_key: tail_num
   measure: aircraft_count is count()
-  // join, see: https://looker-open-source.github.io/malloy/documentation/language/join.html
+  // join, see: https://malloydata.github.io/malloy/documentation/language/join.html
   join_one: aircraft_models with aircraft_model_code
 }
 
@@ -32,7 +32,7 @@ source: flights is table('duckdb:data/flights.parquet') + {
   rename: destination_code is destination
 
   // join all the data sources
-  //  see: https://looker-open-source.github.io/malloy/documentation/language/join.html
+  //  see: https://malloydata.github.io/malloy/documentation/language/join.html
 
   join_one: carriers with carrier
   join_one: origin is airports with origin_code
@@ -41,7 +41,7 @@ source: flights is table('duckdb:data/flights.parquet') + {
 
 
   // declare some resusable aggregate calculations
-  //  see: https://looker-open-source.github.io/malloy/documentation/language/aggregates.html
+  //  see: https://malloydata.github.io/malloy/documentation/language/aggregates.html
   measure:
     flight_count is count()
     total_distance is sum(distance)
@@ -49,14 +49,14 @@ source: flights is table('duckdb:data/flights.parquet') + {
     origin_count is origin.count()
   
     // aggregates can be computed at any level of the graph
-    //  see: https://looker-open-source.github.io/malloy/documentation/patterns/foreign_sums.html
+    //  see: https://malloydata.github.io/malloy/documentation/patterns/foreign_sums.html
     seats_for_sale is sum(aircraft.aircraft_models.seats)
     seats_owned is aircraft.sum(aircraft.aircraft_models.seats)
     average_plane_size is aircraft.avg(aircraft.aircraft_models.seats)
     average_flight_distance is distance.avg()
 
   // declare some queries:
-  // see: https://looker-open-source.github.io/malloy/documentation/language/query.html
+  // see: https://malloydata.github.io/malloy/documentation/language/query.html
   query: top_carriers is {
     group_by: carriers.nickname
     aggregate: 
