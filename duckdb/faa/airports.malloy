@@ -1,6 +1,6 @@
 source: airports is table('duckdb:data/airports.parquet') {
   rename: facility_type is fac_type
-  
+
   measure: airport_count is count()
 
   query: by_state is {
@@ -19,7 +19,19 @@ source: airports is table('duckdb:data/airports.parquet') {
     group_by: faa_region
     aggregate: airport_count
     nest:
-      by_state_shape_map is by_state 
+      by_state_shape_map is by_state
       by_facility_type
+  }
+}
+
+sql: foo_sql is {
+  select: """
+  SELECT faa_region as 'test ? identifier' FROM 'data/airports.parquet'
+  """
+}
+
+source: foo is from_sql(foo_sql) {
+  query: bar is {
+    project: `test ? identifier`
   }
 }
