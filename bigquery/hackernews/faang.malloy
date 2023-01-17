@@ -3,19 +3,9 @@
 import "hackernews.malloy"
 
 // analysis about FAANG (Facebook Apple Amazon Netflix and Google)
-// a resonable threshold for interesting stories is about 10
+// a reasonable threshold for interesting stories is about 10
 
 source: faang_analysis is stories {
-
-  dimension:
-    faang is title ?
-      pick 'Facebook' when ~ r'(Facebook|Instagram|Whatsapp)'
-      pick 'Apple' when ~ r'(Apple|iPhone|IOS|Macbook)'
-      pick 'Amazon' when ~ r'(Amazon|AWS)'
-      pick 'Netflix' when ~ r'Netflix'
-      pick 'Google' when ~ r'(Google|GOOG|Alphabet|GCloud|Chrome)'
-      else 'OTHER'
-
   query: apple_dashboard is term_dashboard {
     where: faang = 'Apple', score >= threshold
   }

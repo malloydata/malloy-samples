@@ -1,0 +1,35 @@
+{
+  "name": "malloy-samples",
+  "version": "0.0.21",
+  "description": "Malloy sample files",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/malloydata/malloy-samples.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/malloydata/malloy-samples/issues"
+  },
+  "homepage": "https://github.com/malloydata/malloy-samples#readme",
+  "dependencies": {
+    "@malloydata/db-bigquery": "0.0.21",
+    "@malloydata/db-duckdb": "0.0.21",
+    "@malloydata/malloy": "0.0.21",
+    "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "@typescript-eslint/parser": "^5.48.2",
+    "@types/jest": "^29.2.5",
+    "eslint": "^8.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "jest": "^29.3.1",
+    "jest-expect-message": "^1.1.3",
+    "ts-jest": "^29.0.5",
+    "typescript": "^4.8.4"
+  }
+}
