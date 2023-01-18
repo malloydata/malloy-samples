@@ -60,7 +60,7 @@ describe(`DuckDB`, () => {
     if (dir === "imdb") {
       // Skip IMDB if files not downloaded
       if (!fs.existsSync(path.join(projectPath, "data", "names.parquet"))) {
-        console.log("IMDB files not downloaded, run 'make' in duckdb/imdb");
+        console.info("IMDB files not downloaded, run 'make' in duckdb/imdb");
         testOrSkip = test.skip;
       }
     }
