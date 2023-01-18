@@ -14,3 +14,5 @@ steps:
     waitFor: ["nix-quiet-install"]
     timeout: "1800s"
 timeout: "1800s"
+options:
+  machineType: "E2_HIGHCPU_8"
