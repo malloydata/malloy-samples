@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "test": "jest --runInBand --config=tests/jest.config.js",
-    "test-silent": "jest --runInBand --reporters jest-silent-reporter",
+    "test-silent": "jest --runInBand --config=tests/jest.config.js --reporters jest-silent-reporter",
     "lint": "eslint tests"
   },
   "repository": {
