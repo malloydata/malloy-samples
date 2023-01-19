@@ -1,0 +1,11 @@
+.*  export-ignore
+cloudbuild export-ignore
+code_of_conduct.md export-ignore
+CONTRIBUTING.md export-ignore
+default.nix export-ignore
+jest.config.js export-ignore
+package.json export-ignore
+package-lock.json export-ignore
+tests export-ignore
+tsconfig.json export-ignore
+wasm export-ignore
