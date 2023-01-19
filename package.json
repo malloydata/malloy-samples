@@ -4,7 +4,7 @@
   "description": "Malloy sample files",
   "private": true,
   "scripts": {
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --config=tests/jest.config.js",
     "test-silent": "jest --runInBand --reporters jest-silent-reporter",
     "lint": "eslint tests"
   },
