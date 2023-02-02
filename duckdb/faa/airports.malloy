@@ -23,15 +23,3 @@ source: airports is table('duckdb:data/airports.parquet') {
       by_facility_type
   }
 }
-
-sql: foo_sql is {
-  select: """
-  SELECT faa_region as 'test ? identifier' FROM 'data/airports.parquet'
-  """
-}
-
-source: foo is from_sql(foo_sql) {
-  query: bar is {
-    project: `test ? identifier`
-  }
-}
