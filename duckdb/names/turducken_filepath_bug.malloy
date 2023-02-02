@@ -1,0 +1,23 @@
+import "names.malloy"
+
+// Query compiles fine outside of Turducken:
+query: names -> {
+        group_by: name 
+        aggregate: population
+      }
+
+// Inside Turducken, get a filepath error
+// Invalid SQL, IO Error: No files found that match the pattern "usa_names.parquet":
+sql: names_sql is {
+  select: """
+    SELECT
+      ROW_NUMBER() OVER (ORDER BY state_count) as row_number,
+      *
+    FROM (%{
+      names -> {
+        group_by: name 
+        aggregate: population
+      }
+    }%)
+  """
+}
