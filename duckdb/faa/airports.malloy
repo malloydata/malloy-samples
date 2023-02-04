@@ -1,4 +1,4 @@
-source: airports is table('duckdb:data/airports.parquet') {
+source: airports is table('duckdb:https://malloydata.github.io/malloy-samples/duckdb/faa/data/airports.parquet') {
   rename: facility_type is fac_type
 
   measure: airport_count is count()
