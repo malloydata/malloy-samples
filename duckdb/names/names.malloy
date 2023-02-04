@@ -1,7 +1,7 @@
 //  Github: https://github.com/lloydtabb/name_fiddle
 //  About Fiddles: https://github.com/lloydtabb/malloy_fiddle_dist
 
-source: names is table('duckdb:usa_names.parquet') {
+source: names is table('duckdb:https://malloydata.github.io/malloy-samples/duckdb/names/usa_names.parquet') {
   rename: year_born is `year`
   measure: population is `number`.sum()
   dimension: decade is floor(year_born/10)*10
