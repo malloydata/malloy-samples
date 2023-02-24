@@ -13,20 +13,9 @@ These examples require a [Google Cloud](https://cloud.google.com) login.
 These examples use [DuckDB](https://duckdb.org/) to read local data files.
 Datasets are included or can be easily downloaded and do not require a login.
 
-## About Malloy
+## Additional Resources:
 
-Please visit **[malloydata.dev](https://www.malloydata.dev)**.
-
-To try the web version of these samples in Malloy Composer
-
-  http://malloydata.github.io/malloy-samples/wasm
-
-To run these samples locally in Malloy Composer
-
-```
-git clone git@github.com:malloydata/malloy-samples.git
-cd malloy-samples
-python -m SimpleHTTPServer
-```
-
-then visit: http://localhost:8000/wasm
+* [Homepage](http://malloydata.dev)
+* [Docs and Guides](https://malloydata.github.io/documentation/)
+* [Malloy Github repository](https://github.com/malloydata/malloy/)
+* Join our [Slack community](https://join.slack.com/t/malloy-community/shared_invite/zt-1kgfwgi5g-CrsdaRqs81QY67QW0~t_uw)
