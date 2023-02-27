@@ -1,0 +1,21 @@
+{
+  "apps": [
+    {
+      "id": "names",
+      "path": "./names/composer.json"
+    },
+    {
+      "id": "ecommerce",
+      "path": "./ecommerce/composer.json"
+    },
+    {
+      "id": "faa",
+      "path": "./faa/composer.json"
+    },
+    {
+      "id": "recalls",
+      "path": "./auto_recalls/composer.json"
+    }
+  ],
+  "readme": "./apps.md"
+}
