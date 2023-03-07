@@ -44,12 +44,12 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import fs from "fs";
-import path from "path";
-import { Runtime } from "@malloydata/malloy";
-import { DuckDBConnection } from "@malloydata/db-duckdb";
+import fs from 'fs';
+import path from 'path';
+import {Runtime} from '@malloydata/malloy';
+import {DuckDBConnection} from '@malloydata/db-duckdb';
 
-const SAMPLE_PROJECT_ROOT = path.join(__dirname, "..", "duckdb");
+const SAMPLE_PROJECT_ROOT = path.join(__dirname, '..', 'duckdb');
 
 describe(`DuckDB`, () => {
   let modelsFound = false;
@@ -57,28 +57,28 @@ describe(`DuckDB`, () => {
     const projectPath = path.join(SAMPLE_PROJECT_ROOT, dir);
     if (!fs.statSync(projectPath).isDirectory()) continue;
     let testOrSkip = test;
-    if (dir === "imdb") {
+    if (dir === 'imdb') {
       // Skip IMDB if files not downloaded
-      if (!fs.existsSync(path.join(projectPath, "data", "names.parquet"))) {
+      if (!fs.existsSync(path.join(projectPath, 'data', 'names.parquet'))) {
         console.info("IMDB files not downloaded, run 'make' in duckdb/imdb");
         testOrSkip = test.skip;
       }
     }
     for (const fn of fs.readdirSync(projectPath)) {
-      if (fn.endsWith(".malloy")) {
+      if (fn.endsWith('.malloy')) {
         modelsFound = true;
         const filePath = path.join(projectPath, fn);
         const srcURL = new URL(`model://${filePath}`);
         const fileReader = {
           readURL: (url: URL) => {
             return Promise.resolve(
-              fs.readFileSync(url.toString().replace("model://", ""), "utf-8")
+              fs.readFileSync(url.toString().replace('model://', ''), 'utf-8')
             );
           },
         };
         const runtime = new Runtime(
           fileReader,
-          new DuckDBConnection("duckdb", ":memory:", projectPath)
+          new DuckDBConnection('duckdb', ':memory:', projectPath)
         );
         testOrSkip(`compiling ${dir}/${fn}`, async () => {
           await runtime.getModel(srcURL);

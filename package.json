@@ -2,11 +2,15 @@
   "name": "malloy-samples",
   "version": "0.0.21",
   "description": "Malloy sample files",
+  "engines": {
+    "node": ">=10"
+  },
   "private": true,
   "scripts": {
     "test": "jest --runInBand --config=tests/jest.config.js",
     "test-silent": "jest --runInBand --config=tests/jest.config.js --reporters jest-silent-reporter",
-    "lint": "eslint tests"
+    "lint": "gts lint",
+    "lint-fix": "gts fix"
   },
   "repository": {
     "type": "git",
@@ -33,5 +37,10 @@
     "jest-silent-reporter": "^0.5.0",
     "ts-jest": "^29.0.5",
     "typescript": "^4.8.4"
+  },
+  "devDependencies": {
+    "gts": "^3.1.1",
+    "typescript": "~4.7.0",
+    "@types/node": "^14.11.2"
   }
 }
