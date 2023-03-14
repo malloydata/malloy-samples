@@ -1,4 +1,5 @@
 --! styles ecommerce.styles.json
+import "malloy://bigquery_functions"
 
 // duckdb sources
 source: users_table is table('duckdb:users.parquet'){}
@@ -9,11 +10,11 @@ source: order_items_table is table('duckdb:order_items.parquet')
 
 source: users is users_table + {
   primary_key: id
-  dimension: full_name is CONCAT(
-      upper(left(first_name,1)),lower(substr(first_name,2)),
-      ' ',
-      upper(left(last_name,1)),lower(substr(last_name,2))
-    )
+  dimension: full_name is concat(
+    upper(substr(first_name, 1, 1)), lower(substr(first_name,2)),
+    ' ',
+    upper(substr(last_name, 1, 1)), lower(substr(last_name,2))
+  )
   measure: user_count is count()
 }
 

@@ -1,4 +1,5 @@
 --! styles the_met.styles.json
+import "malloy://bigquery_functions"
 
 source: met_objects is table('bigquery-public-data.the_met.objects') {
   // eliminate some bad data

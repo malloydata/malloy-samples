@@ -1,6 +1,7 @@
 --! styles flights.styles.json
 
 import "airports.malloy"
+import "malloy://bigquery_functions"
 
 source: carriers is table('malloy-data.faa.carriers') {
   primary_key: code

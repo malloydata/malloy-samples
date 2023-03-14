@@ -1,7 +1,8 @@
 --! styles ga_sessions.styles.json
+import "malloy://bigquery_functions"
 
 source:ga_sessions is table('bigquery-public-data.google_analytics_sample.ga_sessions_20170801'){
-  dimension: start_time is timestamp_seconds(visitStartTime)
+  dimension: start_time is timestamp_seconds#timestamp(visitStartTime)
 
   measure:
     user_count is count(distinct fullVisitorId)

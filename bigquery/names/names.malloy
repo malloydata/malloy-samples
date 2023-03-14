@@ -1,4 +1,5 @@
 --! styles names.styles.json
+import "malloy://bigquery_functions"
 
 source: names is table('bigquery-public-data.usa_names.usa_1910_current') {
 

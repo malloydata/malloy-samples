@@ -1,4 +1,5 @@
 --! styles flights.styles.json
+import "malloy://bigquery_functions"
 
 source: carriers is table('duckdb:data/carriers.parquet') + {
   primary_key: code

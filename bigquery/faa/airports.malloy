@@ -1,4 +1,5 @@
 -- --! styles airports.styles.json
+import "malloy://bigquery_functions"
 
 source: airports is table('bigquery:malloy-data.faa.airports') {
   primary_key: code
