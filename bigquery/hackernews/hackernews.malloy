@@ -7,7 +7,7 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
     post_type is `type`
 
   dimension:
-    post_time is timestamp_seconds#timestamp(`time`)
+    post_time is timestamp_seconds!timestamp(`time`)
     site is regexp_extract(
       regexp_extract(url, r'^http://([^\\/]*)\\/'),
       r'([^\\.]+\\.[^\\.]+(?:\\.[A-Za-z][A-Za-z])?)$'
