@@ -13,7 +13,7 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
       r'([^\\.]+\\.[^\\.]+(?:\\.[A-Za-z][A-Za-z])?)$'
     )
 
-  dimension: safe_score is score ? pick 0 when = null
+  dimension: safe_score is ifnull(score, 0)
   dimension: score_class is safe_score ?
       pick 'blah' when < 5
       pick 'hmmm' when < 10
