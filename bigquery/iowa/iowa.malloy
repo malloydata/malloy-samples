@@ -1,5 +1,4 @@
 --! styles iowa.styles.json
-import "malloy://bigquery_functions"
 
 source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
 

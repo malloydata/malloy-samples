@@ -1,5 +1,4 @@
 --! styles hackernews.styles.json
-import "malloy://bigquery_functions"
 
 source: stories is table('bigquery-public-data.hacker_news.full') {
   rename:

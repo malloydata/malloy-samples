@@ -1,4 +1,3 @@
-import "malloy://bigquery_functions"
 
 source: words is table('malloy-data.malloytest.words') {
   query: five_letter_words is {

@@ -1,5 +1,4 @@
 --! styles ecommerce.styles.json
-import "malloy://bigquery_functions"
 
 // bigquery sources
 

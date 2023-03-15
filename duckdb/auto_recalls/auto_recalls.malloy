@@ -1,5 +1,4 @@
 // Auto Recalls: CSV example
-import "malloy://bigquery_functions"
 
 source: recalls is table('duckdb:auto_recalls.csv') {
   declare:
