@@ -8,7 +8,22 @@ sql: order_items_sql is {
   connection: "duckdb"
 }
 
+query: q_orders is from_sql(order_items_sql) -> {
+   group_by: order_sequence
+    aggregate: order_count is count()
+}
+
+
+source: order_items1 is from(->q_orders) {
+  query: by_sequence is {
+    group_by: order_sequence
+    aggregate: order_count is count()
+  }
+}
+
+// Broken:  This eroneously reports an error
 source: order_items_table is from_sql(order_items_sql) {
+// Broken:  This eroneously reports an error
   query: by_sequence is {
     group_by: order_sequence
     aggregate: order_count is count()
