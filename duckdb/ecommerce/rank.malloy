@@ -1,0 +1,16 @@
+sql: order_items_sql is {
+  select: """
+    select 
+      *
+      , RANK() OVER (PARTITION BY user_id ORDER BY created_at) as order_sequence
+    FROM 'order_items.parquet'
+  """
+  connection: "duckdb"
+}
+
+source: order_items_table is from_sql(order_items_sql) {
+  query: by_sequence is {
+    group_by: order_sequence
+    aggregate: order_count is count()
+  }
+}
