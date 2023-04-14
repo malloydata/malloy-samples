@@ -1,0 +1,14 @@
+[
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "# Minimum of a Count",
+    "metadata": {}
+  },
+  {
+    "kind": 2,
+    "language": "malloy",
+    "value": "import \"ecommerce.malloy\"\n\nquery: order_items -> {\n  group_by: inventory_items.product_brand\n  aggregate: inventory_items.product.product_count\n  having: inventory_items.product.product_count > 100\n}",
+    "metadata": {}
+  }
+]
