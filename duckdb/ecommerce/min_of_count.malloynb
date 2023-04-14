@@ -22,5 +22,17 @@
     "language": "malloy",
     "value": "query: product -> {\n  group_by: brand\n  aggregate: product_count\n  nest: p is {\n    project: *\n  }\n}\n-> {\n  where: product_count > 300\n  project: p.*\n}",
     "metadata": {}
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "# Total revenue from products that have more than brands that have more than 350 products",
+    "metadata": {}
+  },
+  {
+    "kind": 2,
+    "language": "malloy",
+    "value": "query: order_items -> {\n  join_one: brands_350 is from(\n    product->{group_by: brand; having: product_count > 350}\n  ) on inventory_items.product_brand = brands_350.brand\n\n  where: brands_350.brand != null\n  group_by: inventory_items.product_brand\n  aggregate: total_sales\n}",
+    "metadata": {}
   }
 ]
