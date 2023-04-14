@@ -1,5 +1,8 @@
 // Auto Recalls: CSV example
-source: recalls is table('duckdb:auto_recalls.csv') {
+source: recalls is 
+  table('duckdb:https://malloydata.github.io/malloy-samples/duckdb/auto_recalls/auto_recalls.csv')
+  // table('duckdb:https://cors-proxy.htmldriven.com/?url=https://data.transportation.gov/api/views/6axg-epim/rows.csv')  
+  {
   declare:
     recall_count is count()
     percent_of_recalls is recall_count/all(recall_count)*100
@@ -16,6 +19,16 @@ source: recalls is table('duckdb:auto_recalls.csv') {
       total_defects
       percent_of_recalls
   }
+
+  query: foo is {
+    nest: `By Manufacturer_bar_chart` is {
+    group_by: `Manufacturer`
+    aggregate:
+      recall_count
+    limit: 10
+    }
+  }
+
 
   query: by_type is {
     group_by: `Recall Type`

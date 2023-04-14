@@ -8,7 +8,19 @@
   {
     "kind": 2,
     "language": "malloy",
-    "value": "import \"ecommerce.malloy\"\n\nquery: order_items -> {\n  group_by: inventory_items.product_brand\n  aggregate: inventory_items.product.product_count\n  having: inventory_items.product.product_count > 100\n}",
+    "value": "import \"ecommerce.malloy\"\n\nquery: product -> {\n  group_by: brand\n  aggregate: product_count\n  having: product_count > 250\n}",
+    "metadata": {}
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "# map and project\nYou can aggregate and collect, then project in a single step without a join...",
+    "metadata": {}
+  },
+  {
+    "kind": 2,
+    "language": "malloy",
+    "value": "query: product -> {\n  group_by: brand\n  aggregate: product_count\n  nest: p is {\n    project: *\n  }\n}\n-> {\n  where: product_count > 300\n  project: p.*\n}",
     "metadata": {}
   }
 ]
