@@ -188,6 +188,50 @@ source: order_items is order_items_table + {
       top_customers + {group_by: order_count}
   }
 
+  query: sales_summary is {
+    aggregate:
+      order_count
+      total_sales
+      total_gross_margin
+  }
+
+  -- This query fails
+  -- "Unrecognized name: inventory_items_0; Did you mean inventory_item_id? at [4:105]"
+  -- `inventory_items` join is not in compiled SQL
+  query: sales_summary_yoy_bug is {
+    declare:
+      order_count_2022 is order_count { where: year(created_at) = 2022 }
+      total_sales_2022 is total_sales { where: year(created_at) = 2022 }
+      total_gross_margin_2022 is total_gross_margin { where: year(created_at) = 2022 }
+
+      order_count_2021 is order_count { where: year(created_at) = 2021 }
+      total_sales_2021 is total_sales { where: year(created_at) = 2021 }
+      total_gross_margin_2021 is total_gross_margin { where: year(created_at) = 2021 }
+     
+    aggregate:
+      order_count_yoy is (order_count_2022 - order_count_2021) / order_count_2021
+      total_sales_yoy is (total_sales_2022 - total_sales_2021) / total_sales_2021
+      total_gross_margin_yoy is (total_gross_margin_2022 - total_gross_margin_2021) / total_gross_margin_2021
+  }
+
+  -- This query succeeds:
+  query: sales_summary_yoy is {
+    declare:
+      order_count_2022 is order_count { where: year(created_at) = 2022 }
+      total_sales_2022 is total_sales { where: year(created_at) = 2022 }
+      total_gross_margin_2022 is total_gross_margin { where: year(created_at) = 2022 }
+
+      order_count_2021 is order_count { where: year(created_at) = 2021 }
+      total_sales_2021 is total_sales { where: year(created_at) = 2021 }
+      total_gross_margin_2021 is total_gross_margin { where: year(created_at) = 2021 }
+     
+    aggregate:
+      total_gross_margin
+      order_count_yoy is (order_count_2022 - order_count_2021) / order_count_2021
+      total_sales_yoy is (total_sales_2022 - total_sales_2021) / total_sales_2021
+      total_gross_margin_yoy is (total_gross_margin_2022 - total_gross_margin_2021) / total_gross_margin_2021
+  }
+
 
   query: search_index is {
     index: *, users.*, inventory_items.* 
