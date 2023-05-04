@@ -55,4 +55,39 @@ CREATE OR REPLACE VIEW ecommerce_views.daily_funnel AS
 
 ;;;
 
+CREATE OR REPLACE VIEW ecommerce_views.sessions AS
+(%{
+  events -> {
+    group_by: 
+        user_id
+        session_id
 
+    aggregate:
+        event_count is count()
+        session_start is min(created_at)
+        session_end is max(created_at)
+
+    having:
+        count() > 3
+    
+    nest: session_events is {
+        project:
+            created_at
+            event_type
+            uri
+            product_id
+
+        order_by:
+            created_at
+    }
+
+    where: user_id != null
+  }
+}%)
+
+;;;
+
+CREATE OR REPLACE VIEW ecommerce_views.cohorts_monthly_v AS
+(%{
+  cohorts -> { project: * }
+}%)
