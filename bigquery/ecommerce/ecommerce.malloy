@@ -237,26 +237,35 @@ source: calendar is from(
     primary_key: the_date
 }
 
-source: active_purchase_days is from(
-  order_items -> {
-      group_by:
-          user_id
-          the_date is created_at.day
+source: declare_bug is order_items + {
+    query: sales_summary_buggy is {
+      declare:
+        total_sales_2022 is total_sales { where: year(created_at) = 2022 }
+        total_sales_2021 is total_sales { where: year(created_at) = 2021 }
 
       aggregate:
-          total_sales
-          order_item_count
-  } -> {
-      join_many: calendar on the_date <= calendar.the_date
+        _ is nullif(total_gross_margin - total_gross_margin, 0)
+        total_sales_2022
+        total_sales_growth is total_sales_2022 - total_sales_2021
+        total_sales_yoy is total_sales_2022 / nullif(total_sales_2021, 0) - 1
+        growth_contribution is (total_sales_2022 - total_sales_2021) / nullif(all(total_sales_2022 - total_sales_2021), 0)
+    }
 
-      group_by:
-          user_id
-          calendar.the_date
-
-      aggregate:
-          cumulative_sales is sum(total_sales)
-          cumulative_order_count is sum(order_item_count)
-          sales_on_date is sum(pick total_sales when the_date = calendar.the_date else 0)
-          order_count_on_date is sum(pick order_item_count when the_date = calendar.the_date else 0)
+  // This query doesn't compile
+  // line 255: INTERNAL ERROR model/Segment.nextStructDef: Redefinition of total_sales_2022
+  query: buggy_sales_summary_by_state is sales_summary_buggy + {
+    nest: by_dept is sales_summary_buggy + {
+      group_by: inventory_items.product.department
+    }
   }
-)
+
+  // This query is functionally identical to the above, but it works.
+  // The only difference is this one does not use `declare`, but the above query does.
+  query: working_sales_yoy_by_state is sales_summary_yoy + {
+    nest: by_department is sales_summary_yoy + {
+      group_by: inventory_items.product.department
+      order_by: total_sales_2022 desc
+    }
+  }
+
+}
