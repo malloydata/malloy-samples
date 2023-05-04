@@ -200,6 +200,7 @@ source: order_items is order_items_table + {
 
   query: sales_summary_yoy is {
     aggregate:
+      // Ugly hack to get around https://github.com/malloydata/malloy/issues/1092
       _ is nullif(total_gross_margin - total_gross_margin, 0)
       
       total_sales_growth is total_sales_2022 - total_sales_2021
