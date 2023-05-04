@@ -84,7 +84,8 @@ source: order_items is order_items_table + {
     total_sales is sale_price.sum()
     total_gross_margin is gross_margin.sum()
     average_gross_margin is gross_margin.avg()
-    // Would be nice to have parameters here:
+    // Don't like that these are defined in the Source. Ideally we'd do this in `declare`, but
+    // can't because of a bug.
     total_sales_2022 is total_sales { where: year(created_at) = 2022 }
     total_sales_2021 is total_sales { where: year(created_at) = 2021 }
 
@@ -193,9 +194,13 @@ source: order_items is order_items_table + {
 
   query: sales_summary is {
     aggregate:
-      order_count
-      total_sales
-      total_gross_margin
+        sales is total_sales { where: status != 'Cancelled' and status != 'Returned'}
+        orders is order_count { where: status != 'Cancelled' and status != 'Returned'}
+        order_items is order_item_count { where: status != 'Cancelled' and status != 'Returned'}
+        purchasers is count(distinct user_id) { where: status != 'Cancelled' and status != 'Returned'}
+        refunds is total_sales { where: status ? 'Cancelled' | 'Returned' }
+        refunded_orders is order_count { where: status ? 'Cancelled' | 'Returned' }
+        refunded_items is order_item_count { where: status ? 'Cancelled' | 'Returned' }
   }
 
   query: sales_summary_yoy is {
@@ -219,10 +224,14 @@ source: order_items is order_items_table + {
      }
   }
 
-  query: sales_yoy_by_state is sales_summary_yoy + {
-    nest: by_state is sales_summary_yoy + {
-      group_by: users.state
-      order_by: total_sales_2022 desc
+  query: sales_yoy_by_region is sales_summary_yoy + {
+    nest: by_country is sales_summary_yoy + {
+      group_by: users.country
+      order_by: total_sales_growth desc
+      nest: by_state is sales_summary_yoy + {
+        group_by: users.state
+        order_by: total_sales_growth desc
+      }
     }
   }
 
@@ -241,3 +250,27 @@ source: calendar is from(
     primary_key: the_date
 }
 
+  source: funnel_orders is from(
+    order_items_table -> {
+        group_by:  
+            order_date is created_at.day
+
+        aggregate:
+            order_count is count()
+    }
+  )
+
+source: funnel_signups is from(
+    users_table -> {
+        group_by:
+            signup_date is created_at.day
+
+        aggregate:
+            signup_count is count()
+    }
+)
+
+source: daily_funnel is calendar + {
+    join_one: funnel_orders on the_date = funnel_orders.order_date
+    join_one: funnel_signups on the_date = funnel_signups.signup_date
+}
