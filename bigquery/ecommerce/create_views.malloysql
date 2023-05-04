@@ -1,0 +1,14 @@
+-- connection: bigquery
+-- import: "ecommerce.malloy"
+
+CREATE OR REPLACE VIEW ecommerce_views.dim_user_v AS 
+(%{
+    user_order_facts -> { project: * }
+}%)
+
+;;;
+
+CREATE OR REPLACE VIEW ecommerce_views.sales_yoy_by_category AS
+(%{
+    order_items -> sales_yoy_by_category
+}%)
