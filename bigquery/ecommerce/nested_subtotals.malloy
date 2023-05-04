@@ -23,54 +23,38 @@ query: order_items -> sales_summary_yoy + {
 // How do we do this in SQL?
 
 // One dimension:
-
 sql: subtotals_one_dimension is {
     select:
     """
-    with subtotals as (
-    SELECT
-        date_trunc(a.created_at, year) as the_year
-        , b.product_department
-        , sum(a.sale_price) as department_sales
-    FROM `malloy-data.ecomm.order_items` a
-    LEFT JOIN `malloy-data.ecomm.inventory_items` b on a.inventory_item_id = b.id
-    group by 1,2
+    WITH sales_by_department AS (
+        SELECT
+            b.product_department
+            , sum(case when date_trunc(a.created_at, year) = '2021-01-01' then a.sale_price else 0 end) as sales_2021
+            , sum(case when date_trunc(a.created_at, year) = '2022-01-01' then a.sale_price else 0 end) as sales_2022
+        FROM `malloy-data.ecomm.order_items` a
+        LEFT JOIN `malloy-data.ecomm.inventory_items` b on a.inventory_item_id = b.id
+        GROUP BY 1
     ),
 
-    sales_by_department as (
-    select
-        product_department
-        , sum(case when the_year = '2021-01-01 00:00:00' then department_sales else 0 end) as sales_2021
-        , sum(case when the_year = '2022-01-01 00:00:00' then department_sales else 0 end) as sales_2022
-    from subtotals
-    group by 1
-    ),
-
-    sales_with_subtotals as (
-    select
-        product_department
-        , sales_2022 as department_sales_2022
-        , sales_2022 - sales_2021 as department_sales_growth
-        , sales_2022 / sales_2021 - 1 as department_sales_yoy
-        , sum(sales_2022) over (partition by 1) as total_sales
-        , sum(sales_2022) over (partition by 1) - sum(sales_2021) over (partition by 1) as total_sales_growth
-        , sum(sales_2022) over (partition by 1) / sum(sales_2021) over (partition by 1) - 1 as total_sales_yoy
-    from sales_by_department
+    sales_with_total as (
+        SELECT
+            product_department
+            , sales_2022
+            , sales_2022 - sales_2021 as sales_growth
+            , sales_2022 / sales_2021 - 1 as sales_yoy
+            , sum(sales_2022) over (partition by 1) as total_sales
+            , sum(sales_2022) over (partition by 1) - sum(sales_2021) over (partition by 1) as total_sales_growth
+        FROM sales_by_department
     )
 
-    select
-        total_sales
-        , total_sales_growth
-        , total_sales_yoy
-        , '--' as spacer
+    SELECT
+        product_department
+        , sales_2022
+        , sales_growth
+        , sales_yoy
+        , sales_growth / total_sales_growth as growth_contribution
+    FROM sales_with_total
 
-        , product_department
-        , department_sales_2022
-        , department_sales_growth
-        , department_sales_yoy
-        , department_sales_growth / total_sales_growth as department_growth_contribution
-    from sales_with_subtotals
-    order by product_department
     """
     connection: "bigquery"
 }
@@ -79,41 +63,31 @@ sql: subtotals_one_dimension is {
 sql: subtotals_two_dimensions is {
     select:
     """
-    with subtotals as (
-    SELECT
-        date_trunc(a.created_at, year) as the_year
-        , b.product_department
-        , b.product_category
-        , sum(a.sale_price) as sales
-    FROM `malloy-data.ecomm.order_items` a
-    LEFT JOIN `malloy-data.ecomm.inventory_items` b on a.inventory_item_id = b.id
-    group by 1,2,3
+    with sales_by_department as (
+        SELECT
+            b.product_department
+            , b.product_category
+            , sum(case when date_trunc(a.created_at, year) = '2021-01-01 00:00:00' then a.sale_price else 0 end) as sales_2021
+            , sum(case when date_trunc(a.created_at, year) = '2022-01-01 00:00:00' then a.sale_price else 0 end) as sales_2022
+        FROM `malloy-data.ecomm.order_items` a
+        LEFT JOIN `malloy-data.ecomm.inventory_items` b on a.inventory_item_id = b.id
+        group by 1,2
     ),
 
-    sales_by_department_and_category as (
-    select
-        product_department
-        , product_category
-        , sum(case when the_year = '2021-01-01 00:00:00' then sales else 0 end) as sales_2021
-        , sum(case when the_year = '2022-01-01 00:00:00' then sales else 0 end) as sales_2022
-    from subtotals
-    group by 1,2
-    ),
-
-    sales_with_subtotals as (
-    select
-        product_department
-        , product_category
-        , sales_2022 as category_sales_2022
-        , sales_2022 - sales_2021 as category_sales_growth
-        , sales_2022 / sales_2021 - 1 as category_sales_yoy
-        , sum(sales_2022) over (partition by product_department) as department_sales_2022
-        , sum(sales_2022) over (partition by product_department) - sum(sales_2021) over (partition by product_department) as department_sales_growth
-        , sum(sales_2022) over (partition by product_department) / sum(sales_2021) over (partition by product_department) - 1 as department_sales_yoy
-        , sum(sales_2022) over (partition by 1) as total_sales_2022
-        , sum(sales_2022) over (partition by 1) - sum(sales_2021) over (partition by 1) as total_sales_growth
-        , sum(sales_2022) over (partition by 1) / sum(sales_2021) over (partition by 1) - 1 as total_sales_yoy
-    from sales_by_department_and_category
+    sales_with_total as (
+        select
+            product_department
+            , product_category
+            , sales_2022 as category_sales_2022
+            , sales_2022 - sales_2021 as category_sales_growth
+            , sales_2022 / sales_2021 - 1 as category_sales_yoy
+            , sum(sales_2022) over (partition by product_department) as department_sales_2022
+            , sum(sales_2022) over (partition by product_department) - sum(sales_2021) over (partition by product_department) as department_sales_growth
+            , sum(sales_2022) over (partition by product_department) / sum(sales_2021) over (partition by product_department) - 1 as department_sales_yoy
+            , sum(sales_2022) over (partition by 1) as total_sales_2022
+            , sum(sales_2022) over (partition by 1) - sum(sales_2021) over (partition by 1) as total_sales_growth
+            , sum(sales_2022) over (partition by 1) / sum(sales_2021) over (partition by 1) - 1 as total_sales_yoy
+        from sales_by_department
     )
 
     select
@@ -134,9 +108,26 @@ sql: subtotals_two_dimensions is {
         , category_sales_growth
         , category_sales_yoy
         , category_sales_growth / department_sales_growth as category_growth_contribution
-    from sales_with_subtotals
+    from sales_with_total
     order by product_department, category_sales_growth desc
+
     """
     connection: "bigquery"
 }
 
+// Nested subtotal with "GROUP BY ROLLUP"
+sql: subtotals_one_dimension_rollup is {
+    select:
+    """
+    SELECT
+        date_trunc(a.created_at, year) as the_year
+        , b.product_department
+        , sum(a.sale_price) as department_sales
+    FROM `malloy-data.ecomm.order_items` a
+    LEFT JOIN `malloy-data.ecomm.inventory_items` b on a.inventory_item_id = b.id
+    group by rollup (1,2)
+    """
+    connection: "bigquery"
+}
+
+// This does a decent "rollup", but computing the YoY changes is going to be painful.
