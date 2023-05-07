@@ -78,6 +78,8 @@ source: order_items is order_items_table + {
     average_gross_margin is gross_margin.avg()
     product_count is count(distinct inventory_items.product_id)
     user_count is users.count()
+    total_sales_2022 is total_sales { where: year(created_at) = 2022 }
+    total_sales_2021 is total_sales { where: year(created_at) = 2021 }
 
   query: top_categories is {
     top: 5
@@ -183,6 +185,15 @@ source: order_items is order_items_table + {
       top_customers + {group_by: order_count}
   }
   
+
+  query: sales_summary_yoy is {
+    aggregate:
+      total_sales_2022
+      sales_growth is total_sales_2022 - total_sales_2021
+      sales_yoy is total_sales_2022 / nullif(total_sales_2021,0) - 1
+      growth_contribution is (total_sales_2022 - total_sales_2021) / all(total_sales_2022 - total_sales_2021)
+  }
+
   query: search_index is {
     index: *, users.*, inventory_items.* 
     sample: true
