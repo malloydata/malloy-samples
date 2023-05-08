@@ -76,6 +76,8 @@ source: order_items is order_items_table + {
     percent_of_sales is total_sales/all(total_sales)
     total_gross_margin is gross_margin.sum()
     average_gross_margin is gross_margin.avg()
+    product_count is count(distinct inventory_items.product_id)
+    user_count is users.count()
 
   query: top_categories is {
     top: 5
@@ -150,7 +152,7 @@ source: order_items is order_items_table + {
     inventory_items.product.product_count
   nest:
     top_categories
-    by_month
+    by_month_line_chart is by_month
     top_products
   limit: 10
   }
@@ -175,13 +177,12 @@ source: order_items is order_items_table + {
       order_count
       total_gross_margin
     nest: 
-      by_month
+      by_month_line_chart is by_month
       sales_by_state_shape_map is sales_by_state
       top_brands
       top_customers + {group_by: order_count}
   }
-
-
+  
   query: search_index is {
     index: *, users.*, inventory_items.* 
     sample: true

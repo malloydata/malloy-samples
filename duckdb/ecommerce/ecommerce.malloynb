@@ -1,0 +1,62 @@
+[
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "# eCommerce\nThis dataset represents transactional database for a fictitious eCommerce business. \n",
+    "metadata": {}
+  },
+  {
+    "kind": 2,
+    "language": "malloy",
+    "value": "--! styles ecommerce.styles.json\nimport \"ecommerce.malloy\"",
+    "metadata": {}
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## Business Overview\nA high level overview of performance of the business",
+    "metadata": {}
+  },
+  {
+    "kind": 2,
+    "language": "malloy",
+    "value": "query: order_items -> business_overview_dashboard\n// --! style dashboard",
+    "metadata": {}
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## Customer Lookup\nLook up information about a customer and view their history.\n",
+    "metadata": {}
+  },
+  {
+    "kind": 2,
+    "language": "malloy",
+    "value": "query: order_items -> customer_dashboard {where: users.full_name = 'Mary Smith'}\n// --! style dashboard",
+    "metadata": {}
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "# Brand Dashboard\nAn overview of brand performance\n",
+    "metadata": {}
+  },
+  {
+    "kind": 2,
+    "language": "malloy",
+    "value": "query: order_items -> brand_dashboard\n// --! style dashboard",
+    "metadata": {}
+  },
+  {
+    "kind": 1,
+    "language": "markdown",
+    "value": "## Frequent Returners\nLists individuals who return a lot of merchandise\n",
+    "metadata": {}
+  },
+  {
+    "kind": 2,
+    "language": "malloy",
+    "value": "query: order_items -> frequent_returners",
+    "metadata": {}
+  }
+]
