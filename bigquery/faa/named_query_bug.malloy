@@ -1,0 +1,8 @@
+import "airports.malloy"
+
+query: named_query is airports -> {
+    project: *
+    limit: 10
+}
+
+query: named_query is airports -> by_region
