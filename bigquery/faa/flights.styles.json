@@ -27,6 +27,6 @@
     "renderer": "line_chart"
   },
   "by_month_line_chart": {
-    "renderer": "spark_line"
+    "renderer": "sparkline"
   }
 }

@@ -39,9 +39,9 @@
     "renderer": "vega",
     "spec_name": "spark_bar_SM"
   },
-  "time_spark_line": {
+  "time_sparkline": {
     "renderer": "vega",
-    "spec_name": "spark_line_TM"
+    "spec_name": "sparkline_TM"
   },
   "spark_force_scale": {
     "renderer":"vega",
@@ -364,7 +364,7 @@
       ]
     }
   },
-  "spark_line_TM": {
+  "sparkline_TM": {
     "renderer":"vega",
     "spec": {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
