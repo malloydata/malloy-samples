@@ -238,7 +238,7 @@ source: flights is table('malloy-data.faa.flights') {
 }
 
 query: sessionize_delta_southwest is
-  flights -> sessionize { where: carrier ? 'WN' | 'DL', dep_tim::date ? @2002-03-03 }
+  flights -> sessionize { where: carrier ? 'WN' | 'DL', dep_time::date ? @2002-03-03 }
 
 query: kayak_query_sj_to_la is
   flights -> kayak {
