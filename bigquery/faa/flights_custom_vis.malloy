@@ -141,7 +141,7 @@ source: vis_flights is flights {
       aggregate: flight_count                // measure
     }
     // spark_bar_TM
-    nest: time_spark_line is {
+    nest: time_sparkline is {
       group_by: dep_month is dep_time.month    // time
       aggregate: flight_count                  // measure
     }
