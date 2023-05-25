@@ -28,7 +28,7 @@ sql: bard_nested_subtotals is {
         created_at,
         sale_price,
         inventory_item_id
-    FROM read_parquet('order_items.parquet')
+    FROM 'order_items.parquet'
     ),
     inventory_items AS (
     SELECT
@@ -36,7 +36,7 @@ sql: bard_nested_subtotals is {
         product_department,
         product_category,
         created_at AS inventory_items_created_at
-    FROM read_parquet('inventory_items.parquet')
+    FROM 'inventory_items.parquet'
     )
     SELECT
     year,
@@ -78,8 +78,8 @@ sql: handwritten_nested_subtotals is {
             , b.product_category
             , sum(case when date_trunc('year', a.created_at) = '2021-01-01' then a.sale_price else 0 end) as sales_2021
             , sum(case when date_trunc('year', a.created_at) = '2022-01-01' then a.sale_price else 0 end) as sales_2022
-        FROM read_parquet('order_items.parquet') a
-        LEFT JOIN read_parquet('inventory_items.parquet') b on a.inventory_item_id = b.id
+        FROM 'order_items.parquet' a
+        LEFT JOIN 'inventory_items.parquet' b on a.inventory_item_id = b.id
         group by 1,2
     )
     SELECT
