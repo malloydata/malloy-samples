@@ -10,7 +10,7 @@ source: stations is table('bigquery-public-data.fcc_political_ads.broadcast_tv_r
   }
 
   query: owner_dashboard is {
-    group_by: station_count
+    aggregate: station_count
     nest: stations_by_service
     nest: stations_by_state is {
       group_by: communityState

@@ -46,8 +46,8 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
     group_by:
       vendor_name
       item_description
-      total_sale_dollars
     aggregate:
+      total_sale_dollars
       total_bottles
       avg_price_per_100ml
       percent_of_sales
@@ -96,7 +96,7 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
   }
 
   query: vendor_dashboard is {
-    group_by: vendor_count is count(distinct vendor_number)
+    aggregate: vendor_count is count(distinct vendor_number)
     aggregate:
       total_sale_dollars
       total_bottles

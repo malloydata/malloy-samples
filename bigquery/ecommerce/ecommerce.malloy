@@ -185,7 +185,7 @@ source: order_items is order_items_table + {
       by_month
       sales_by_state_shape_map is sales_by_state
       top_brands
-      top_customers + {group_by: order_count}
+      top_customers + {aggregate: order_count}
   }
 
 

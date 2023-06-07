@@ -63,7 +63,7 @@ source: met_objects is table('bigquery-public-data.the_met.objects') {
   }
 
   query: over_view_dashboard is {
-    group_by: object_count
+    aggregate: object_count
     nest: department_dashboard is {
       group_by: department
       aggregate: object_count
