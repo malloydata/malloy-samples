@@ -5,8 +5,8 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
   rename: _vendor_name is vendor_name
   // dimensions
   dimension:
-    gross_margin is 100 * (state_bottle_retail - state_bottle_cost) / ifnull(state_bottle_retail, 0)
-    price_per_100ml is state_bottle_retail / ifnull(bottle_volume_ml, 0) * 100
+    gross_margin is 100 * (state_bottle_retail - state_bottle_cost) / nullif(state_bottle_retail, 0)
+    price_per_100ml is state_bottle_retail / nullif(bottle_volume_ml, 0) * 100
 
     category_class is category_name ?
       pick 'WHISKIES' when ~ r'(WHISK|SCOTCH|BOURBON|RYE)'
