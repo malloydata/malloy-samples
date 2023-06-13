@@ -1,3 +1,4 @@
+
 source: words is table('malloy-data.malloytest.words') {
   query: five_letter_words is {
     where: length(word) = 5 and word ~ r'^[a-z]{5}$'

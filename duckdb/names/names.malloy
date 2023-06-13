@@ -141,12 +141,13 @@ source: names2 is names +  {
     group_by: 
       name
       population
+    aggregate:
       years_apart is max(by_decade.decade)-min(by_decade.decade)
       total_percentage is by_decade.percent_in_decade.sum()
       max_percentage is max(by_decade.percent_in_decade)
-      nest: by_decade is {
-        project: by_decade.decade, by_decade.percent_in_decade
-      }
+    nest: by_decade is {
+      project: by_decade.decade, by_decade.percent_in_decade
+    }
     limit: 10
   }
 

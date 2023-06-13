@@ -1,3 +1,4 @@
+
 // Make a table of 5 letter words
 source: words is table('malloy-data.malloytest.words_bigger') {
   query: five_letter_words is {

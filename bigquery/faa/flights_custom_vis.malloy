@@ -56,7 +56,7 @@ source: vis_flights is flights {
   //  repeated for each of the measures.
   query: by_carrier_repeated_bar is {
     group_by: carriers.nickname                 // string
-    aggregate:
+    group_by:
       dist is distance ?                         // string
         pick 'short' when < 300
         pick 'medium' when < 1000

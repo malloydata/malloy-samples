@@ -18,10 +18,10 @@ source: events_table is table('malloy-data.ecomm.events')
 source: users is users_table + {
   primary_key: id
   //dimension: full_name is INITCAP(CONCAT(first_name,' ',last_name))
-  dimension: full_name is CONCAT(
-      upper(left(first_name,1)),lower(substr(first_name,2)),
+  dimension: full_name is concat(
+      upper(substr(first_name, 1, 1)), lower(substr(first_name, 2)),
       ' ',
-      upper(left(last_name,1)),lower(substr(last_name,2))
+      upper(substr(last_name, 1, 1)), lower(substr(last_name, 2)),
     )
   measure: user_count is count()
 }
@@ -195,7 +195,7 @@ source: order_items is order_items_table + {
       by_month
       sales_by_state_shape_map is sales_by_state
       top_brands
-      top_customers + {group_by: order_count}
+      top_customers + {aggregate: order_count}
   }
 
   query: sales_summary is {

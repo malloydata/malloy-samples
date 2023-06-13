@@ -1,4 +1,5 @@
 // Auto Recalls: CSV example
+
 source: recalls is table('duckdb:auto_recalls.csv') {
   declare:
     recall_count is count()

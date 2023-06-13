@@ -1,7 +1,7 @@
 --! styles ga_sessions.styles.json
 
 source:ga_sessions is table('bigquery-public-data.google_analytics_sample.ga_sessions_20170801'){
-  dimension: start_time is timestamp_seconds(visitStartTime)
+  dimension: start_time is timestamp_seconds!timestamp(visitStartTime)
 
   measure:
     user_count is count(distinct fullVisitorId)
@@ -60,7 +60,7 @@ source:ga_sessions is table('bigquery-public-data.google_analytics_sample.ga_ses
   query: by_page_title is { where: totals.transactionRevenue > 0
     group_by: hits.page.pageTitle
     aggregate: hits_count
-    nest: sold_count
+    aggregate: sold_count
   }
 
   query: by_all is {

@@ -6,13 +6,14 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
     post_type is `type`
 
   dimension:
-    post_time is timestamp_seconds(`time`)
+    post_time is timestamp_seconds!timestamp(`time`)
     site is regexp_extract(
-      regexp_extract(url, '^http://([^\\/]*)\\/'),
-      '([^\\.]+\\.[^\\.]+(?:\\.[A-Za-z][A-Za-z])?)$'
+      regexp_extract(url, r'^http://([^\\/]*)\\/'),
+      r'([^\\.]+\\.[^\\.]+(?:\\.[A-Za-z][A-Za-z])?)$'
     )
 
-  dimension: score_class is ifnull(score, 0) ?
+  dimension: safe_score is ifnull(score, 0)
+  dimension: score_class is safe_score ?
       pick 'blah' when < 5
       pick 'hmmm' when < 10
       pick 'oooh' when < 100
@@ -20,7 +21,7 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
 
   dimension:
     threshold is 10
-    is_interesting is ifnull(score, 0) >= threshold
+    is_interesting is safe_score >= threshold
 
   dimension:
     faang is title ?

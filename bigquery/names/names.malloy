@@ -44,7 +44,7 @@ source: names is table('bigquery-public-data.usa_names.usa_1910_current') {
       nest: iconic_name_list is {
         top: 15; order_by: 2 desc
         group_by: name
-        aggregate: popularity is (by_state.births_per_100k - births_per_100k) / births_per_100k
+        group_by: popularity is (by_state.births_per_100k - births_per_100k) / births_per_100k
       }
     }
   }
@@ -64,7 +64,7 @@ source: names is table('bigquery-public-data.usa_names.usa_1910_current') {
       nest: iconic_name_list is {
         top: 15; order_by: 2 desc
         group_by: name
-        aggregate: popularity is (by_decade.births_per_100k - births_per_100k) / births_per_100k
+        group_by: popularity is (by_decade.births_per_100k - births_per_100k) / births_per_100k
       }
     }
   }
@@ -75,7 +75,7 @@ query:  jes_dashboard is names -> name_dashboard { where: name ~ r'Jes' }
 query: jessie_over_time is names -> {
   where: name = 'Jessie'
   nest: decade_graph
-  nest: total_population
+  aggregate: total_population
   nest: by_state_and_time is {
     group_by: state
     aggregate: total_population
