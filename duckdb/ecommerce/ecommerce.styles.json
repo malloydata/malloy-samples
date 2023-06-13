@@ -51,7 +51,7 @@
   "status_by_month": {
     "sheet": {
       "by_month": {
-        "renderer": "spark_line"
+        "renderer": "sparkline"
       }
     }
   },
