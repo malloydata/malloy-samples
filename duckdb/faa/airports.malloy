@@ -15,11 +15,13 @@ source: airports is table('duckdb:data/airports.parquet') {
       airport_count
   }
 
-  query: airports_by_region_dashboard is {
+  # dashboard
+  query: airports_by_region is {
     group_by: faa_region
     aggregate: airport_count
     nest:
-      by_state_shape_map is by_state
+      # shape_map
+      by_state
       by_facility_type
   }
 }

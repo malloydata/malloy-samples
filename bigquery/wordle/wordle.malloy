@@ -52,7 +52,8 @@ source: wordle is from(words_and_letters -> words_and_position) {
     aggregate:
       word_count
       use_count is letters.count()
-    nest: positition_order_bar_chart is {
+    # bar_chart
+    nest: positition_order is {
       group_by: letters.position
       aggregate: word_count
     }

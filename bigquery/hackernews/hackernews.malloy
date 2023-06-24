@@ -44,11 +44,13 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
     aggregate: post_count
   }
 
+  # line_chart
   query: posts_over_time is {
     group_by: posted_month is post_time.month
     aggregate: post_count
   }
 
+  # line_chart
   query: percent_interesting_over_time is {
     group_by: posted_year is post_time.year
     aggregate: percent_interesting
@@ -69,6 +71,7 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
     aggregate: post_count
   }
 
+  # bar_chart
   query: by_score_class is {
     group_by: score_class
     aggregate: post_count
@@ -98,9 +101,11 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
       score
       title
       post_type
+      # link
       url
   }
 
+  # dashboard
   query: term_dashboard is {
     nest: by_date_and_type_line_chart is {
       group_by: posted_month is post_time.month
@@ -113,6 +118,7 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
       recent_stories {limit: 20}
   }
 
+  # dashboard
   query: poster_dashboard is top_posters {        -- reuses and refines the top_posters query
     where: post_type = 'story'
     aggregate:

@@ -1,5 +1,3 @@
---! styles iowa.styles.json
-
 source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
 
   rename: _vendor_name is vendor_name
@@ -27,6 +25,7 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
     vendor_name is upper(_vendor_name)
   // measures
   measure:
+    # currency dollars
     total_sale_dollars is sale_dollars.sum()
     item_count is count(distinct item_number)
     total_bottles is bottles_sold.sum()
@@ -35,6 +34,7 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
     percent_of_sales is total_sale_dollars / all(total_sale_dollars) * 100
 
   // queries
+  # line_chart
   query: by_month is {
     order_by: 1
     group_by: purchase_month is `date`.week
@@ -65,14 +65,24 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
       avg_price_per_100ml
   }
 
-  query: by_vendor_bar_chart is {
-    top: 10
+  # bar_chart
+  query: by_vendor is {
     group_by: vendor_name
     aggregate:
       total_sale_dollars
       total_bottles
+    calculate: rank is row_number()
+  } -> {
+    group_by: 
+      vendor_name is 
+        pick vendor_name when rank < 10
+        else 'other'
+      aggregate:
+        total_sale_dollars is total_sale_dollars.sum()
+        total_bottles is total_bottles.sum()
   }
 
+  # bar_chart
   query: by_class is {
     top: 10
     group_by: category_class
@@ -81,6 +91,7 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
       item_count
   }
 
+  # bar_chart
   query: by_category is {
     top: 10
     group_by: category_name
@@ -89,6 +100,7 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
       item_count
   }
 
+  # bar_chart
   query: by_sku is {
     group_by: item_description
     aggregate: total_sale_dollars
@@ -103,7 +115,7 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped'){
     nest:
       by_month
       by_class
-      by_vendor_bar_chart
+      by_vendor
       top_sellers_by_revenue
       most_expensive_products
       by_vendor_dashboard is {
@@ -130,12 +142,10 @@ query: luxco_dashboard is iowa->vendor_dashboard {
   where: vendor_name ? ~ r'Luxco'
 }
 
-query: jim_beam_dashboard is iowa->vendor_dashboard {
-  where: vendor_name ? ~ r'Jim Beam'
-}
+# dashboard
 query: iowa-> {
   nest: by_class
-  nest: by_vendor_bar_chart
+  nest: by_vendor
   nest: by_month
   nest: by_county is {
     group_by: county

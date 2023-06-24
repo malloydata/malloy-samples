@@ -67,13 +67,15 @@ source: recalls is table('duckdb:auto_recalls.csv') {
     order_by: `Potentially Affected` desc
   }
 
-  query: recall_dashboard is by_manufacturer + {
-    nest: by_year_line_chart is by_year + {group_by: `Recall Type`}
+  # dashboard
+  query: recalls is by_manufacturer + {
+    # line_chart
+    nest: by_year + {group_by: `Recall Type`}
+    # bar_chart
     nest: by_type
     nest: recent_recalls + {limit: 6}
     nest: biggest_recalls + {limit: 6}
   }
   
-  query: brakes_dashboard 
-    is recall_dashboard {? `Recall Description` ~r'brake'}
+  query: brakes is recalls {? `Recall Description` ~r'brake'}
 }

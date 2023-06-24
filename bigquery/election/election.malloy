@@ -1,5 +1,3 @@
---! styles election.styles.json
-
 source: stations is table('bigquery-public-data.fcc_political_ads.broadcast_tv_radio_station'){
   primary_key: stationId
   measure: station_count is count()
@@ -10,8 +8,11 @@ source: stations is table('bigquery-public-data.fcc_political_ads.broadcast_tv_r
   }
 
   query: owner_dashboard is {
+    group_by: partyName
     aggregate: station_count
+    # bar_chart
     nest: stations_by_service
+    # shape_map
     nest: stations_by_state is {
       group_by: communityState
       aggregate: station_count

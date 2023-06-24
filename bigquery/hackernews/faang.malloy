@@ -6,10 +6,12 @@ import "hackernews.malloy"
 // a reasonable threshold for interesting stories is about 10
 
 source: faang_analysis is stories {
+  # dashboard
   query: apple_dashboard is term_dashboard {
     where: faang = 'Apple', score >= threshold
   }
 
+  # dashboard
   query: google_dashboard is term_dashboard {
     where: faang = 'Google', score >= threshold
   }
@@ -18,6 +20,7 @@ source: faang_analysis is stories {
     where: faang != 'OTHER', score >= threshold
   }
 
+  # dashboard
   query: faang_dashboard is {
     where:
       faang != 'OTHER',

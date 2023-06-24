@@ -20,7 +20,8 @@ source:ga_sessions is table('bigquery-public-data.google_analytics_sample.ga_ses
     aggregate: hits_count
     limit: 10
   }
-  query: by_adContent_bar_chart is {
+  # bar_chart
+  query: by_adContent is {
     group_by: device.browser
     aggregate: user_count
     group_by: device.deviceCategory
@@ -31,17 +32,20 @@ source:ga_sessions is table('bigquery-public-data.google_analytics_sample.ga_ses
     aggregate: user_count
     limit: 10
   }
+  # bar_chart
   query: by_device is {
     group_by: device.browser
     aggregate: user_count
     group_by: device.deviceCategory
   }
+  # bar_chart
   query: by_category is {
     group_by: category is hits.product.v2ProductCategory
     aggregate: total_productRevenue
     aggregate: sold_count
     limit: 10
   }
+  # bar_chart
   query: by_hour_of_day is {
     group_by: gsession_hour is hour(start_time)
     aggregate: session_count
@@ -65,12 +69,13 @@ source:ga_sessions is table('bigquery-public-data.google_analytics_sample.ga_ses
 
   query: by_all is {
     nest: by_source
-    nest: by_adContent_bar_chart
+    nest: by_adContent
     nest: by_region
     nest: by_category
   }
 }
 
+# dashboard
 query: sessions_dashboard is ga_sessions -> {
   nest:
     by_region

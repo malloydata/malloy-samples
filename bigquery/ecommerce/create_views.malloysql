@@ -1,91 +1,93 @@
--- connection: bigquery
--- import: "ecommerce.malloy"
+>>>malloy
+import "ecommerce.malloy"
+
+>>>sql connection:bigquery
 
 CREATE OR REPLACE VIEW ecommerce_views.dim_user_v AS 
 (%{
     user_order_facts -> { project: * }
 }%)
 
-;;;
+>>sql
 
 CREATE OR REPLACE VIEW ecommerce_views.sales_yoy_by_category AS
 (%{
     order_items -> sales_yoy_by_category
 }%)
 
-;;;
+>>>sql
 
 CREATE OR REPLACE VIEW ecommerce_views.sales_yoy_by_region AS
 (%{
   order_items -> sales_yoy_by_region
 }%)
 
-;;;
+>>>sql
 
 CREATE OR REPLACE VIEW ecommerce_views.sales_daily AS
 (%{
     order_items -> sales_summary + { group_by: the_date is created_at.day }
 }%)
 
-;;;
+>>>sql
 
 CREATE OR REPLACE VIEW ecommerce_views.sales_weekly AS
 (%{
     order_items -> sales_summary + { group_by: the_week is created_at.week }
 }%)
 
-;;;
+>>>sql
 
 CREATE OR REPLACE VIEW ecommerce_views.sales_monthly AS
 (%{
     order_items -> sales_summary + { group_by: the_month is created_at.month }
 }%)
 
-;;;
+>>>sql
 
 CREATE OR REPLACE VIEW ecommerce_views.daily_funnel AS
 (%{
     daily_funnel -> {
         group_by: the_date
-        aggregate:
+        group_by:
             funnel_signups.signup_count
             funnel_orders.order_count
     }
 }%)
 
-;;;
+>>>sql
 
 CREATE OR REPLACE VIEW ecommerce_views.sessions AS
 (%{
   events -> {
     group_by: 
-        user_id
-        session_id
+      user_id
+      session_id
 
     aggregate:
-        event_count is count()
-        session_start is min(created_at)
-        session_end is max(created_at)
+      event_count is count()
+      session_start is min(created_at)
+      session_end is max(created_at)
 
     having:
-        count() > 3
+      count() > 3
     
     nest: session_events is {
-        project:
-            created_at
-            event_type
-            uri
-            product_id
+      project:
+        created_at
+        event_type
+        uri
+        product_id
 
-        order_by:
-            created_at
+      order_by:
+        created_at
     }
 
     where: user_id != null
   }
 }%)
 
-;;;
+>>>sql
 
 CREATE OR REPLACE VIEW ecommerce_views.cohorts_monthly_v AS
 (%{

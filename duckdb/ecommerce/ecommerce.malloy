@@ -69,23 +69,34 @@ source: order_items is order_items_table + {
   dimension:
     gross_margin is sale_price - inventory_items.cost
 
+  # currency dollars
+  measure:
+    total_sales is sale_price.sum()  
+    total_gross_margin is gross_margin.sum()
+    average_gross_margin is gross_margin.avg()
+
+
   measure:
     order_count is count(distinct order_id)
     order_item_count is count()
-    total_sales is sale_price.sum()
+    # percent
     percent_of_sales is total_sales/all(total_sales)
-    total_gross_margin is gross_margin.sum()
-    average_gross_margin is gross_margin.avg()
     product_count is count(distinct inventory_items.product_id)
     user_count is users.count()
     total_sales_2022 is total_sales { where: year(created_at) = 2022 }
     total_sales_2021 is total_sales { where: year(created_at) = 2021 }
 
+  # bar_chart
   query: top_categories is {
-    top: 5
     group_by: inventory_items.product_category
     aggregate: total_sales
-  }
+    calculate: rank is row_number()
+  } -> {
+    group_by: product_cateory is 
+      pick product_category when rank < 6
+      else 'other'
+    aggregate: total_sales is total_sales.sum()
+  } 
 
   query: top_brands is {
     top: 5
@@ -111,16 +122,19 @@ source: order_items is order_items_table + {
     order_by: created_at desc
   }
 
+  # line_chart
   query: by_year is {
     group_by: created_year is year(created_at)
     aggregate: total_sales
   }
 
+  # line_chart
   query: by_month is {
     group_by: created_month is created_at.month
     aggregate: total_sales
   }
 
+  # shape_map
   query: sales_by_state is {
     group_by: users.state
     aggregate: total_sales
@@ -145,20 +159,22 @@ source: order_items is order_items_table + {
       value_returned is total_sales { ? status = 'Returned'}
   }
 
+  # dashboard
   query: brand_dashboard is {
-  group_by: inventory_items.product.brand
-  aggregate:
-    total_sales
-    percent_of_sales
-    order_item_count
-    inventory_items.product.product_count
-  nest:
-    top_categories
-    by_month_line_chart is by_month
-    top_products
-  limit: 10
+    group_by: inventory_items.product.brand
+    aggregate:
+      total_sales
+      percent_of_sales
+      order_item_count
+      inventory_items.product.product_count
+    nest:
+      top_categories
+      by_month_line_chart is by_month
+      top_products
+    limit: 10
   }
 
+  # dashboard
   query: customer_dashboard is {
     top: 5
     group_by: users.full_name, user_id, users.city, users.state, users.country
@@ -167,20 +183,22 @@ source: order_items is order_items_table + {
       order_item_count
       order_count
     nest:
+      # bar_chart
       top_categories
       by_year
       top_brands
       recent_purchases
   }
 
-  query: business_overview_dashboard is {
+  # dashboard
+  query: business_overview is {
     aggregate:
       total_sales
       order_count
       total_gross_margin
     nest: 
-      by_month_line_chart is by_month
-      sales_by_state_shape_map is sales_by_state
+      by_month
+      sales_by_state
       top_brands
       top_customers + {aggregate: order_count}
   }

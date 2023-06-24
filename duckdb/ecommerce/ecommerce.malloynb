@@ -8,7 +8,7 @@
   {
     "kind": 2,
     "language": "malloy",
-    "value": "--! styles ecommerce.styles.json\nimport \"ecommerce.malloy\"",
+    "value": "import \"ecommerce.malloy\"",
     "metadata": {}
   },
   {
@@ -20,7 +20,7 @@
   {
     "kind": 2,
     "language": "malloy",
-    "value": "query: order_items -> business_overview_dashboard\n// --! style dashboard",
+    "value": "run: order_items -> business_overview",
     "metadata": {}
   },
   {
@@ -32,7 +32,7 @@
   {
     "kind": 2,
     "language": "malloy",
-    "value": "query: order_items -> customer_dashboard {where: users.full_name = 'Mary Smith'}\n// --! style dashboard",
+    "value": "run: order_items -> customer_dashboard {where: users.full_name = 'Mary Smith'}",
     "metadata": {}
   },
   {
@@ -44,7 +44,7 @@
   {
     "kind": 2,
     "language": "malloy",
-    "value": "query: order_items -> brand_dashboard\n// --! style dashboard",
+    "value": "run: order_items -> brand_dashboard",
     "metadata": {}
   },
   {

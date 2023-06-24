@@ -1,7 +1,7 @@
 import "ecommerce.malloy"
 
 // Calculate nested subtotals, one dimension
-query: order_items -> sales_summary_yoy + {
+run: order_items -> sales_summary_yoy + {
     nest: sales_summary_yoy + {
         group_by: inventory_items.product_department
         order_by: product_department
@@ -9,7 +9,7 @@ query: order_items -> sales_summary_yoy + {
 }
 
 // Calculate nested subtotals, two dimensions:
-query: order_items -> sales_summary_yoy + {
+run: order_items -> sales_summary_yoy + {
     nest: sales_summary_yoy + {
         group_by: inventory_items.product_department
         order_by: product_department

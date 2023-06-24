@@ -42,7 +42,8 @@ source: names2 is names +  {
   query: names_chart is {
     group_by: name
     aggregate: births_per_100k
-    nest: by_year_line_chart is {
+    # line_chart
+    nest: by_year is {
       group_by: year_born
       aggregate: population
     }
@@ -84,13 +85,15 @@ source: names2 is names +  {
     limit: 20
   }
 
-  query: gender_year_line_chart is {
+  # line_chart
+  query: gender_year is {
     group_by: year_born
     aggregate: population
     group_by: gender is gender ? pick 'Female' when 'F' else 'Male'
   }
 
-   query: gender_by_state_shape_map is {
+  # shape_map
+   query: gender_by_state is {
       group_by: state
       aggregate: percent_female is population{? gender='M'}/population
     }
@@ -98,8 +101,8 @@ source: names2 is names +  {
   query: gender_neutral_names is {
     group_by: name
     aggregate: population
-    nest: gender_year_line_chart 
-    nest: gender_by_state_shape_map
+    nest: gender_year 
+    nest: gender_by_state
     having: population{? gender='F'}/population ? > .10 & < .9
     limit: 10
   }
@@ -108,15 +111,15 @@ source: names2 is names +  {
     where: name = 'Kelly'
     group_by: name
     aggregate: population
-    nest: gender_year_line_chart
-    nest: gender_by_state_shape_map 
+    nest: gender_year
+    nest: gender_by_state
     nest: by_decade is {
       group_by: decade
-      nest: gender_by_state_shape_map
+      nest: gender_by_state
     }
     nest: by_state is {
       group_by: state
-      nest: gender_year_line_chart
+      nest: gender_year
     }
   }
 
@@ -153,24 +156,29 @@ source: names2 is names +  {
 
   query: name_dashboard is {
     where: name = 'Lloyd' | 'Anika' | 'Jessie' | 'Kelly' | 'Todd' | 'Chris'
-    nest: by_name_line_chart is {
+    # line_chart
+    nest: by_name is {
       group_by: decade
       aggregate: births_per_100k
       group_by: name
     }
-    nest: by_name_bar_chart is {
+    # bar_chart
+    nest: by_name is {
       group_by: name
       aggregate: births_per_100k
       group_by: gender
     }
+    # dashboard
     nest: name_dashboard is {
       group_by: name
       aggregate: population
-      nest: by_year_line_chart is {
+      # line_chart
+      nest: by_year is {
         group_by: year_born
         aggregate: population
       }
-      nest: by_state_shape_map is {
+      # shape_map
+      nest: by_state is {
         group_by: state
         aggregate: per_100k is population/cohort.population * 100000
       }
