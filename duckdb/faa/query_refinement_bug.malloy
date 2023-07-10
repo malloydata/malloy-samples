@@ -1,0 +1,30 @@
+import "flights.malloy"
+
+query: by_dest is flights -> {
+  group_by:
+    destination
+
+  aggregate:
+    flight_count
+}
+
+// Old syntax with leading arrow:
+query: -> by_dest
+
+// New syntax, no leading arrow required
+run: by_dest
+
+// Old syntax, leading arrow with refinement:
+query: -> by_dest + {
+  group_by: origin
+}
+
+// Weird syntax, leading arrow with `run`
+run: -> by_dest + {
+  group_by: origin
+}
+
+// Expected syntax, but doesn't work:
+run: by_dest + {
+  group_by: origin
+}
