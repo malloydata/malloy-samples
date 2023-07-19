@@ -20,13 +20,16 @@ source: flights_base is table('duckdb:data/flights.parquet') + {
     total_distance is sum(distance)
     origin_count is origin.count()
     total_distance_bucketed is round(sum(distance)/10000)
+
+  query: distance_buckets_by_origin is {
+    group_by: origin_code
+    aggregate: total_distance_bucketed
+  }
 }
 
 source: flights is flights_base + {
-  join_one: with_measure is from(flights_base -> {
-    group_by: origin_code
-    aggregate: total_distance_bucketed
-  }) on origin_code = with_measure.origin_code
+  join_one: with_measure is from(flights_base -> distance_buckets_by_origin) 
+    on origin_code = with_measure.origin_code
 }
 
 run: flights -> {
