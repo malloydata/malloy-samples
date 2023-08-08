@@ -120,7 +120,7 @@ source: flights is table('duckdb:data/flights.parquet') + {
       by_month
     nest: hubs is {
       top: 5
-      where: destination.airport_count > 1
+      having: destination.airport_count > 1
       group_by: hub is origin.name
       aggregate:
         destination_count
