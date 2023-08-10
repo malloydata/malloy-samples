@@ -7,6 +7,7 @@
   packages = [
     pkgs.nodejs_18
     pkgs.google-cloud-sdk
+    pkgs.duckdb
   ];
 
   # search for the extension on https://open-vsx.org/ and use "publisher.id"
