@@ -1,4 +1,6 @@
-source: events is table('bigquery:malloy-303216.ga4.events') {
+
+source: events is table('bigquery:bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*') {
+
   rename:
     event_timestamp_raw is event_timestamp
 
@@ -10,15 +12,7 @@ source: events is table('bigquery:malloy-303216.ga4.events') {
   measure:
     is_new_user is max(new_user)
     user_count is count(distinct user_pseudo_id)
-}
-
-run: events -> {
-  project: 
-    event_timestamp
-    event_timestamp_raw
-    event_date
-
-  limit: 100
+    session_count is count(distinct event_params.value.int_value) { where: event_params.key = 'ga_session_id' }
 }
 
 -- Example: Query a specific date range for selected events.
@@ -263,21 +257,59 @@ run: events -> {
 //   ga_session_id,
 //   event_timestamp ASC;
 
+run: events -> {
+  group_by:
+    user_pseudo_id
+    event_timestamp
+
+  aggregate:
+    ga_session_id is max(event_params.value.int_value) { where: event_params.key = 'ga_session_id' }
+    page_location is max(event_params.value.string_value) { where: event_params.key = 'page_location' }
+    page_title is max(event_params.value.string_value) { where: event_params.key = 'page_title' }
+
+  where:
+    event_name = 'page_view'
+    and event_timestamp.day ? @2020-12-01 to @2020-12-03
+
+  order_by: user_pseudo_id, ga_session_id, event_timestamp asc
+}
+
+// Tried to do this with a `nest + project` but generated invalid SQL:
+run: events -> {
+  group_by:
+    user_pseudo_id
+    event_timestamp
+
+  nest: ga_session is {
+    project: ga_session_id is event_params.value.int_value
+    where: event_params.key = 'ga_session_id'
+  }
+
+  where:
+    event_name = 'page_view'
+    and event_timestamp.day ? @2020-12-01 to @2020-12-03
+}
+
 -- Example: List all available event parameters and count their occurrences.
 
 // SELECT
 //   EP.key AS event_param_key,
 //   COUNT(*) AS occurrences
 // FROM
-//   -- Replace table name.
 //   `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`, UNNEST(event_params) AS EP
 // WHERE
-//   -- Replace date range.
 //   _TABLE_SUFFIX BETWEEN '20201201' AND '20201202'
 // GROUP BY
 //   event_param_key
 // ORDER BY
 //   event_param_key ASC;
+
+run: events -> {
+  group_by: event_params.key
+  aggregate: occurences is count()
+  where: event_timestamp.day ? @2020-12-01 to @2020-12-03
+  order_by: key
+}
 
 // https://developers.google.com/analytics/bigquery/advanced-queries
 -- Example: Products purchased by customers who purchased a specific product.
@@ -327,7 +359,45 @@ run: events -> {
 // GROUP BY 1
 // ORDER BY item_quantity DESC;
 
+source: purchase_events is events extend { 
+  where: event_name = 'purchase' 
+
+  measure:
+    _total_spend_double is event_params.value.double_value.sum() { where: event_params.key = 'value' }
+    _total_spend_float is event_params.value.float_value.sum() { where: event_params.key = 'value' }
+    _total_spend_int is event_params.value.int_value.sum() { where: event_params.key = 'value' }
+
+    total_spend is _total_spend_double + _total_spend_float + _total_spend_int
+
+  dimension:
+    item_of_interest is 'Google Navy Speckled Tee'
+}
+
+run: purchase_events -> {
+
+  extend: {
+    join_one: purchasers is purchase_events -> {
+      group_by: user_pseudo_id
+
+      where:
+        (event_timestamp.day ? @2020-11-01 to @2021-02-01)
+        and items.item_name = item_of_interest
+    } extend {} on user_pseudo_id = purchasers.user_pseudo_id
+
+    dimension:
+      is_purchaser is purchasers.user_pseudo_id != null
+  }
+
+  group_by: items.item_name
+  aggregate: item_quantity is items.quantity.sum()
+
+  where: 
+    is_purchaser
+    and items.item_name != item_of_interest
+}
+
 // Average amount of money spent per purchase session by user
+// I think this SQL query is wrong... the avg_spend_per_session_by_user has some bad data:
 
 // SELECT
 //   user_pseudo_id,
@@ -350,40 +420,16 @@ run: events -> {
 // GROUP BY
 //   1;
 
+run: purchase_events -> {
+  group_by:
+    user_pseudo_id
 
-// Latest Session Id and Session Number for users
--- Get the latest ga_session_id and ga_session_number for specific users during last 4 days.
+  aggregate:
+    session_count
+    avg_spend_per_session is total_spend / session_count
 
--- Replace timezone. List at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones.
-// DECLARE REPORTING_TIMEZONE STRING DEFAULT 'America/Los_Angeles';
+  where:
+    event_timestamp.day ? @2020-11-01 to @2021-02-01
 
-// -- Replace list of user_pseudo_id's with ones you want to query.
-// DECLARE USER_PSEUDO_ID_LIST ARRAY<STRING> DEFAULT
-//   [
-//     '1005355938.1632145814', '979622592.1632496588', '1101478530.1632831095'];
-
-// CREATE TEMP FUNCTION GetParamValue(params ANY TYPE, target_key STRING)
-// AS (
-//   (SELECT `value` FROM UNNEST(params) WHERE key = target_key LIMIT 1)
-// );
-
-// CREATE TEMP FUNCTION GetDateSuffix(date_shift INT64, timezone STRING)
-// AS (
-//   (SELECT FORMAT_DATE('%Y%m%d', DATE_ADD(CURRENT_DATE(timezone), INTERVAL date_shift DAY)))
-// );
-
-// SELECT DISTINCT
-//   user_pseudo_id,
-//   FIRST_VALUE(GetParamValue(event_params, 'ga_session_id').int_value)
-//     OVER (UserWindow) AS ga_session_id,
-//   FIRST_VALUE(GetParamValue(event_params, 'ga_session_number').int_value)
-//     OVER (UserWindow) AS ga_session_number
-// FROM
-//   -- Replace table name.
-//   `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
-// WHERE
-//   user_pseudo_id IN UNNEST(USER_PSEUDO_ID_LIST)
-//   AND RIGHT(_TABLE_SUFFIX, 8)
-//     BETWEEN GetDateSuffix(-3, REPORTING_TIMEZONE)
-//     AND GetDateSuffix(0, REPORTING_TIMEZONE)
-// WINDOW UserWindow AS (PARTITION BY user_pseudo_id ORDER BY event_timestamp DESC);
+  order_by: 1
+}
