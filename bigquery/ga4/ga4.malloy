@@ -9,6 +9,7 @@ source: events is table('bigquery:malloy-303216.ga4.events') {
 
   measure:
     is_new_user is max(new_user)
+    user_count is count(distinct user_pseudo_id)
 }
 
 run: events -> {
@@ -95,7 +96,7 @@ run: events -> {
 
 run: events -> {
   aggregate:
-    avg_transaction_per_purchaser is count() / count(distinct user_pseudo_id)
+    avg_transaction_per_purchaser is count() / user_count
 
   where:
     (event_name ? 'in_app_purchase' | 'purchase')
@@ -172,7 +173,7 @@ run: events -> {
 //   COUNT(DISTINCT user_pseudo_id) AS user_count
 // FROM
 //   -- Replace table name.
-//   `bigquery-public-data.ga4_obfuscated_web_ecommerce.events_*`, UNNEST(items)
+//   `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`, UNNEST(items)
 // WHERE
 //   -- Replace date range.
 //   _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
@@ -183,6 +184,21 @@ run: events -> {
 //   user_count DESC
 // LIMIT 10;
 
+run: events -> {
+  group_by:
+    items.item_id
+    items.item_name
+
+  aggregate: 
+    user_count
+
+  where:
+    event_name = 'add_to_cart'
+    and (event_timestamp.day ? @2020-11-01 to @2021-11-01)
+
+  order_by: user_count desc
+  limit: 10
+}
 
 -- Example: Average number of pageviews by purchaser type.
 
@@ -205,6 +221,26 @@ run: events -> {
 //   SUM(page_view_count) / COUNT(*) AS avg_page_views,
 // FROM UserInfo
 // GROUP BY 1;
+
+run: events -> {
+  group_by:
+    user_pseudo_id
+
+  aggregate:
+    page_view_count is count() { where: event_name = 'page_view' }
+    purchase_event_count is count() { where: event_name ? 'in_app_purchase' | 'purchase' }
+
+  where:
+    event_timestamp.day ? @2020-12-01 to @2020-12-03
+} -> {
+  group_by:
+    purchaser is purchase_event_count > 0
+  
+  aggregate:
+    user_count is count()
+    total_page_views is sum(page_view_count)
+    avg_page_views is sum(page_view_count) / count()
+}
 
 -- Example: Sequence of pageviews.
 
@@ -290,17 +326,6 @@ run: events -> {
 //   AND items.item_name != selected_product
 // GROUP BY 1
 // ORDER BY item_quantity DESC;
-
-
-
-run: events -> {
-  project:
-    event_date
-    app_info.*
-
-  limit: 10
-}
-
 
 // Average amount of money spent per purchase session by user
 
