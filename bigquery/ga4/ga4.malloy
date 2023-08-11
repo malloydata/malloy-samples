@@ -13,6 +13,10 @@ source: events is table('bigquery:bigquery-public-data.ga4_obfuscated_sample_eco
     is_new_user is max(new_user)
     user_count is count(distinct user_pseudo_id)
     session_count is count(distinct event_params.value.int_value) { where: event_params.key = 'ga_session_id' }
+
+  query: nested_index is {
+    index: event_params.*, user_properties.*, items.*
+  }
 }
 
 -- Example: Query a specific date range for selected events.
@@ -368,9 +372,24 @@ source: purchase_events is events extend {
     _total_spend_int is event_params.value.int_value.sum() { where: event_params.key = 'value' }
 
     total_spend is _total_spend_double + _total_spend_float + _total_spend_int
+    purchase_count is count()
 
   dimension:
     item_of_interest is 'Google Navy Speckled Tee'
+
+  query: by_country is {
+    group_by: geo.country
+    aggregate:
+      total_spend
+      purchase_count
+  }
+
+  query: by_year is {
+    group_by: the_year is event_timestamp.year
+    aggregate:
+      total_spend
+      purchase_count
+  }
 }
 
 run: purchase_events -> {
@@ -439,4 +458,15 @@ run: purchase_events -> {
   aggregate:
     total_spend
     pct_of_total is total_spend / all(total_spend)
+}
+
+run: purchase_events -> nested_index -> {
+  project: *
+  order_by: weight desc
+}
+
+run: purchase_events -> nested_index -> {
+  project: *
+  where: fieldName ~ '%key'
+  order_by: weight desc
 }
