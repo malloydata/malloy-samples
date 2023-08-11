@@ -1,0 +1,62 @@
+
+source: events is table('bigquery:bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*') {
+
+  dimension:
+    event_value is (event_params.value.int_value ?? event_params.value.float_value ?? event_params.value.double_value)
+
+  measure:
+    user_count is count(distinct user_pseudo_id)
+    total_value is event_value.sum() { where: event_params.key = 'value' }
+
+    _int_value_sum is event_params.value.int_value.sum()
+    _float_value_sum is event_params.value.float_value.sum()
+    _double_value_sum is event_params.value.double_value.sum()
+}
+
+source: purchase_events is events extend {
+  where: event_name = 'purchase'
+}
+
+source: debug_events is purchase_events extend {
+  where: user_pseudo_id = '79305784.7623717578'
+
+  query: debug_query is {
+    project:
+      user_pseudo_id
+      event_value
+      event_params.key
+      event_params.value.int_value
+      event_params.value.double_value
+      event_params.value.float_value
+  }
+}
+
+-- 13 rows:
+run: debug_events -> { aggregate: row_cnt is count() }
+
+run: debug_events -> debug_query
+
+run: debug_events -> debug_query -> {
+  aggregate: row_count is count()
+}
+
+run: debug_events -> debug_query refine {
+  where: event_params.key = 'value'
+}
+
+run: debug_events -> {
+  group_by:
+    user_pseudo_id
+  
+  aggregate:
+    int_sum is event_params.value.int_value.sum()
+    double_sum is event_params.value.double_value.sum()
+    float_sum is event_params.value.float_value.sum()
+
+    event_value.sum()
+    total_value
+
+    _int_value_sum
+    _float_value_sum
+    _double_value_sum
+}
