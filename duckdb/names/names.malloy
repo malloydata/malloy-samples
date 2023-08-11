@@ -187,3 +187,22 @@ source: names2 is names +  {
   }
   // these should move into the markdown file
 }
+
+
+run: names -> {
+  group_by:
+    year_born
+  
+  aggregate:
+    f_count is count() { where: gender = 'F' }
+    m_count is count() { where: gender = 'M' }
+
+  calculate:
+    f_count_change is f_count - lag(f_count)
+    m_count_change is m_count - lag(m_count)
+
+    diff_change_wrong is f_count_change - m_count_change
+    diff_change_right is (f_count_change) - (m_count_change)
+
+  order_by: year_born
+}
