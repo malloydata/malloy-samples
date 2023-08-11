@@ -1,0 +1,30 @@
+source: events is table('bigquery:bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*') {
+
+  rename:
+    event_timestamp_raw is event_timestamp
+
+  dimension:
+    event_timestamp is timestamp_micros!timestamp(event_timestamp_raw)
+    new_user is pick 1 when event_name ? 'first_visit' | 'first_open' else 0
+    event_value is (event_params.value.int_value ?? event_params.value.float_value ?? event_params.value.double_value)
+
+  measure:
+    is_new_user is max(new_user)
+    user_count is count(distinct user_pseudo_id)
+    session_count is count(distinct event_params.value.int_value) { where: event_params.key = 'ga_session_id' }
+}
+
+source: purchase_events is events extend { 
+  measure:
+    _total_spend_double is event_params.value.double_value.sum() { where: event_params.key = 'value' }
+    _total_spend_float is event_params.value.float_value.sum() { where: event_params.key = 'value' }
+    _total_spend_int is event_params.value.int_value.sum() { where: event_params.key = 'value' }
+
+    total_spend is _total_spend_double + _total_spend_float + _total_spend_int
+
+  dimension:
+    item_of_interest is 'Google Navy Speckled Tee'
+
+  where:
+    (event_name = 'purchase')
+}

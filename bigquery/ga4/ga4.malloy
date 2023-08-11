@@ -397,8 +397,6 @@ run: purchase_events -> {
 }
 
 // Average amount of money spent per purchase session by user
-// I think this SQL query is wrong... the avg_spend_per_session_by_user has some bad data:
-
 // SELECT
 //   user_pseudo_id,
 //   COUNT(
@@ -433,6 +431,8 @@ run: purchase_events -> {
 
   order_by: 1
 }
+
+// Other queries of interest
 
 run: purchase_events -> {
   group_by: device.operating_system
