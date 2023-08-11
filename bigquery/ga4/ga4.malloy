@@ -433,3 +433,10 @@ run: purchase_events -> {
 
   order_by: 1
 }
+
+run: purchase_events -> {
+  group_by: device.operating_system
+  aggregate:
+    total_spend
+    pct_of_total is total_spend / all(total_spend)
+}
