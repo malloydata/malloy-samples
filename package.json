@@ -34,9 +34,9 @@
   },
   "homepage": "https://github.com/malloydata/malloy-samples#readme",
   "dependencies": {
-    "@malloydata/db-bigquery": "0.0.47",
-    "@malloydata/db-duckdb": "0.0.47",
-    "@malloydata/malloy": "0.0.47",
+    "@malloydata/db-bigquery": "0.0.67",
+    "@malloydata/db-duckdb": "0.0.67",
+    "@malloydata/malloy": "0.0.67",
     "@types/jest": "^29.2.5",
     "@typescript-eslint/eslint-plugin": "^5.48.2",
     "@typescript-eslint/parser": "^5.48.2",
