@@ -42,6 +42,37 @@ run: debug_events -> {
     event_value_sum_2 is sum(event_params.value.int_value ?? event_params.value.float_value ?? event_params.value.double_value)
 }
 
+// Results seem to stabilize when adding a filter on event_params.key = 'value'
+run: debug_events -> {
+  group_by:
+    user_pseudo_id
+  
+  aggregate:
+    int_sum is event_params.value.int_value.sum()
+    double_sum is event_params.value.double_value.sum()
+    float_sum is event_params.value.float_value.sum()
+
+    event_value_sum is event_value.sum()
+    event_value_sum_2 is sum(event_params.value.int_value ?? event_params.value.float_value ?? event_params.value.double_value)
+
+  where:
+    event_params.key = 'value'
+}
+
+// However, they leak MD5 values again when the filter is moved to the aggregation:
+run: debug_events -> {
+  group_by:
+    user_pseudo_id
+  
+  aggregate:
+    int_sum is event_params.value.int_value.sum()
+    double_sum is event_params.value.double_value.sum()
+    float_sum is event_params.value.float_value.sum()
+
+    event_value_sum is event_value.sum() { where: event_params.key = 'value' }
+    event_value_sum_2 is sum(event_params.value.int_value ?? event_params.value.float_value ?? event_params.value.double_value) { where: event_params.key = 'value' }
+}
+
 // Debug queries below to inspect the contents of the data:
 -- 13 rows:
 run: debug_events -> { aggregate: row_cnt is count() }
