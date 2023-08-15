@@ -13,5 +13,6 @@
   # search for the extension on https://open-vsx.org/ and use "publisher.id"
   idx.extensions = [
     "malloydata.malloy-vscode"
+    "googlecloudtools.cloudcode"
   ];
 }
