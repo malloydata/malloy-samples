@@ -18,18 +18,16 @@ run: airports -> {
       and longitude < (stations.longitude + .5)
       and latitude > (stations.latitude - .5)
       and latitude < (stations.latitude + .5)
-
-    dimension:
-      rad_const is 0.0174533
   }
 
   project:
     *
-    stations_lon_rad is stations.longitude * rad_const
-    stations_lat_rad is stations.latitude * rad_const
     station_id is stations.id
-    station_distance is acos(sin(latitude) * sin(stations.latitude) + cos(latitude) * cos(stations.latitude) * cos(stations.longitude - longitude)) * 3963
+    station_distance is acos(sin(latitude * 0.0174533) * sin(stations.latitude * 0.0174533) + cos(latitude * 0.0174533) * cos(stations.latitude * 0.0174533) * cos(stations.longitude * 0.0174533 - longitude * 0.0174533)) * 6371
 
   where:
     major = 'Y'
+
+  calculate:
+    
 }
