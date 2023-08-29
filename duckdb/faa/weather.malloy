@@ -1,0 +1,134 @@
+// acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos(lon2-lon1))*6371
+
+source: stations is duckdb.table('data/ghcnd_stations.snappy.parquet') {
+  where: state != null
+}
+
+
+
+run: stations -> {
+  aggregate: row_cnt is count()
+}
+
+
+source: daily_weather_raw is duckdb.sql("SELECT * FROM read_parquet('data/ghcnd_2002/*.parquet')") {
+  query: pivoted is {
+     group_by:
+      id
+      the_date is `date`
+    
+    aggregate:
+      prcp_amt is max(value) { where: element = 'PRCP' }
+      snow_amt is max(value) { where: element = 'SNOW' }
+      tmp_max is max(value) { where: element = 'TMAX' }
+      tmp_min is max(value) { where: element = 'TMIN' }
+      wnd_avg is max(value) { where: element = 'AWND' }
+
+    where:
+      qflag = null
+      and mflag = null
+  }
+}
+
+
+run: daily_weather_raw -> {
+  group_by: 
+    id
+    the_date is `date`
+    element
+
+  aggregate:
+    row_count is count()
+
+  order_by: 4 desc
+}
+
+source: daily_weather is daily_weather_raw -> pivoted extend {
+  join_one: stations on id = stations.id
+}
+
+run: daily_weather -> {
+  group_by: stations.state
+  aggregate: row_count is count()
+}
+
+// PRCP = Precipitation (tenths of mm)
+// SNOW = Snowfall (mm)
+// SNWD = Snow depth (mm)
+// TMAX = Maximum temperature (tenths of degrees C)
+// TMIN = Minimum temperature (tenths of degrees C)
+
+// MFLAG is the measurement flag. There are ten possible values:
+
+// Blank = no measurement information applicable
+// B = precipitation total formed from two 12-hour totals
+// D = precipitation total formed from four six-hour totals
+// H = represents highest or lowest hourly temperature (TMAX or TMIN) or the average of hourly values (TAVG)
+// K = converted from knots
+// L = temperature appears to be lagged with respect to reported hour of observation
+// O = converted from oktas
+// P = identified as “missing presumed zero” in DSI 3200 and 3206
+// T = trace of precipitation, snowfall, or snow depth
+// W = converted from 16-point WBAN code (for wind direction)
+
+// Q-FLAG is the measurement quality flag. There are fourteen possible values:
+
+// Blank = did not fail any quality assurance check
+// D = failed duplicate check
+// G = failed gap check
+// I = failed internal consistency check
+// K = failed streak/frequent-value check
+// L = failed check on length of multiday period
+// M = failed mega consistency check
+// N = failed naught check
+// O = failed climatological outlier check
+// R = failed lagged range check
+// S = failed spatial consistency check
+// T = failed temporal consistency check
+// W = temperature too warm for snow
+// X = failed bounds check
+// Z = flagged as a result of an official Datzilla Investigation
+
+
+// PRCP = precipitation
+// TMAX = temp max
+// TMIN = temp max
+// SNWD = snow depth (mm)
+// SNOW = snowfall (mm)
+// TAVG = avg temp
+// TOBS = temp at time of observation
+// AWND = average daily wind speed
+// PGTM = peak gust time
+// WSF5 = fastest 5 minute wind speed
+// WSF2 = fastest 2 minute wind speed
+// WESD = water equivalent of snow on ground
+
+// ACMC = Average cloudiness midnight to midnight from 30-second ceilometer data (percent)
+// ACMH = Average cloudiness midnight to midnight from manual observations (percent)
+// ACSC = Average cloudiness sunrise to sunset from 30-second ceilometer data (percent)
+// ACSH = Average cloudiness sunrise to sunset from manual observations (percent)
+// AWDR = Average daily wind direction (degrees)
+// AWND = Average daily wind speed (tenths of meters per second)
+// DAEV = Number of days included in the multiday evaporation total (MDEV)
+// DAPR = Number of days included in the multiday precipitation total (MDPR)
+// DASF = Number of days included in the multiday snowfall total (MDSF)
+// DATN = Number of days included in the multiday minimum temperature (MDTN)
+// DATX = Number of days included in the multiday maximum temperature (MDTX)
+// DAWM = Number of days included in the multiday wind movement (MDWM)
+// DWPR = Number of days with non-zero precipitation included in multiday precipitation total (MDPR)
+// EVAP = Evaporation of water from evaporation pan (tenths of mm)
+// FMTM = Time of fastest mile or fastest 1-minute wind (hours and minutes,i.e., HHMM)
+// FRGB = Base of frozen ground layer (cm)
+// FRGT = Top of frozen ground layer (cm)
+// FRTH = Thickness of frozen ground layer (cm)
+// GAHT = Difference between river and gauge height (cm)
+// MDEV = Multiday evaporation total (tenths of mm; use with DAEV)
+// MDPR = Multiday precipitation total (tenths of mm; use with DAPR and DWPR, if available)
+// MDSF = Multiday snowfall total
+// MDTN = Multiday minimum temperature (tenths of degrees C; use with DATN)
+// MDTX = Multiday maximum temperature (tenths of degrees C; use with DATX)
+// MDWM = Multiday wind movement (km)
+// MNPN = Daily minimum temperature of water in an evaporation pan (tenths of degrees C)
+// MXPN = Daily maximum temperature of water in an evaporation pan (tenths of degrees C)
+// PGTM = Peak gust time (hours and minutes, i.e., HHMM)
+// PSUN = Daily percent of possible sunshine (percent)

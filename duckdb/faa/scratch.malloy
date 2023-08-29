@@ -1,0 +1,35 @@
+import 'airports.malloy'
+import 'weather.malloy'
+
+run: airports -> {
+  group_by:
+    state
+
+  aggregate:
+    row_count is count()
+}
+
+// acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos(lon2-lon1))*6371
+
+run: airports -> {
+  extend: {
+    join_many: stations
+      on longitude > (stations.longitude - .5)
+      and longitude < (stations.longitude + .5)
+      and latitude > (stations.latitude - .5)
+      and latitude < (stations.latitude + .5)
+
+    dimension:
+      rad_const is 0.0174533
+  }
+
+  project:
+    *
+    stations_lon_rad is stations.longitude * rad_const
+    stations_lat_rad is stations.latitude * rad_const
+    station_id is stations.id
+    station_distance is acos(sin(latitude) * sin(stations.latitude) + cos(latitude) * cos(stations.latitude) * cos(stations.longitude - longitude)) * 3963
+
+  where:
+    major = 'Y'
+}
