@@ -27,7 +27,16 @@ run: airports -> {
 
   where:
     major = 'Y'
+} -> {
+  group_by:
+    code
 
-  calculate:
-    
+  nest: stations is {
+    project:
+      station_id
+      station_distance
+
+    order_by: station_distance desc
+    calculate: station_rank is rank()
+  }
 }
