@@ -1,29 +1,23 @@
 import 'airports.malloy'
 import 'weather.malloy'
 
-run: airports -> {
-  group_by:
-    state
-
-  aggregate:
-    row_count is count()
-}
-
-// acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos(lon2-lon1))*6371
-
-run: airports -> {
+query: closest_stations_qry is airports -> {
   extend: {
     join_many: stations
       on longitude > (stations.longitude - .5)
       and longitude < (stations.longitude + .5)
       and latitude > (stations.latitude - .5)
       and latitude < (stations.latitude + .5)
+
+    dimension:
+      radian_c is 0.0174533
+      km_c is 6371
   }
 
   project:
-    *
+    code
     station_id is stations.id
-    station_distance is acos(sin(latitude * 0.0174533) * sin(stations.latitude * 0.0174533) + cos(latitude * 0.0174533) * cos(stations.latitude * 0.0174533) * cos(stations.longitude * 0.0174533 - longitude * 0.0174533)) * 6371
+    station_distance is acos(sin(latitude * radian_c) * sin(stations.latitude * radian_c) + cos(latitude * radian_c) * cos(stations.latitude * radian_c) * cos(stations.longitude * radian_c - longitude * radian_c)) * km_c
 
   where:
     major = 'Y'
@@ -32,11 +26,23 @@ run: airports -> {
     code
 
   nest: stations is {
-    project:
+    group_by:
       station_id
       station_distance
 
     order_by: station_distance desc
     calculate: station_rank is rank()
   }
+} -> {
+  project:
+    code
+    stations.station_id
+    stations.station_distance
+
+  where: stations.station_rank = 1
 }
+
+source: airport_weather_stations is closest_stations_qry extend {
+  primary_key: code
+}
+
