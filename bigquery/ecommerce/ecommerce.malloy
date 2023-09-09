@@ -306,7 +306,7 @@ source: cohorts is from(order_items -> {
     aggregate:
         cumulative_sales is sum(total_sales)
         cumulative_order_count is sum(order_item_count)
-        sales_this_month is sum(pick total_sales when order_month = calendar_months.the_month else 0)
-        orders_this_month is sum(pick order_item_count when order_month = calendar_months.the_month else 0)
+        sales_this_month is calendar_months.sum(pick total_sales when order_month = calendar_months.the_month else 0)
+        orders_this_month is calendar_months.sum(pick order_item_count when order_month = calendar_months.the_month else 0)
 })
 
