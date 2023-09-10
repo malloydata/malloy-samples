@@ -1,5 +1,8 @@
--- connection: bigquery
--- import: "ecommerce.malloy"
+>>>malloy
+import "ecommerce.malloy"
+>>>sql
+-- connection: bigquery  
+
 
 CREATE OR REPLACE VIEW ecommerce_views.dim_user_v AS 
 (%{
@@ -46,8 +49,8 @@ CREATE OR REPLACE VIEW ecommerce_views.sales_monthly AS
 CREATE OR REPLACE VIEW ecommerce_views.daily_funnel AS
 (%{
     daily_funnel -> {
-        group_by: the_date
-        aggregate:
+        group_by: 
+            the_date
             funnel_signups.signup_count
             funnel_orders.order_count
     }
