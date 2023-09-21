@@ -31,17 +31,23 @@ source:ga_sessions is table('bigquery-public-data.google_analytics_sample.ga_ses
     aggregate: user_count
     limit: 10
   }
+
+  # bar_chart
   view: by_device is {
     group_by: device.browser
     aggregate: user_count
     group_by: device.deviceCategory
   }
+
+  # bar_chart
   view: by_category is {
     group_by: category is hits.product.v2ProductCategory
     aggregate: total_productRevenue
     aggregate: sold_count
     limit: 10
   }
+
+  # bar_chart
   view: by_hour_of_day is {
     group_by: gsession_hour is hour(start_time)
     aggregate: session_count
