@@ -14,40 +14,40 @@ source:ga_sessions is table('bigquery-public-data.google_analytics_sample.ga_ses
     hits_count is hits.count()
     sold_count is hits.count() { where: hits.product.productQuantity > 0 }
 
-  query: by_source is {
+  view: by_source is {
     where: trafficSource.`source` != '(direct)'
     group_by: trafficSource.`source`
     aggregate: hits_count
     limit: 10
   }
-  query: by_adContent_bar_chart is {
+  view: by_adContent_bar_chart is {
     group_by: device.browser
     aggregate: user_count
     group_by: device.deviceCategory
   }
-  query: by_region is {
+  view: by_region is {
     where: geoNetwork.region !~ '%demo%'
     group_by: geoNetwork.region
     aggregate: user_count
     limit: 10
   }
-  query: by_device is {
+  view: by_device is {
     group_by: device.browser
     aggregate: user_count
     group_by: device.deviceCategory
   }
-  query: by_category is {
+  view: by_category is {
     group_by: category is hits.product.v2ProductCategory
     aggregate: total_productRevenue
     aggregate: sold_count
     limit: 10
   }
-  query: by_hour_of_day is {
+  view: by_hour_of_day is {
     group_by: gsession_hour is hour(start_time)
     aggregate: session_count
     order_by: 1
   }
-  query: page_load_times is {
+  view: page_load_times is {
     group_by: hits.page.pageTitle
     aggregate: hit_count is hits.count()
     nest: load_bar_chart is {
@@ -57,13 +57,13 @@ source:ga_sessions is table('bigquery-public-data.google_analytics_sample.ga_ses
     limit: 10
   }
 
-  query: by_page_title is { where: totals.transactionRevenue > 0
+  view: by_page_title is { where: totals.transactionRevenue > 0
     group_by: hits.page.pageTitle
     aggregate: hits_count
     aggregate: sold_count
   }
 
-  query: by_all is {
+  view: by_all is {
     nest: by_source
     nest: by_adContent_bar_chart
     nest: by_region
