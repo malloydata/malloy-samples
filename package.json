@@ -1,6 +1,6 @@
 {
   "name": "malloy-samples",
-  "version": "0.0.21",
+  "version": "0.0.85",
   "description": "Malloy sample files",
   "config": {
     "malloy_packages": [
@@ -34,9 +34,9 @@
   },
   "homepage": "https://github.com/malloydata/malloy-samples#readme",
   "dependencies": {
-    "@malloydata/db-bigquery": "0.0.67",
-    "@malloydata/db-duckdb": "0.0.67",
-    "@malloydata/malloy": "0.0.67",
+    "@malloydata/db-bigquery": "0.0.85",
+    "@malloydata/db-duckdb": "0.0.85",
+    "@malloydata/malloy": "0.0.85",
     "@types/jest": "^29.2.5",
     "@typescript-eslint/eslint-plugin": "^5.48.2",
     "@typescript-eslint/parser": "^5.48.2",
