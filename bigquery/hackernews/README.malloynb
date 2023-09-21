@@ -1,0 +1,44 @@
+>>>markdown
+# Hacker News
+
+All the [Hacker News](https://news.ycombinator.com) posts, ever.
+>>>malloy
+import 'hackernews.malloy'
+import 'faang.malloy'
+>>>markdown
+# Term Dashboard - BigQuery
+Stories about BigQuery over time:
+>>>malloy
+# dashboard
+run: stories -> term_dashboard {
+  where: title ~ r'BigQuery'
+}
+>>>markdown
+# Posts over Time
+Graph of posts over time
+>>>malloy
+# line_chart
+run: stories -> posts_over_time + { 
+  limit: 100000   
+}
+>>>markdown
+# Interesting or Not
+Most posts get no traction. `is_interesting` denotes a post with traction
+>>>malloy
+run: stories ->  { 
+  group_by: is_interesting
+  aggregate:
+    post_count
+    # percent
+    pct_of_total is post_count / all(count())
+}
+>>>markdown
+# Facebook, Apple, Amazon, Netflix and Google over time
+Graph of stories about FAANG companies over time
+>>>malloy
+# line_chart
+run: stories -> posts_over_time + { 
+  where: is_interesting, faang != 'OTHER'
+  group_by: faang
+  limit: 100000 
+}

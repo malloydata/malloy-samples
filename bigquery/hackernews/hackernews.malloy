@@ -1,5 +1,3 @@
---! styles hackernews.styles.json
-
 source: stories is table('bigquery-public-data.hacker_news.full') {
   rename:
     poster is `by`
@@ -39,56 +37,58 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
     percent_interesting is floor(interesting_post_count / post_count * 100)
     first_post_date is min(post_time).day
 
-  query: by_date is {
+  view: by_date is {
     group_by: posted_month is post_time.month
     aggregate: post_count
   }
 
-  query: posts_over_time is {
+  # line_chart
+  view: posts_over_time is {
     group_by: posted_month is post_time.month
     aggregate: post_count
   }
 
-  query: percent_interesting_over_time is {
+  view: percent_interesting_over_time is {
     group_by: posted_year is post_time.year
     aggregate: percent_interesting
   }
 
-  query: stories_by_month is {
+  view: stories_by_month is {
     where: post_type = 'story'
     nest: by_date
   }
 
-  query: jobs_by_month is {
+  view: jobs_by_month is {
     where: post_type = 'job'
     nest: by_date
   }
 
-  query: by_post_type is {
+  view: by_post_type is {
     group_by: post_type
     aggregate: post_count
   }
 
-  query: by_score_class is {
+  # bar_chart
+  view: by_score_class is {
     group_by: score_class
     aggregate: post_count
   }
 
-  query: top_posters is {
+  view: top_posters is {
     top: 10
     where: poster != null
     group_by: poster
     aggregate: interesting_post_count, post_count
   }
 
-  query: top_sites is {
+  view: top_sites is {
     top: 10
     where: site != null
     group_by: site
     aggregate: post_count
   }
 
-  query: recent_stories is {
+  view: recent_stories is {
     top: 100
     where: post_type = 'story'
     order_by: post_time desc
@@ -101,7 +101,7 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
       url
   }
 
-  query: term_dashboard is {
+  view: term_dashboard is {
     nest: by_date_and_type_line_chart is {
       group_by: posted_month is post_time.month
       aggregate: post_count
@@ -113,7 +113,7 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
       recent_stories {limit: 20}
   }
 
-  query: poster_dashboard is top_posters {        -- reuses and refines the top_posters query
+  view: poster_dashboard is top_posters {        -- reuses and refines the top_posters query
     where: post_type = 'story'
     aggregate:
       percent_interesting
