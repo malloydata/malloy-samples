@@ -135,7 +135,7 @@ run: events -> {
 
 run: events -> {
   aggregate:
-    total_event_value is sum(event_value)
+    total_event_value is event_value.sum()
 
   where:
     event_name = 'purchase'
