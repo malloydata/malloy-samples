@@ -2,6 +2,8 @@
 # Analyzing GA4 data with Malloy
 
 This notebook builds a data model on the Google Analytics 4 export data in BigQuery. The GA4 data contains a single table, `events`, with quite a complex schema. Building a Malloy data model on top of this raw table makes it far easier to understand and  analyze. The cell below defines reusable dimensions and measures. Later on, we'll see side-by-side examples of queries in SQL vs. Malloy, and how much simpler they are in Malloy.
+
+In the cell below, we define a source called `events`, and define some basic calculations on top of it. For example, we convert the `event_timestamp` column from "milliseconds since epoch" to an actual timestamp value. We also create some pre-defined aggregates such as `session_count`.
 >>>malloy
 source: events is table('bigquery:bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*') {
 
@@ -22,7 +24,11 @@ source: events is table('bigquery:bigquery-public-data.ga4_obfuscated_sample_eco
     index: event_params.*, user_properties.*, items.*
   }
 }
+>>>markdown
+For event tables, it's often the case that a lot of our queries only care about a specific type of event, such as purchases or conversion events. With Malloy, you can create a new `source` object based off of an already-existing `source` with the `extend` keyword. In the example below, we create the `purchase_events` source, which is the `events` source filtered down to just purchases.
 
+In the GA4 dataset, purchase events have a revenue value associated with them that lives inside the `event_params` nested column. The logic to pull these values out is complicated and verbose. With Malloy, we can implement it a single time and reuse it anywhere, making it much easier for consumers of the model to analyze this dataset.
+>>>malloy
 source: purchase_events is events extend { 
   where: event_name = 'purchase' 
 
