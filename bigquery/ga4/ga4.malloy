@@ -14,7 +14,7 @@ source: events is table('bigquery:bigquery-public-data.ga4_obfuscated_sample_eco
     user_count is count(distinct user_pseudo_id)
     session_count is count(distinct event_params.value.int_value) { where: event_params.key = 'ga_session_id' }
 
-  query: nested_index is {
+  view: nested_index is {
     index: event_params.*, user_properties.*, items.*
   }
 }
@@ -33,21 +33,21 @@ source: purchase_events is events extend {
   dimension:
     item_of_interest is 'Google Navy Speckled Tee'
 
-  query: by_day is {
+  view: by_day is {
     group_by: the_day is event_timestamp.day::date
     aggregate:
       total_spend
       purchase_count
   }
 
-  query: by_country is {
+  view: by_country is {
     group_by: geo.country
     aggregate:
       total_spend
       purchase_count
   }
 
-  query: by_year is {
+  view: by_year is {
     group_by: the_year is event_timestamp.year
     aggregate:
       total_spend
