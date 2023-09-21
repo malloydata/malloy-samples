@@ -1,0 +1,44 @@
+>>>markdown
+# Iowa State Store Liquor Purchases
+
+In Iowa, all liquor stores are own by the state.  The store's purchases are a matter of public record.  
+
+See the [Malloy source code](https://github.com/malloydata/malloy-samples/tree/main/bigquery/iowa) for this data set.
+
+## Overview
+
+The query below will give you a feel for the market as a whole.  Notice that some of the top seller are a huge part of the market.  For example Tito's vodka is 3.5% of all liquor sales in Iowa.
+>>>malloy
+import 'iowa.malloy'
+>>>malloy
+# dashboard
+run: iowa -> {
+  nest: by_class
+  nest: by_vendor
+  nest: by_month
+  nest: top_sellers_by_revenue + {limit: 10}
+  nest: most_expensive_products + {limit: 10}
+  nest: top_10_counties is {
+    group_by: county
+    aggregate: total_sale_dollars
+    limit: 10
+  }
+}
+>>>markdown
+## Lookup Dashboards
+Examine the market for a particular class of alcohol:
+>>>malloy
+// Try this with 'TEQUILAS', 'WHISKIES', 'RUM', 'GINS'
+
+# dashboard
+run: iowa -> vendor_dashboard {
+  where: category_class ~ 'VODKAS'
+}
+>>>markdown
+## Vendor Dashboards
+Examine the sales of a particular vendor.
+>>>malloy
+# dashboard
+run: iowa -> vendor_dashboard {
+  where: vendor_name ~ 'JIM BEAM%'
+}
