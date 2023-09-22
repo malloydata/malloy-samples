@@ -1,5 +1,3 @@
---! styles ecommerce.styles.json
-
 // duckdb sources
 source: users_table is table('duckdb:users.parquet'){}
 source: product_table is table('duckdb:products.parquet'){}
