@@ -1,25 +1,22 @@
-//  Github: https://github.com/lloydtabb/name_fiddle
-//  About Fiddles: https://github.com/lloydtabb/malloy_fiddle_dist
-
-source: names is table('duckdb:usa_names.parquet') {
+source: names is duckdb.table('usa_names.parquet') extend {
   rename: year_born is `year`
   measure: population is `number`.sum()
   dimension: decade is floor(year_born/10)*10
   measure: births_per_100k is floor(population/all(population)*100000)
-  query: by_name is {
+  view: by_name is {
     group_by: name
     aggregate: population
     limit: 10
   }
-  query: by_state is {
+  view: by_state is {
     group_by: state
     aggregate: births_per_100k
   }
-  query: by_gender is {
+  view: by_gender is {
     group_by: gender
     aggregate: population
   }
-  query: by_decade is {
+  view: by_decade is {
     group_by: decade
     aggregate: births_per_100k
     order_by: 1 asc
@@ -34,12 +31,12 @@ source: cohort is from(names->{
   measure: population is cohort_size.sum()
 }
 
-source: names2 is names +  {
+source: names2 is names extend {
   join_one: cohort on 
     gender = cohort.gender 
     and state = cohort.state 
     and year_born = cohort.year_born
-  query: names_chart is {
+  view: names_chart is {
     group_by: name
     aggregate: births_per_100k
     nest: by_year_line_chart is {
@@ -52,14 +49,7 @@ source: names2 is names +  {
     }
     limit: 10
   }
-
-  query: x is {
-    group_by: name
-    aggregate: population, all_pop is all(population)
-      percent_of_totall is population/all(population)
-  }
-
-  query: iconic_names_by_state is {
+  view: iconic_names_by_state is {
     group_by: name, state, gender
     aggregate: 
       all_name is all(population, name)
@@ -84,18 +74,18 @@ source: names2 is names +  {
     limit: 20
   }
 
-  query: gender_year_line_chart is {
+  view: gender_year_line_chart is {
     group_by: year_born
     aggregate: population
     group_by: gender is gender ? pick 'Female' when 'F' else 'Male'
   }
 
-   query: gender_by_state_shape_map is {
+   view: gender_by_state_shape_map is {
       group_by: state
       aggregate: percent_female is population{? gender='M'}/population
     }
 
-  query: gender_neutral_names is {
+  view: gender_neutral_names is {
     group_by: name
     aggregate: population
     nest: gender_year_line_chart 
@@ -104,7 +94,7 @@ source: names2 is names +  {
     limit: 10
   }
 
-  query: kelly_time_space_dashboard is {
+  view: kelly_time_space_dashboard is {
     where: name = 'Kelly'
     group_by: name
     aggregate: population
@@ -126,7 +116,7 @@ source: names2 is names +  {
   //  (see the previous example)
   // The second stage computes the difference between years
   //  and the total percentage in both decades (good for filtering)
-  query:  resurgent_names is {
+  view:  resurgent_names is {
     group_by: name
     aggregate: population
     nest: by_decade is {
@@ -151,7 +141,7 @@ source: names2 is names +  {
     limit: 10
   }
 
-  query: name_dashboard is {
+  view: name_dashboard is {
     where: name = 'Lloyd' | 'Anika' | 'Jessie' | 'Kelly' | 'Todd' | 'Chris'
     nest: by_name_line_chart is {
       group_by: decade
@@ -182,7 +172,7 @@ source: names2 is names +  {
     }
   }
 
-  query: search_index is {
+  view: search_index is {
     index: name, state by population
   }
   // these should move into the markdown file
