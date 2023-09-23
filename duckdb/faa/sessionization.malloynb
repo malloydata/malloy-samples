@@ -11,7 +11,7 @@ import {flights} from 'flights.malloy'
 * For each plane, calculate the number of flight legs on each day
 * Produce a subtable of each play/day of all the flight legs and delays
 >>>malloy
-query: flights -> {
+run: flights -> {
     where: 
       dep_time.day = @2002-03-03,
       carrier = 'WN' | 'DL'
