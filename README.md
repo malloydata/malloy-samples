@@ -4,14 +4,20 @@ These Malloy model examples are designed to be used with [Malloy](https://www.ma
 a semantic modeling and querying data language. You can download the latest samples from
 [releases](https://github.com/malloydata/malloy-samples/releases/latest/).
 
-## [Google BigQuery](bigquery)
-
-These examples require a [Google Cloud](https://cloud.google.com) login.
 
 ## [DuckDB](duckdb)
 
 These examples use [DuckDB](https://duckdb.org/) to read local data files.
 Datasets are included or can be easily downloaded and do not require a login.
+
+  * [Auto Recalls](duckdb/auto_recalls/README.malloynb)
+  * [E-Commerce Example](duckdb/ecommerce/README.malloynb)
+  * [FAA Flight Data Example](duckdb/faa/README.md)
+
+
+## [Google BigQuery](bigquery)
+
+These examples require a [Google Cloud](https://cloud.google.com) login.
 
 ## Additional Resources:
 
