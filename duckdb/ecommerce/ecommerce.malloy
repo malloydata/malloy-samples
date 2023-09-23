@@ -70,8 +70,11 @@ source: order_items is order_items_table extend {
   measure:
     order_count is count(distinct order_id)
     order_item_count is count()
+    # currency
     total_sales is sale_price.sum()
+    # percent
     percent_of_sales is total_sales/all(total_sales)
+    # currency
     total_gross_margin is gross_margin.sum()
     average_gross_margin is gross_margin.avg()
     product_count is count(distinct inventory_items.product_id)
