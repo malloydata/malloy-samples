@@ -1,8 +1,10 @@
 {
+  "extends": "../node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
     "esModuleInterop": true,
     "noEmit": true,
-    "rootDir": "tests",
+    "rootDir": "../tests",
     "skipLibCheck": true,
-  },
+    "types": ["node", "jest"]
+  }
 }
