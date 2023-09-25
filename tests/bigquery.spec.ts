@@ -23,8 +23,9 @@
 
 import fs from 'fs';
 import path from 'path';
-import {Runtime} from '@malloydata/malloy';
 import {BigQueryConnection} from '@malloydata/db-bigquery';
+import {compileMalloy} from './utils/malloy';
+import {compileMSQL} from './utils/msql';
 
 const SAMPLE_PROJECT_ROOT = path.join(__dirname, '..', 'bigquery');
 
@@ -37,20 +38,14 @@ describe(`BigQuery`, () => {
       if (fn.endsWith('.malloy')) {
         modelsFound = true;
         const filePath = path.join(projectPath, fn);
-        const srcURL = new URL(`model://${filePath}`);
-        const fileReader = {
-          readURL: (url: URL) => {
-            return Promise.resolve(
-              fs.readFileSync(url.toString().replace('model://', ''), 'utf-8')
-            );
-          },
-        };
-        const runtime = new Runtime(
-          fileReader,
-          new BigQueryConnection('bigquery')
-        );
-        test(`compiling ${dir}/${fn}`, async () => {
-          await runtime.getModel(srcURL);
+        it(`compiles ${dir}/${fn}`, async () => {
+          await compileMalloy(filePath, new BigQueryConnection('bigquery'));
+        });
+      } else if (fn.endsWith('.malloynb') || fn.endsWith('.malloysql')) {
+        modelsFound = true;
+        const filePath = path.join(projectPath, fn);
+        it(`compiles ${dir}/${fn}`, async () => {
+          await compileMSQL(filePath, new BigQueryConnection('bigquery'));
         });
       }
     }
