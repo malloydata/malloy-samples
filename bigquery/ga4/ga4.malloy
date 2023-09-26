@@ -1,5 +1,6 @@
+import 'config.malloy'
 
-source: events is table('bigquery:bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*') {
+source: events is events_table extend { 
 
   rename:
     event_timestamp_raw is event_timestamp
@@ -14,7 +15,7 @@ source: events is table('bigquery:bigquery-public-data.ga4_obfuscated_sample_eco
     user_count is count(distinct user_pseudo_id)
     session_count is count(distinct event_params.value.int_value) { where: event_params.key = 'ga_session_id' }
 
-  query: nested_index is {
+  view: nested_index is {
     index: event_params.*, user_properties.*, items.*
   }
 }
@@ -27,30 +28,87 @@ source: purchase_events is events extend {
     _total_spend_float is event_params.value.float_value.sum() { where: event_params.key = 'value' }
     _total_spend_int is event_params.value.int_value.sum() { where: event_params.key = 'value' }
 
+    # currency
     total_spend is _total_spend_double + _total_spend_float + _total_spend_int
+    # percent
+    spend_pct_of_total is total_spend / nullif(all(total_spend), 0)
     purchase_count is count()
 
   dimension:
     item_of_interest is 'Google Navy Speckled Tee'
 
-  query: by_day is {
+  view: revenue_by_day is {
     group_by: the_day is event_timestamp.day::date
     aggregate:
       total_spend
-      purchase_count
+    having: total_spend > 0
   }
 
-  query: by_country is {
+  view: revenue_by_country is {
     group_by: geo.country
     aggregate:
       total_spend
-      purchase_count
+      spend_pct_of_total
   }
 
-  query: by_year is {
-    group_by: the_year is event_timestamp.year
+  view: revenue_by_device_category is {
+    group_by: device.category
     aggregate:
       total_spend
-      purchase_count
+      spend_pct_of_total
   }
+
+  view: revenue_by_traffic_source is {
+    group_by: traffic_source.`source`
+    aggregate:
+      total_spend
+      spend_pct_of_total
+  }
+
+  view: revenue_by_traffic_medium is {
+    group_by: traffic_source.medium
+    aggregate:
+      total_spend
+      spend_pct_of_total
+  }
+
+  view: revenue_by_traffic_name is {
+    group_by: traffic_source.name
+    aggregate:
+      total_spend
+      spend_pct_of_total
+ }
+
+  view: revenue_by_year is {
+    group_by: the_year is event_timestamp.year
+    
+    aggregate:
+      total_spend
+  }
+}
+
+run: purchase_events -> {
+  nest: revenue_by_device_category + {
+    nest: revenue_by_country + { limit: 10 }
+  }
+  nest: revenue_by_country + { 
+    limit: 10 
+    nest: revenue_by_device_category
+  }
+}
+
+# line_chart
+run: purchase_events -> revenue_by_day + {
+  nest: revenue_by_country
+} -> {
+  project:
+    the_day
+    revenue_by_country.*
+} -> {
+  group_by: the_day
+  aggregate: spend_pct_of_total is max(spend_pct_of_total)
+  group_by: country
+
+  where: (country ? 'United States' | 'India' | 'Canada'| 'United Kingdom' | 'Spain')
+  limit: 500
 }
