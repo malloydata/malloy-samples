@@ -1,12 +1,13 @@
 // Auto Recalls: CSV example
-
+##! m4warnings
 source: recalls is duckdb.table('auto_recalls.csv') extend {
-  declare:
+  measure:
     recall_count is count()
     percent_of_recalls is recall_count/all(recall_count)*100
     total_defects is `Potentially Affected`.sum()
 
     # link
+  dimension:
     recall_url is concat(
       'https://www.nhtsa.gov/recalls?nhtsaId=',
       `NHTSA ID`
