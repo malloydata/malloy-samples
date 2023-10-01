@@ -1,3 +1,4 @@
+##! m4warning
 import "ecommerce.malloy"
 
 // "People who buy x also buy y": finds brands that frequently co-occur in transaction history
@@ -34,7 +35,7 @@ source: brand_synergy is from(
 source: order_items_w_brand_synergy is order_items {
   join_one: brand_synergy on inventory_items.product_brand = brand_synergy.brand
 
-  query: brand_w_synergy_dashboard is brand_dashboard {
+  view: brand_w_synergy_dashboard is brand_dashboard {
     nest: synergistic_brands is {
       group_by: brand_synergy.synergies.brand
       aggregate: occurances is brand_synergy.synergies.occurances.sum()
