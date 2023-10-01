@@ -101,7 +101,7 @@ run: events -> {
 //   AND _TABLE_SUFFIX BETWEEN '20201201' AND '20201202';
 
 run: events -> {
-  project:
+  select:
     event_timestamp
     event_value
 
@@ -265,7 +265,7 @@ run: events -> {
     event_timestamp
 
   nest: ga_session is {
-    project: ga_session_id is event_params.value.int_value
+    select: ga_session_id is event_params.value.int_value
     where: event_params.key = 'ga_session_id'
   }
 
@@ -413,12 +413,12 @@ run: purchase_events -> {
 }
 
 run: purchase_events -> nested_index -> {
-  project: *
+  select: *
   order_by: weight desc
 }
 
 run: purchase_events -> nested_index -> {
-  project: *
+  select: *
   where: fieldName ~ '%key'
   order_by: weight desc
 }

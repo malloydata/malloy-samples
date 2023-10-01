@@ -1,8 +1,8 @@
-source: met_objects is table('bigquery-public-data.the_met.objects') {
+source: met_objects is bigquery.table('bigquery-public-data.the_met.objects') extend {
   // eliminate some bad data
   where: object_begin_date < 2031 & > -8000
 
-  join_one: images is table('bigquery-public-data.the_met.images') { primary_key: object_id } with object_id
+  join_one: images is bigquery.table('bigquery-public-data.the_met.images') extend { primary_key: object_id } with object_id
 
   measure:
     object_count is count()
@@ -80,7 +80,7 @@ source: met_objects is table('bigquery-public-data.the_met.objects') {
   view: department_dashboard is {
     where: department = 'Photographs' and object_begin_date > 1900
     aggregate:
-      artist_count is count(distinct artist_display_name)
+      artist_count is count(artist_display_name)
       object_count
      image_count
     nest: by_artist is {

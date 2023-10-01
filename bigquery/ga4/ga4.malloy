@@ -12,8 +12,8 @@ source: events is events_table extend {
 
   measure:
     is_new_user is max(new_user)
-    user_count is count(distinct user_pseudo_id)
-    session_count is count(distinct event_params.value.int_value) { where: event_params.key = 'ga_session_id' }
+    user_count is count(user_pseudo_id)
+    session_count is count(event_params.value.int_value) { where: event_params.key = 'ga_session_id' }
 
   view: nested_index is {
     index: event_params.*, user_properties.*, items.*
@@ -101,7 +101,7 @@ run: purchase_events -> {
 run: purchase_events -> revenue_by_day + {
   nest: revenue_by_country
 } -> {
-  project:
+  select:
     the_day
     revenue_by_country.*
 } -> {

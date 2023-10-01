@@ -1,4 +1,4 @@
-source: stories is table('bigquery-public-data.hacker_news.full') {
+source: stories is bigquery.table('bigquery-public-data.hacker_news.full') extend {
   rename:
     poster is `by`
     post_type is `type`
@@ -110,10 +110,10 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
     nest:
       top_posters
       top_sites
-      recent_stories {limit: 20}
+      recent_stories + {limit: 20}
   }
 
-  view: poster_dashboard is top_posters {        -- reuses and refines the top_posters query
+  view: poster_dashboard is top_posters + {        -- reuses and refines the top_posters query
     where: post_type = 'story'
     aggregate:
       percent_interesting
@@ -123,14 +123,14 @@ source: stories is table('bigquery-public-data.hacker_news.full') {
       percent_interesting_over_time
       by_score_class
       top_sites
-    nest: best_stories is recent_stories {               -- reuses and refines the stories query
+    nest: best_stories is recent_stories + {               -- reuses and refines the stories query
       top: 10
       order_by: score desc
     }
   }
 }
 
-query: data_stories is stories -> term_dashboard {where: title ~ '%Data%' | '% data%'}
+query: data_stories is stories -> term_dashboard + {where: title ~ '%Data%' | '% data%'}
 
 
 query: stories -> posts_over_time + { 

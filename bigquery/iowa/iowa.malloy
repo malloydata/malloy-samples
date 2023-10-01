@@ -1,4 +1,4 @@
-source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped') {
+source: iowa is bigquery.table('malloy-data.iowa_liquor_sales.sales_deduped') extend {
 
   rename: _vendor_name is vendor_name
   // dimensions
@@ -27,7 +27,7 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped') {
   measure:
     # currency
     total_sale_dollars is sale_dollars.sum()
-    item_count is count(distinct item_number)
+    item_count is count(item_number)
     total_bottles is bottles_sold.sum()
     line_item_count is count()
     avg_price_per_100ml is price_per_100ml.avg()
@@ -101,7 +101,7 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped') {
 
   # dashboard
   view: vendor_dashboard is {
-    aggregate: vendor_count is count(distinct vendor_number)
+    aggregate: vendor_count is count(vendor_number)
     aggregate:
       total_sale_dollars
       total_bottles
@@ -123,19 +123,19 @@ source: iowa is table('malloy-data.iowa_liquor_sales.sales_deduped') {
   }
 }
 
-query: vodka_dashboard is iowa->vendor_dashboard {
+query: vodka_dashboard is iowa->vendor_dashboard + {
   where: category_class ~ 'VODKAS'
 }
 
-query: tequila_dashboard is iowa->vendor_dashboard {
+query: tequila_dashboard is iowa->vendor_dashboard + {
   where: category_class ~ 'TEQUILAS'
 }
 
-query: luxco_dashboard is iowa->vendor_dashboard {
+query: luxco_dashboard is iowa->vendor_dashboard + {
   where: vendor_name ~ 'LUXCO%'
 }
 
-query: jim_beam_dashboard is iowa->vendor_dashboard {
+query: jim_beam_dashboard is iowa->vendor_dashboard + {
   where: vendor_name ~ 'JIM BEAM%'
 }
 
