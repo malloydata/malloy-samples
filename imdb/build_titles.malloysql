@@ -1,0 +1,147 @@
+>>>markdown
+# Build Script for the IMDB
+
+This script produces three files.  Files are downloaded from https://datasets.imdbws.com/
+
+  Information courtesy of IMDb
+  (https://www.imdb.com).
+  Used with permission.
+
+* titles.parquet - movie info
+* principals.parquet - people that worked on the movie and what they did
+* names.parquet - information about the people that worked on the movies.
+
+This script is designed to run locally (not from the web version).  Clone the repository and launch VSCode
+
+>>>markdown
+## Raw Data Definitions
+Define sources for all the raw data.
+
+To fetch the raw data, first run the commands.
+
+```
+cd data
+sh get.sh
+```
+>>>malloy
+// Import the raw data.
+
+source: raw_titles is duckdb.sql(""" 
+		SELECT * FROM
+		read_csv_auto(
+			-- 'https://datasets.imdbws.com/title.basics.tsv.gz'
+			'data/title.basics.tsv.gz'
+			, all_varchar=true, delim='\t', quote='',header=True)
+	""")
+
+source: raw_principals is duckdb.sql(""" 
+		SELECT * FROM
+		read_csv_auto(
+			-- 'https://datasets.imdbws.com/title.principals.tsv.gz'
+			'data/title.principals.tsv.gz'
+			, all_varchar=true, delim='\t', quote='',header=True)
+	""")
+
+source: raw_ratings is duckdb.sql(""" 
+		SELECT * FROM
+		read_csv_auto(
+			-- 'https://datasets.imdbws.com/title.ratings.tsv.gz'
+			'data/title.ratings.tsv.gz'
+			, all_varchar=true, delim='\t', quote='',header=True)
+	""")
+
+source: raw_crew is duckdb.sql(""" 
+		SELECT * FROM
+		read_csv_auto(
+			-- 'https://datasets.imdbws.com/title.crew.tsv.gz'
+			'data/title.crew.tsv.gz'
+			, all_varchar=true, delim='\t', quote='',header=True)
+	""")
+source: raw_names is duckdb.sql(""" 
+		SELECT * FROM
+		read_csv_auto(
+			-- 'https://datasets.imdbws.com/name.basics.tsv.gz'
+			'data/name.basics.tsv.gz'
+			, all_varchar=true, delim='\t', quote='',header=True)
+	""")
+>>>markdown
+## Build titles.parquet
+
+We're building a subset of the data.  We limit the titles to those with more than XXXX votes in their ratings.
+
+`startYear`, `endYear` and `runtimeMinutes` (etc)) are stored as numbers mostly but have `\N` is some rows.  We use Malloy's safe cast operator `:::` to convert to strings.  
+
+We split `directors` and `writers` into an array using the DuckDB native `str_split!` function.  The explanation point `!` tells Malloy to trust the Native function.
+
+The first line `-- connection: duckdb` tells Malloy to use the `duckdb` database connection when executing SQL.
+>>>sql
+-- connection: duckdb
+
+copy %{
+  raw_titles -> {
+    join_one: raw_ratings on tconst = raw_ratings.tconst
+    join_one: raw_crew on tconst = raw_crew.tconst
+    where: raw_ratings.numVotes > 30000
+    select:
+      tconst
+      isAdult, originalTitle, primaryTitle
+      startYear is startYear:::number 
+      endYear is endYear:::number
+      runtimeMinutes is runtimeMinutes:::number
+      genres is str_split!(genres,',')
+      directors is str_split!(raw_crew.directors,',')
+      writers is str_split!(raw_crew.writers,',')
+      averageRating is raw_ratings.averageRating:::number
+      numVotes is raw_ratings.numVotes:::number
+    }
+}%  to 'data/titles.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
+
+
+>>>markdown
+## Build principals.parquet
+
+Joining in titles insures that we only include rows where we have title data.
+>>>sql
+-- connection: duckdb
+
+copy 
+  %{
+    raw_principals -> {
+      join_one: titles is table('duckdb:data/titles.parquet') on tconst = titles.tconst
+      where: titles.tconst != null
+      select: 
+        tconst
+        ordering
+        nconst
+        category
+        job
+        characters is str_split!(
+      regexp_replace!(characters,'[\[\]\"]','','g'),
+      ',')
+    }
+  }%
+ to 'principals.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
+
+
+
+>>>markdown
+## Build names.parquet
+
+Only include data for people in the principals table
+>>>sql
+-- connection: duckdb
+
+copy 
+  %{
+  raw_names -> {
+    join_many: principals is table('duckdb:data/principals.parquet') on nconst = principals.nconst
+    where: principals.nconst != null
+    group_by: 
+      nconst
+      primaryName
+      primaryProfession
+      birthYear is birthYear:::number
+      deathYear is deathYear:::number
+    }
+  }%
+to 'data/names.parquet' (FORMAT 'parquet', CODEC 'ZSTD')

@@ -1,0 +1,65 @@
+>>>markdown
+# Cohort Analysis
+It is often useful to see how groups of people behave over time.  The most simple example is in retail.  Of the people that first signed up for accouunts how many made an order and how many ordered in subsequent months.
+
+We'll use the following model
+>>>malloy
+source: order_items is duckdb.table('../data/order_items.parquet') extend {
+  join_one: users is duckdb.table('../data/users.parquet') on user_id=users.id
+  measure: 
+    user_count is count(distinct user_id)
+    order_count is count()
+    total_sales is sale_price.sum()
+}
+>>>markdown
+
+## Example
+
+In the example below, we look at the first 6 months of 2022.  In this example we are looking in terms of numbers of users.
+>>>malloy
+#(docs) limit=5000 size=medium
+run: order_items -> {
+  // limit the data to 6 months
+  where: (users.created_at.month ? @2022 for 6 months) and
+    created_at ? @2022 for 6 months
+
+  // show overall statistics about the orders
+  group_by: `Order Month` is created_at.month
+  aggregate: 
+    `Users that Ordered Count` is user_count
+
+  // Pivot the cohorts
+  # pivot
+  nest: cohorts is {
+    group_by: `User Signup Cohort` is users.created_at.month
+    aggregate: 
+      `Users in Cohort that Ordered` is user_count
+      # percent
+      `Percent of cohort that ordered` is user_count/all(user_count)
+
+    order_by: `User Signup Cohort`
+  }
+}
+>>>markdown
+
+## Cohorts as a percentage of Sales.
+>>>malloy
+#(docs) limit=5000 size=medium
+run: order_items -> {
+  where: (users.created_at.month ? @2022 for 6 months) and
+    created_at ? @2022 for 6 months
+  group_by: `Order Month` is created_at.month
+  aggregate: 
+    # number="$#,##0"
+    `Total Sales` is total_sales
+  # pivot
+  nest: cohorts is {
+    group_by: `User Signup Cohort` is users.created_at.month
+    aggregate: 
+      # percent
+      `Cohort as Percent of Sales` is total_sales/all(total_sales)
+
+    order_by: `User Signup Cohort`
+  }
+}
+>>>markdown

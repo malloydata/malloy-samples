@@ -1,0 +1,80 @@
+// Auto Recalls: CSV example
+##! m4warnings
+source: recalls is duckdb.table('auto_recalls.csv') extend {
+  measure:
+    recall_count is count()
+    percent_of_recalls is recall_count/all(recall_count)*100
+    total_defects is `Potentially Affected`.sum()
+
+    # link
+  dimension:
+    recall_url is concat(
+      'https://www.nhtsa.gov/recalls?nhtsaId=',
+      `NHTSA ID`
+    )
+  view: by_manufacturer is {
+    group_by: `Manufacturer`
+    aggregate:
+      recall_count
+      total_defects
+      percent_of_recalls
+  }
+
+  view: by_type is {
+    group_by: `Recall Type`
+    aggregate:
+      recall_count
+      percent_of_recalls
+  }
+
+  view: by_year is {
+    group_by: recall_year is year(`Report Received Date`)
+    aggregate:
+      recall_count
+    order_by: recall_year
+  }
+
+  # line_chart
+  view: by_year_manufacturer_line_chart is {
+    nest: top_manufacturers is {
+      group_by: Manufacturer
+      aggregate: recall_count
+      limit: 5
+    }
+    nest: x is {
+      group_by: Manufacturer, recall_year is year(`Report Received Date`)
+      aggregate:
+        recall_count
+    }
+  }
+  -> {
+    where: top_manufacturers.Manufacturer = x.Manufacturer
+    group_by: x.recall_year, x.recall_count, x.Manufacturer,
+    limit: 100000
+    order_by: 1, 3
+  }
+
+  view: recent_recalls is {
+    group_by:
+      recall_date is `Report Received Date`::string
+      `NHTSA ID`
+      recall_url
+      Manufacturer
+      Subject
+      `Potentially Affected`
+    order_by: 1 desc
+    limit: 10
+  }
+
+  view: biggest_recalls is recent_recalls + {
+    order_by: `Potentially Affected` desc
+  }
+
+  # dashboard
+  view: recall_dashboard is by_manufacturer + {
+    nest: by_year_line_chart is by_year + {group_by: `Recall Type`}
+    nest: by_type
+    nest: recent_recalls + {limit: 6}
+    nest: biggest_recalls + {limit: 6}
+  }
+}

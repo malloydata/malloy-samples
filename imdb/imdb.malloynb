@@ -1,0 +1,29 @@
+>>>markdown
+# IMDB Analysis in Malloy
+>>>malloy
+import {movies} from "imdb.malloy"
+>>>markdown
+## Top titles
+>>>malloy
+run: movies->by_title + { limit: 20 } 
+>>>markdown
+## Top 20 horror movies
+>>>malloy
+run: movies-> by_title + { 
+  where: genres.value = 'Horror'
+  limit: 20
+}
+>>>markdown
+
+## Top Stars
+>>>malloy
+run: movies->by_name + { 
+  limit: 20 
+} 
+>>>markdown
+## Top Comedy Stars
+>>>malloy
+run: movies->by_name + { 
+  where: genres.value = 'Comedy'
+  limit: 20 
+} 

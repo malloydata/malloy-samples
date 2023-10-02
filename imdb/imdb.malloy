@@ -1,0 +1,101 @@
+// Information courtesy of IMDb (https://www.imdb.com).
+// Used with permission. 
+// For personal / educational use only
+//
+//  Github: https://github.com/lloydtabb/imdb_fiddle
+//  About Fiddles: https://github.com/lloydtabb/malloy_fiddle_dist/
+
+source: people is duckdb.table('data/names.parquet') extend {
+// cast, crew, everyone involved in movies
+  primary_key: nconst
+}
+
+source: principals is duckdb.table('data/principals.parquet') extend {
+// a mapping table that links people to movies, along with their job on that movie.
+  join_one: people is people on nconst = people.nconst
+}
+
+source: movies is duckdb.table('data/titles.parquet') extend {
+// all the movies
+  join_many: principals on tconst = principals.tconst
+  primary_key: tconst
+
+  measure:
+    title_count is count(tconst)
+    row_count is count()
+    total_ratings is sum(numVotes/1000.0)
+    average_rating is averageRating.avg()
+    # percent
+    percent_of_titles is title_count/all(title_count)
+
+  dimension:
+    # image
+    movie_image is concat('https://artifacts.flyxit.com/flyx-artifacts/',tconst,'.jpg')
+    # link
+    movie_url is concat('https://www.imdb.com/title/',tconst)
+
+
+  view: by_title is {
+    group_by: primaryTitle, startYear, numVotes
+    order_by: 3 desc
+  }
+
+  view: by_year is {
+    group_by: startYear
+    aggregate: title_count
+    order_by: startYear desc
+  }
+
+  view: by_name is {
+    group_by:
+      principals.people.primaryName, principals.nconst
+    aggregate:
+      total_ratings
+      title_count
+  }
+
+  view: by_job_category is {
+    group_by: job_category is principals.category
+    aggregate: title_count
+  }
+
+  view: by_genre is {
+    group_by: genre is genres.value
+    aggregate: 
+      title_count, 
+      total_ratings
+      percent_of_titles
+
+  }
+
+  view: by_character is {
+    group_by: principals.characters.value
+    aggregate: title_count
+  }
+
+  view: by_year_and_genre is by_year + {
+    nest: by_genre
+  }
+
+  # dashboard
+  view: titles_dashboard is {
+    group_by: 
+      movie_image
+      production_year is startYear
+      primaryTitle
+      runtimeMinutes
+      movie_url 
+    nest:
+      genre_list is by_genre
+      by_cast is by_job_category {
+        # list
+        nest: names is by_name + {limit: 200}
+      }
+    limit: 20
+    order_by: 2 desc
+  }
+}
+
+
+// example query
+run: movies -> by_name

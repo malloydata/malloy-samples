@@ -1,0 +1,29 @@
+>>>markdown
+# Genre Analysis
+Top movies, top people, popularity over time
+>>>malloy
+import {movies} from "imdb.malloy" 
+>>>malloy
+# dashboard
+run: movies-> {
+  where: startYear ? > 1940 & < 2020
+  group_by: genre is genres.value
+     aggregate: 
+      title_count, 
+      total_ratings
+      percent_of_titles
+  nest: by_title + { limit: 5}
+  nest: by_director is by_name + {
+    where: principals.category = 'director'
+    limit: 5
+  }
+  nest: by_actor is by_name + {
+    where: principals.category ~ 'act%'
+    limit: 5
+  }
+  # line_chart
+  nest: by_year is {
+    group_by: startYear
+    aggregate: percent_of_titles is title_count/exclude(title_count, genre)*100
+  }
+}

@@ -1,0 +1,10 @@
+>>>markdown
+# Star Trek dashboard
+All the Star Trek movies.
+>>>malloy
+import {movies} from "imdb.malloy" 
+>>>malloy
+
+run: movies -> titles_dashboard {   
+  where: primaryTitle ~ r'Star Trek' and startYear < 2020
+}

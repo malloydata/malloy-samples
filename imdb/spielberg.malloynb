@@ -1,0 +1,48 @@
+>>>markdown
+# Steven Spielberg
+What did he direct? When? Who does he commonly work with and on what?
+>>>malloy
+##! m4warnings
+import {movies} from "imdb.malloy" 
+>>>markdown
+## Steven Spielberg movies
+>>>malloy
+query: speiberg_movies is movies->{
+  where: principals.people.primaryName ~ r'Steven Spielberg'
+  group_by: tconst, principals.people.nconst
+}
+
+run: speiberg_movies
+>>>markdown
+## People that work with Steven Spielberg 
+>>>malloy
+run: movies -> {
+  // join in the query above.
+  extend: {
+    join_one: x is speiberg_movies on x.tconst=tconst
+  }
+  // filter the list to speilberg movies.
+  where: x.tconst != null
+
+  group_by: principals.people.primaryName
+  aggregate: title_count
+
+
+  where: principals.people.nconst != x.nconst
+  aggregate: `years` is concat(min(startYear)::string, 
+      '-', max(startYear)::string)
+  limit: 20
+  order_by: title_count desc
+  nest: by_job_list is by_job_category
+  nest: title_list is by_title
+}
+>>>markdown
+## Steven Spielberg dashboard
+>>>malloy
+# dashboard
+run: movies -> titles_dashboard + { 
+  extend: {
+    join_one: x is speiberg_movies on x.tconst=tconst
+  }
+  where: x.tconst != null
+}

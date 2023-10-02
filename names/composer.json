@@ -1,0 +1,11 @@
+{
+  "readme": "./composer.md",
+  "title": "Baby Names",
+  "models": [
+    {
+      "id": "names2",
+      "path": "names.malloy",
+      "tables": ["usa_names.parquet"]
+    }
+  ]
+}

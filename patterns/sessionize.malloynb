@@ -1,0 +1,34 @@
+>>>markdown
+# Sessionized Data - Map/Reduce
+
+Flight event data contains _dep_time_, _carrier_, _origin_, _destination_ and _tail_num_  (the plane that made the flight).  The query below takes the flight event data and maps it into sessions of _flight_date_, _carrier_, and _tail_num_.  For each session, a nested list of _flight_legs_ by the aircraft on that day.  The flight legs are numbered.
+
+
+>>>malloy
+#(docs) size=large limit=5000
+run: duckdb.table('../data/flights.parquet') extend {
+  where: carrier = 'WN' and dep_time ? @2002-03-03
+  measure: flight_count is count()
+} -> {
+  calculate: session_id is row_number()
+  group_by:
+    flight_date is dep_time.day
+    carrier
+    tail_num
+    aggregate: 
+      flight_count 
+      max_delay is max(dep_delay)
+      total_distance is distance.sum()
+  nest: flight_legs is  {
+    order_by: 3
+    calculate: flght_leg is row_number() 
+    group_by:
+      tail_num
+      dep_minute is dep_time.minute
+      origin
+      destination
+      dep_delay
+      arr_delay
+  } 
+}
+>>>markdown
