@@ -28,11 +28,11 @@ import {compileMSQL} from './utils/msql';
 import {compileMalloy} from './utils/malloy';
 
 const SAMPLE_PROJECT_ROOT = path.join(__dirname, '..');
-const EXCEPT_LIST = ['build_titles.malloysql'];
+const EXCEPT_LIST = ['build_titles.malloysql', 'bigquery'];
 
 function inExceptList(fn: string) {
   for (const except of EXCEPT_LIST) {
-    if (fn.endsWith(except)) {
+    if (fn.includes(except)) {
       return true;
     }
   }
