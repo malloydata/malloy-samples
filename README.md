@@ -27,6 +27,7 @@ If you are reading this on Github, you can run these examples directly from your
   * [Auto Recalls](auto_recalls/README.malloynb)
   * [E-Commerce Example](ecommerce/README.malloynb)
   * [FAA Flight Data Example](faa/README.md)
+  * [IMDB](imdb/README.malloynb)
 
 
 ## [Google BigQuery](bigquery)

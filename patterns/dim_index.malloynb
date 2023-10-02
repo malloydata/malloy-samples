@@ -13,7 +13,6 @@ Indexing could be used by LLMs to find the interesting column/term mapping in th
 
 ## Simple Example
 We're going to take the airports table and index it.  The results are an un ordered list of distinct *fieldName/fieldValue* pairs appear in the table.  The weight, in this case is the number of rows that partciular occurs on. 
-
 >>>malloy
 #(docs) size=medium limit=100
 run: duckdb.table('../data/airports.parquet') -> {
@@ -25,7 +24,6 @@ run: duckdb.table('../data/airports.parquet') -> {
 Adding a second query stage to filter on _string_ columns and ordering by weight descending shows us the most common *fieldName/fieldValue* pairs in the dataset.  
 
 All Malloy queries run as a single SQL query.  The `index:` operator is no different.  Click the **SQL** tab to see how this works.  
-
 >>>malloy
 #(docs) size=medium limit=100
 run: duckdb.table('../data/airports.parquet') -> {
@@ -40,7 +38,6 @@ run: duckdb.table('../data/airports.parquet') -> {
 ## Index For Filtering User Interfaces
 
 Indexes can be used find the best way to filter a dataset.  For example supposed we'd like to find 'SANTA CRUZ' in the dataset. Upon approaching the dataset, but we don't which column might contain it.  In a UI you might imagine that you type 'SANTA' and let have suggestons for values that might be appropriate.  In the results we can see that top value, 'SANTA ROSA', appears as county on 26 rows in the table.  We can also see that 'SANTA CRUZ' is both a `city` and a `county`..
-
 >>>malloy
 #(docs) size=medium limit=100
 run: duckdb.table('../data/airports.parquet') -> {
@@ -54,7 +51,6 @@ run: duckdb.table('../data/airports.parquet') -> {
 >>>markdown
 
 We can then write a simple query to show the rows.  It turns out that 'SANTA CRUZ' is a county in both California and Arizona.
-
 >>>malloy
 #(docs) size=medium limit=100
 run: duckdb.table('../data/airports.parquet') -> {
@@ -65,7 +61,6 @@ run: duckdb.table('../data/airports.parquet') -> {
 
 ## Indexing to show top values for each dimension
 It is often difficult to approach a new dataset.  The index operator provides an intersting way to quickly gain an understanding of the dataset.  By piping the results of an index another stage, we can quickly see all the interesting values for each of the interesting dimesions.  Again, the weight shows the number of rows for that particular dimension/value.
-
 >>>malloy
 #(docs) size=medium limit=100
 run: duckdb.table('../data/airports.parquet') -> {
@@ -83,7 +78,6 @@ run: duckdb.table('../data/airports.parquet') -> {
 
 ## Sampling
 With large datasets, you can also sample a small subsection using the `sample:` parameter.  Sampled indexes are great at identifing the important low cardinality fields.
-
 >>>malloy
 #(docs) size=medium limit=100
 run: duckdb.table('../data/airports.parquet') -> {
@@ -107,11 +101,10 @@ run: duckdb.table('../data/airports.parquet') -> {
 The rest of this pages uses the model below.  The data is an excerpt from the IMDB.  The Malloy schema for this model is shown on the right.  The core value is movies, but joined at the principals (the people that worked on the movie) and the people (the actual data about the individuals).  
 
 We use the measure `total_ratings` to determin a movie's popularity.  An individual's popularity is determined by the some of all the ratings of the movies a person has worked on.
-
 >>>malloy
-source: movies is duckdb.table('../data/titles.parquet') extend {
-  join_many: principals is duckdb.table('../data/principals.parquet') {
-    join_one: people is duckdb.table('../data/names.parquet') 
+source: movies is duckdb.table('../imdb/data/titles.parquet') extend {
+  join_many: principals is duckdb.table('../imdb/data/principals.parquet') {
+    join_one: people is duckdb.table('../imdb/data/names.parquet') 
       on nconst = people.nconst
   } on tconst = principals.tconst
   measure: total_ratings is numVotes.sum()
@@ -120,7 +113,6 @@ source: movies is duckdb.table('../data/titles.parquet') extend {
 
 ## Weights can be any measure
 Often a row count will work nicely as a weight, but sometimes there is something better.  In movies, for example the sum of the number of votes will not only find the interesting most interesting movies but will also find the most interesting people.  For example the most interesting people in the dataset.
-
 
 >>>malloy
 #(docs) size=small limit=200
@@ -132,7 +124,6 @@ run: movies -> {
 
 ## Index the entire graph
 Indexing can work across an entire network of joins and can be selective.
-
 >>>malloy
 #(docs) size=small limit=200
 run: movies -> {
@@ -153,11 +144,10 @@ run: movies -> {
 ## Search Index Naming Convention 
 
 By convention indexes in sources are named `search_index`.
-
 >>>malloy
-source: movies2 is duckdb.table('../data/titles.parquet') extend {
-  join_many: principals is duckdb.table('../data/principals.parquet') extend {
-    join_one: people is duckdb.table('../data/names.parquet') 
+source: movies2 is duckdb.table('../imdb/data/titles.parquet') extend {
+  join_many: principals is duckdb.table('../imdb/data/principals.parquet') extend {
+    join_one: people is duckdb.table('../imdb/data/names.parquet') 
       on nconst = people.nconst
   } on tconst = principals.tconst
 
@@ -176,7 +166,6 @@ source: movies2 is duckdb.table('../data/titles.parquet') extend {
 >>>markdown
 
 So to look for 'Brad'
-
 >>>malloy
 #(docs) size=small limit=200
 run: movies2 -> search_index -> { 
@@ -187,7 +176,6 @@ run: movies2 -> search_index -> {
 >>>markdown
 
 So to look for 'Bat'
-
 >>>malloy
 #(docs) size=small limit=200
 run: movies2 -> search_index -> { 

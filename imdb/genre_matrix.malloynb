@@ -1,0 +1,30 @@
+>>>markdown
+# Genres Matrix
+Genre combinations tell you what to expect in a movie.  What are the top movies in each combination pair?
+>>>malloy
+import {movies} from "imdb.malloy" 
+>>>markdown
+## Genre matrix, top movies
+>>>malloy
+query: movie_genres is movies -> {
+  group_by: tconst, genres.value
+}
+run: movies -> {
+  extend: {
+    join_many: x is movie_genres on tconst = x.tconst
+  } 
+  where: genres.value != x.value
+  group_by: genre1 is genres.value
+  aggregate:  title_count
+  nest: genre is {
+    group_by: 
+      genre1 is genres.value
+      genre2 is x.value
+    # list
+    nest: titles is {
+      group_by: primaryTitle, numVotes
+      order_by: 2 desc
+      limit: 10
+    }
+  }
+}

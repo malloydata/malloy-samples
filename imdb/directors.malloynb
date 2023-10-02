@@ -1,0 +1,21 @@
+>>>markdown
+# Directors
+Who are the top directors?  What did they direct? In each genres?  Who do they work with?
+>>>malloy
+import {movies} from "imdb.malloy" 
+>>>markdown
+## Top directors and their 5 best movies
+>>>malloy
+run: movies->by_name + {
+  where: principals.category = 'director'
+  nest: by_title + { limit: 5}
+  limit: 10
+}
+>>>markdown
+## Top comedy directors and their 5 best movies
+>>>malloy
+run: movies->by_name + {
+  where: principals.category = 'director', genres.value = 'Comedy'
+  nest: by_title + { limit: 5}
+  limit: 10
+}

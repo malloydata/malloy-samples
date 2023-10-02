@@ -1,0 +1,46 @@
+>>>markdown
+# Explore the IMDB Dataset using Malloy
+
+[Malloy](http://www.malloydata.dev) is a new data programming language.  The following is an analysis of the IMDB dataset using Malloy.  
+
+To run these examples, press '.' from github.com (which will bring you into VSCode and github.dev) and when prompted, install the Malloy extension.
+
+* [Basic IMDB Queries](imdb.malloynb) - Simple queries against the IMDB data model
+* [Harvard CS O50](harvard-cs050.malloynb) - Harvard beginning CS class has a section on SQL.  Here are the questions and and answers written in Malloy instead of SQL.
+* [Stars and Jobs](stars_and_jobs.malloynb) - Movie people work lots of jobs.  Take a look at the top stars, what they work on, how long they have been working and what they do.
+* [Directors](directors.malloynb) - Who are the top directors?  What did they direct? In each genres?  
+* [Steven Spielberg](spielberg.malloynb) - What did he direct? When? Who does he commonly work with and on what?
+* [Genre Analysis](genre_analysis.malloynb) - Top movies, top people, popularity over time
+* [Genre Matrix](genre_matrix.malloynb) - Genre combinations tell you what to expect in a movie.  What are the top movies in each combination pair?
+* [Star Trek Dashboard](startrek.malloynb) - All the Star Trek Movies
+* [Tom Hanks in Detail](tomhanks.malloynb) - A very complete dashboard about Tom Hanks
+
+## About the IMDb Dataset
+
+IMDb makes data available for download via [their website](https://www.imdb.com/interfaces/). 
+Used with permission. 
+For personal / educational use only.
+
+
+## Tables
+
+**People** - All of the people who worked on a title, ranging from actors and directors to composers and crew.
+
+**Movies** - The `titles` table (aliased to `movies` in the model) has been filtered only to titles with > 10,000 ratings. Note: This model frequently uses `ratings.numVotes`, the number of votes the title has received. Where `ratings.averageRating` of course indicates how much people _liked_ a movie, `numVotes` is a better proxy for overall popularity of a title. 
+
+**Principals** A mapping table between people and titles, principals links the cast/crew to the titles they worked on.
+
+
+## Included Files
+
+**imdb.malloy**: This is the base model. It names the three tables used, defines relationships between them, and declares measures, dimensions and queries to be used for analysis.
+
+**imdb-queries.malloy**: Extends the base model to add a large variety of potentially interesting queries.
+
+**imdb-queries2.malloy**: Extends the base model to add a much more curated set of potentially interesting queries. The movies2 source includes full indexing for field/value search.
+
+## Building the parquet files
+
+The original data is in TSV format. Run 'make' in this directory to download and create a small subset of the IMDB Data to explore.
+
+
