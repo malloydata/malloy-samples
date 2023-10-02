@@ -1,0 +1,25 @@
+>>>markdown
+# Directly Querying a JSON API
+
+DuckDB can be used to query a JSON API endpoint, and Malloy makes it simple to transform the resulting data. The example below reads exchange rate data from the US Treasury and shows the data by currency over time.
+
+>>>malloy
+source: exchange_rates is 
+  duckdb.table('https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/rates_of_exchange?fields=country_currency_desc,exchange_rate,record_date&page[size]=10000&filter=country_currency_desc.json')
+>>>markdown
+
+## Query by Country
+This query builds a line chart showing exchange rate values over time. With a simple Malloy query, we can easily transform and analyze a dataset directly from an HTTP API, without any intermediate database required.
+
+>>>malloy
+#(docs) limit=5000 size=large
+run: exchange_rates -> {
+  group_by: data.country_currency_desc
+  # line_chart
+  nest: by_date is  {
+    group_by: 
+      data.record_date
+      rate is data.exchange_rate::number
+  }
+}
+>>>markdown

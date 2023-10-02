@@ -1,0 +1,61 @@
+>>>markdown
+# Nested Subtotals
+
+Nested subtotals are quite painful to do in SQL, requiring either self-joins, window functions, or `GROUP BY ROLLUP` queries. Unfortunately for analysts, it's also a very common type of analysis requested by business owners; for example, determing which segments of a population drove revenue growth, or drilling down from annual numbers into more granular time periods, like quarters or months.
+
+To see how we do this in Malloy, let's look at the following simple model:
+>>>malloy
+source: order_items is duckdb.table('../data/order_items.parquet') extend {
+  primary_key: id
+
+  measure:
+    total_sales is sale_price.sum()
+}
+>>>markdown
+
+This contains a single table of order items, and a measure to calculate sales. We can use this to calculate sales by year:
+>>>malloy
+run: order_items -> {
+  group_by: fiscal_year is created_at.year
+  aggregate: total_sales
+  order_by: fiscal_year desc
+}
+>>>markdown
+
+Now suppose we want to drill into the sales numbers by quarter. To do this in SQL would require either a window function, a self-join, or a `GROUP BY ROLLUP`, all of which are complicated to implement, and produce results that are difficult to interpret. In Malloy, none of this is necessary, we simply use a `nest` clause:
+>>>malloy
+run: order_items -> {
+  group_by: fiscal_year is created_at.year
+  aggregate: total_sales
+  order_by: fiscal_year desc
+
+  nest: by_quarter is {
+    group_by: fiscal_quarter is created_at.quarter
+    aggregate: total_sales
+    order_by: fiscal_quarter 
+  }
+}
+>>>markdown
+
+To drill down even further, it's trivial to repeat this pattern once again. The following query looks at the top 5 sales days for each fiscal quarter
+>>>malloy
+run: order_items -> {
+  group_by: fiscal_year is created_at.year
+  aggregate: total_sales
+  order_by: fiscal_year desc
+
+  nest: by_quarter is  {
+    group_by: fiscal_quarter is created_at.quarter
+    aggregate: total_sales
+    order_by: fiscal_quarter 
+
+    nest: top_days is  {
+      group_by: sale_date is created_at.day
+      aggregate: total_sales
+      limit: 5
+    }
+  }
+}
+>>>markdown
+
+These queries are trivial to implement, and easy to understand. If you'd like a challenge, try implementing the same thing in SQL and see what it looks like.

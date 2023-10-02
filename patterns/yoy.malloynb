@@ -1,0 +1,88 @@
+>>>markdown
+# Measuring Change over Time by Comparing Timeframes
+There are a couple of different ways to go about this in Malloy.
+
+## Method 1: Pivoting a Visualization
+
+We can compare performance of different years using the same x and y-axes.  Line charts take the x-axis, y-axis and dimensional (color) axis as parameters.
+In this case, the x-axis is `month_of_year`, the y-axis is `flight_count` and the dimensional (color) axis is the year.
+>>>malloy
+source: flights is duckdb.table('../data/flights.parquet') extend {
+  measure: flight_count is count()
+}
+>>>malloy
+run: flights -> {
+  group_by: month_of_year is month(dep_time)
+  aggregate: flight_count
+  group_by: flight_year is dep_time.year
+}
+>>>markdown
+
+By adding year as the third column, we can display different years on the same chart. Note the `# line_chart` tag above the query. This is a hint to the renderer to display the data as a line chart. Changing the definition of `flight_year` to `year(dep_time)::string` makes the line chart interpret the year as "categorical," giving distinct colors for each year rather than a gradient.
+>>>malloy
+# line_chart
+run: flights -> {
+  group_by: month_of_year is month(dep_time)
+  aggregate: flight_count
+  group_by: flight_year is year(dep_time)::string
+}
+>>>markdown
+
+## Method 2: Filtered Aggregates
+Filters make it easy to reuse aggregate calculations for trends analysis.
+>>>malloy
+run: flights -> {
+  group_by: carrier
+  aggregate:
+    flights_in_2002 is flight_count { where: dep_time = @2002 }
+    flights_in_2003 is flight_count { where: dep_time = @2003 }
+    # percent
+    percent_change is 
+      (flight_count { where: dep_time = @2003 } - flight_count { where: dep_time = @2002 })
+        / nullif(flight_count { where: dep_time = @2003 }, 0)
+}
+>>>markdown
+
+## Method 3: Calculate with Lag
+
+The `calculate:` clause is Malloy's window function equivalent, and allows us to compute year over year calculations using the `lag` function:
+>>>malloy
+run: flights -> {
+  group_by: dep_year is dep_time.year
+  aggregate: flight_count
+  calculate: 
+    last_year is lag(flight_count, 1)
+    # percent
+    growth is (lag(flight_count, 1) - flight_count) / lag(flight_count, 1)
+  order_by: dep_year
+}
+>>>markdown
+
+## Bonus: Relative timeframes and expression reuse
+You might like to write queries that automatically adjust based on the current timeframe.  The query below uses date arithmetic to filter the data to time frames relative to now.  These measures probably aren't generally useful in the model so we use the `extend:` operation to add these measure so they are only locally accessable within the query.
+>>>malloy
+source: inventory_items is duckdb.table('../data/inventory_items.parquet') 
+
+source: order_items is duckdb.table('../data/order_items.parquet') extend {
+  join_one: inventory_items  on inventory_item_id = inventory_items.id
+  measure: order_item_count is count()
+
+  view: category_growth is {
+    extend: {
+      // add measures for use just in this query
+      measure:
+        last_year is order_item_count { where: created_at ? now.year - 1 year }
+        prior_year is order_item_count { where: created_at ? now.year - 2 years }
+    }
+    limit: 10
+    group_by: inventory_items.product_category
+    aggregate:
+      last_year
+      prior_year
+      # percent
+      percent_change is (last_year - prior_year) / nullif(last_year, 0)
+  }
+}
+
+run: order_items -> category_growth
+>>>markdown

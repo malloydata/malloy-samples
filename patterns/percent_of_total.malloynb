@@ -1,0 +1,76 @@
+>>>markdown
+# Percent of Total
+Malloy provides a way to compute _percent of total_ through level of detail (ungrouped aggregates) functions.  The functions `all()` and `exclude()` escape grouping in aggregate calculations.  These functions are different than window functions as they operate inline with the query and can produce correct results even when the data hits a `limit` or is fanned out.  Use cases below.
+>>>malloy
+source: flights is duckdb.table('../data/flights.parquet') extend {
+  join_one: carriers is duckdb.table('../data/carriers.parquet') on carrier = carriers.code
+  measure: flight_count is count()
+}
+>>>markdown
+
+## Totals
+Using `all()`, you can easily produce an aggregate calculation that includes all the data, not just the data on the current row.  Southwest + USAir = 126,434 flights.  Notice that `all_flights` is the total of all the flights accessible in the query.
+>>>malloy
+#(docs) size=medium limit=5000
+run: flights -> {
+  group_by: carriers.nickname
+  aggregate: 
+    flight_count
+    all_flights is all(flight_count)
+    limit: 2
+}
+>>>markdown
+
+## Percent of Total
+The `all()` function is useful for percent of total calculations.  The `# percent` tags the result so it is displayed as a percentage.
+>>>malloy
+#(docs) size=medium limit=5000
+run: flights -> {
+  group_by: carriers.nickname
+  aggregate: 
+    flight_count
+    # percent
+    percent_of_flights is flight_count / all(flight_count)
+    limit: 5
+}
+>>>markdown
+
+## All of a particular grouping
+The `all()` function can optionally take the names of output columns to show all of a particular value.  You can see that all of Southwests fights is still 88,751.  The output column name for `carriers.nickname` is `nickname` so we use that in the calculation.  The `exclude()` function lets you eliminate a dimension from grouping.
+>>>malloy
+#(docs) size=medium limit=5000
+run: flights -> {
+  group_by:
+    carriers.nickname
+    destination
+    origin
+  aggregate: 
+    flight_count
+    flights_by_this_carrier is all(flight_count, nickname)
+    flights_to_this_destination is all(flight_count, destination)
+    flights_by_this_origin is all(flight_count, origin)
+    flights_on_this_route is exclude(flight_count, nickname)
+  limit: 20
+}
+>>>markdown
+## As Percentages
+Displaying results as percentages is often gives clues as to how numbers relate.  Is this number a large or small percentage of the group?  Level of detail calculations are great for this.  In Malloy, identifiers enclosed in back-ticks can have spaces.
+>>>malloy
+#(docs) size=medium limit=5000
+run: flights -> {
+  group_by:
+    carriers.nickname
+    destination
+    origin
+  aggregate: 
+    flight_count
+    # percent
+    `carrier as a percent of all flights` is all(flight_count, nickname) / all(flight_count)
+    # percent
+    `destination as a percent of all flights` is all(flight_count, destination) / all(flight_count)
+    # percent
+    `origin as a percent of all flights` is all(flight_count, origin) / all(flight_count)
+    # percent
+    `carriers as a percentage of route` is flight_count / exclude(flight_count, nickname)
+}
+>>>markdown

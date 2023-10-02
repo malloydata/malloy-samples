@@ -1,18 +1,32 @@
-# Malloy sample models (and datasets)
+# Malloy Analysis Examples (and datasets)
 
-These Malloy model examples are designed to be used with [Malloy](https://www.malloydata.dev),
-a semantic modeling and querying data language. You can download the latest samples from
-[releases](https://github.com/malloydata/malloy-samples/releases/latest/).
+This repository contains example data analysis and common patterns for expressed in Malloy.  Each of the examples can be run from Notebooks.  The 'patterns' are designed to be small and simple and show off how to acomplish some task.  The examples are designed to show how to setup a more.
 
+If you are reading this on Github, you can run these examples directly from your web browser. 
 
-## [DuckDB](duckdb)
+* Make sure you are logged into Github
+* press '.' (the period key)
+* Install the Malloy Extension
 
-These examples use [DuckDB](https://duckdb.org/) to read local data files.
-Datasets are included or can be easily downloaded and do not require a login.
+## Data Analysis Patterns
+  * [Comparing Timeframes](patterns/yoy.malloynb) - There are several different ways of doing timeframe comparisons.  
+  * [Foreign Sums](patterns/foreign_sums.malloynb) - Malloy can aggregate safely anywhere in a network of joins.  Example explains the different patterns.
+  * [Reading Nested Data](patterns/reading_nested.malloynb) - JSON, Parquet, Protobuff, log data is often a graph, not a table.  Malloy can naturally read and aggregate from anywhere in this graph.
+  * [Percent of Total](patterns/percent_of_total.malloynb) - Malloy provides 'level of detal' calculations that, among other things makes calculating percent of total easy at any level of heirachy.
+  * [Cohort Analysis](patterns/cohorts.malloynb) - It is often useful to see how groups of people behave over time.
+  * [Nested Subtotals](patterns/nested_subtotals.malloynb) - With a single table we can only look at one or two perspectives at a time.  With nesting, this is unlimited.
+  * [Other - Creating an Other Bucket](patterns/other.malloynb) - Looking at several groups and combining the rest into 'Other'.
+  * [Auto-bining Historgrams](patterns/autobin.malloynb) - In many tools, you need to fix the axis for histograms.  In malloy we can dynamically figure out the approiate bucketing for the data.
+  * [Moving Average](patterns/moving_avg.malloynb) - Moving averages can give a better idea of trends.
+  * [Data from JSON API](patterns/apijson.malloynb) - We can use a JSON API endpoint as a data source. 
+  * [Sessionize/Map Reduce](patterns/sessionize.malloynb) - A common data pattern is to read events and combine them into session.
+  * [Dimensional Indexes](patterns/dim_index.malloynb) - Malloy can find the most common values in your dataset. 
 
-  * [Auto Recalls](duckdb/auto_recalls/README.malloynb)
-  * [E-Commerce Example](duckdb/ecommerce/README.malloynb)
-  * [FAA Flight Data Example](duckdb/faa/README.md)
+## Examples
+
+  * [Auto Recalls](auto_recalls/README.malloynb)
+  * [E-Commerce Example](ecommerce/README.malloynb)
+  * [FAA Flight Data Example](faa/README.md)
 
 
 ## [Google BigQuery](bigquery)

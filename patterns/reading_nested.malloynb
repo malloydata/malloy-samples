@@ -1,0 +1,91 @@
+>>>markdown
+# Working with Nested Data
+
+Data often comes in a nested structure, where information is organized hierarchically. BigQuery and DuckDB have built-in support for reading tables with nested data and extracting information from these nested structures.
+
+Working with nested data in Malloy is remarkably simple. In Malloy, a nested array or struct is treated as a built-in `join_many` operation. You can effortlessly access the desired data using dot notation.
+
+For example, in Google Analytics data, the top level object is sessions. There are repeated structures such as hits, pageviews, and products and more. Querying this data in SQL is difficult.
+
+Below is the _partial_ schema for Google Analytics.
+
+<img src="./ga_schema.webp" style="width: 100%">
+
+To perform aggregate calculations in Malloy, you can simply specify the complete path to the numeric value and select the appropriate aggregate function. Malloy refers to this as aggregate locality, ensuring accurate calculations regardless of the join pattern used.
+
+## A simple Google Analytics Semantic model
+
+Here is a very simple Malloy model describing some interesting calculations on Google Analytics data:
+>>>malloy
+source: ga_sessions is duckdb.table('../data/ga_sample.parquet') extend {
+  measure:
+    user_count is count(distinct fullVisitorId)
+    # percent
+    percent_of_users is user_count / all(user_count)
+    session_count is count()
+    total_visits is totals.visits.sum()
+    total_hits is totals.hits.sum()
+    total_page_views is totals.pageviews.sum()
+    t2 is totals.pageviews.sum()
+    total_product_revenue is hits.product.productRevenue.sum()
+    hits_count is hits.count()
+    sold_count is hits.count() { where: hits.product.productQuantity > 0 }
+}
+>>>markdown
+
+## Show Data by Traffic Source
+>>>malloy
+#(docs) size=large limit=5000
+run: ga_sessions -> {
+  where: trafficSource.`source` != '(direct)'
+  group_by: trafficSource.`source`
+  aggregate:
+    user_count
+    percent_of_users
+    hits_count
+    total_visits
+    session_count
+  limit: 10
+}
+>>>markdown
+
+## Show Data By Browser
+>>>malloy
+#(docs) size=large limit=5000
+run: ga_sessions -> {
+  group_by: device.browser
+  aggregate:
+    user_count
+    percent_of_users
+    total_visits
+    total_hits
+    total_page_views
+    sold_count
+}
+>>>markdown
+
+## With Nested Results
+>>>malloy
+#(docs) size=large limit=5000
+run: ga_sessions -> {
+  group_by: device.browser
+  aggregate:
+    user_count
+    percent_of_users
+    total_visits
+    total_hits
+    total_page_views
+    sold_count
+  nest: by_source is  {
+    where: trafficSource.`source` != '(direct)'
+    group_by: trafficSource.`source`
+    aggregate:
+      user_count
+      percent_of_users
+      hits_count
+      total_visits
+      session_count
+    limit: 10
+  }
+}
+>>>markdown

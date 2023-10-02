@@ -1,0 +1,202 @@
+// duckdb sources
+##! m4warnings
+source: users_table is duckdb.table('../data/users.parquet') extend {}
+source: product_table is duckdb.table('../data/products.parquet') extend {}
+source: inventory_items_table is duckdb.table('../data/inventory_items.parquet') extend {}
+source: order_items_table is duckdb.table('../data/order_items.parquet')
+
+
+source: users is users_table extend {
+  primary_key: id
+  dimension: full_name is concat(
+    upper(substr(first_name, 1, 1)), lower(substr(first_name,2)),
+    ' ',
+    upper(substr(last_name, 1, 1)), lower(substr(last_name,2))
+  )
+  measure: user_count is count()
+}
+
+source: product is product_table extend {
+  primary_key: id
+  measure: product_count is count()
+}
+
+source: inventory_items is inventory_items_table extend {
+  primary_key: id
+
+  join_one: product with product_id
+
+  measure:
+    inventory_item_count is count(id)
+    total_cost is cost.sum()
+}
+
+source: user_order_facts is 
+  order_items_table ->  {
+    group_by: user_id
+    aggregate: first_order is min(created_at)
+    aggregate: most_recent_order is max(created_at)
+    aggregate: lifetime_orders is count()
+    aggregate: lifetime_spend is sale_price.sum() {where: status != 'Cancelled' & 'Returned'}
+  } extend {
+  primary_key: user_id
+
+  dimension: top_customer is lifetime_orders > 10
+  dimension: lifetime_order_tier is lifetime_orders ?
+    pick '1 to 3' when  < 4
+    pick '4 to 6' when < 7
+    pick '7 to 10' when < 11
+    else '11+'
+
+  dimension: spend_category is lifetime_spend ?
+    pick 'Low Spend' when < 50
+    pick 'Mid Spend' when < 500
+    pick 'High Spend' when < 1000
+    pick 'VIP' when >= 1000
+    else null
+}
+
+source: order_items is order_items_table extend {
+  primary_key: id
+
+  join_one:
+    users with user_id
+    inventory_items with inventory_item_id
+    user_order_facts with user_id
+
+  dimension:
+    gross_margin is sale_price - inventory_items.cost
+
+  measure:
+    order_count is count(order_id)
+    order_item_count is count()
+    # currency
+    total_sales is sale_price.sum()
+    # percent
+    percent_of_sales is total_sales/all(total_sales)
+    # currency
+    total_gross_margin is gross_margin.sum()
+    average_gross_margin is gross_margin.avg()
+    product_count is count(inventory_items.product_id)
+    user_count is users.count()
+    total_sales_2022 is total_sales { where: year(created_at) = 2022 }
+    total_sales_2021 is total_sales { where: year(created_at) = 2021 }
+
+  view: top_categories is {
+    top: 5
+    group_by: inventory_items.product_category
+    aggregate: total_sales
+  }
+
+  view: top_brands is {
+    top: 5
+    group_by: inventory_items.product_brand
+    aggregate: total_sales, percent_of_sales,total_gross_margin, order_item_count
+  }
+
+  view: top_products is {
+    top: 5
+    group_by: inventory_items.product_name
+    aggregate: total_sales, percent_of_sales, total_gross_margin, order_item_count
+  }
+
+  view: top_customers is {
+    top: 5
+    group_by: users.full_name, user_id
+    aggregate: total_sales, order_item_count
+  }
+
+  view: recent_purchases is {
+    top: 5
+    group_by: id, order_id, created_at, sale_price, inventory_items.product_name
+    order_by: created_at desc
+  }
+
+  view: by_year is {
+    group_by: created_year is year(created_at)
+    aggregate: total_sales
+  }
+
+  view: by_month is {
+    group_by: created_month is created_at.month
+    aggregate: total_sales
+  }
+
+  view: sales_by_state is {
+    group_by: users.state
+    aggregate: total_sales
+  }
+
+  view: sales_by_month_2022 is {
+    where: created_at = @2022
+    group_by: order_month is created_at.month
+    aggregate: total_sales
+  }
+
+  view: orders_by_status is {
+    group_by: status
+    aggregate: order_count
+  }
+
+  view: frequent_returners is {
+    group_by: users.full_name, user_id
+    aggregate: 
+      count_returns is order_item_count { where: status = 'Returned'}
+      percent_purchases_returned is round(100.0 * order_item_count { where: status = 'Returned'} / order_item_count, 0)
+      value_returned is total_sales { where: status = 'Returned'}
+  }
+
+  view: brand_dashboard is {
+    group_by: inventory_items.product.brand
+    aggregate:
+      total_sales
+      percent_of_sales
+      order_item_count
+      inventory_items.product.product_count
+    nest:
+      top_categories
+      by_month_line_chart is by_month
+      top_products
+    limit: 10
+  }
+
+  view: customer_dashboard is {
+    top: 5
+    group_by: users.full_name, user_id, users.city, users.state, users.country
+    aggregate:
+      total_sales
+      order_item_count
+      order_count
+    nest:
+      top_categories
+      by_year
+      top_brands
+      recent_purchases
+  }
+
+  view: business_overview_dashboard is {
+    aggregate:
+      total_sales
+      order_count
+      total_gross_margin
+    nest: 
+      by_month_line_chart is by_month
+      sales_by_state_shape_map is sales_by_state
+      top_brands
+      top_customers + {aggregate: order_count}
+  }
+  
+
+  view: sales_summary_yoy is {
+    aggregate:
+      total_sales_2022
+      sales_growth is total_sales_2022 - total_sales_2021
+      sales_yoy is total_sales_2022 / nullif(total_sales_2021,0) - 1
+      growth_contribution is (total_sales_2022 - total_sales_2021) / all(total_sales_2022 - total_sales_2021)
+  }
+
+  view: search_index is {
+    index: *, users.*, inventory_items.* 
+    sample: true
+  }
+}

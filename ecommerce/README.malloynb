@@ -1,0 +1,26 @@
+>>>markdown
+# eCommerce
+This dataset represents transactional database for a fictitious eCommerce business. 
+>>>malloy
+import {order_items} from "ecommerce.malloy"
+>>>markdown
+## Business Overview
+A high level overview of performance of the business
+>>>malloy
+run: order_items -> business_overview_dashboard
+>>>markdown
+## Customer Lookup
+Look up information about a customer and view their history.
+>>>malloy
+# dashboard
+run: order_items -> customer_dashboard + {where: users.full_name = 'Mary Smith'}
+>>>markdown
+# Brand Dashboard
+An overview of brand performance
+>>>malloy
+run: order_items -> brand_dashboard
+>>>markdown
+## Frequent Returners
+Lists individuals who return a lot of merchandise
+>>>malloy
+run: order_items -> frequent_returners
