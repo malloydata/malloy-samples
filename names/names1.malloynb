@@ -140,4 +140,4 @@ run: names -> {
   }
 }
 >>>markdown
-## Next Up: [Building with Queries](names2.malloynb)
+## Next Up: [Composing with Queries](names2.malloynb)
