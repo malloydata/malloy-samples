@@ -23,12 +23,14 @@ source: names is duckdb.table('usa_names.parquet') extend {
 }
 >>>markdown
 ## How many people are in this dataset?
+Using `aggregate:` we can make a computation that encompasses all the the data in the table.
 >>>malloy
 run: names-> {
   aggregate: total_population
 }
 >>>markdown
 ## What are the most common names and gender in this dataset?
+A way to answer this question is to produce a table sorted by total_population.  Malloy has sorts by default on the first aggregate calculation descending.
 >>>malloy
 run: names-> {
   group_by: 
@@ -40,6 +42,7 @@ run: names-> {
 }
 >>>markdown
 ## What are the most common Female names in the dataset?
+We can answer this by using the query above and addinga filter on gender.
 >>>malloy
 run: names-> {
   where: gender = 'F'
@@ -51,6 +54,7 @@ run: names-> {
 }
 >>>markdown
 ## Population over time
+Most transactional data sets include some notion of time.  We can produce a simple table by grouping by `decade`.  Notice that `decade` is a dimension declared in the source and not something in the table.
 >>>malloy
 run: names -> {
   group_by: decade
@@ -59,8 +63,9 @@ run: names -> {
 }
 >>>markdown
 ## Change the view to a line chart.
+By simply adding `# line_chart` above the query, we tag it to be rendered that way.  This line chart takes to columns as input, a time or number and another number.
 >>>malloy
-# bar_chart
+# line_chart
 run: names -> {
   group_by: decade
   aggregate: total_population
@@ -68,7 +73,7 @@ run: names -> {
 }
 >>>markdown
 ## Compare 'Linda' and 'Elizabeth' over decades
-In a line chart, the third parameter is a dimension.
+In a line chart, we can optionally have a third parameter is a dimension.  In this case it is 'Elizabeth' or 'Linda'
 >>>malloy
 # line_chart
 run: names -> {
@@ -81,11 +86,15 @@ run: names -> {
 }
 >>>markdown
 ## States.
+Geography is also interesting.  Let's look at this data by state.
 >>>malloy
 run: names -> {
   group_by: state
   aggregate: total_population
 }
+>>>markdown
+## Showing as a Map
+Malloy show data on maps.  By tagging this query with `# shape_map` we can see the query above as a shape Map.
 >>>malloy
 # shape_map
 run: names -> {
@@ -94,6 +103,7 @@ run: names -> {
 }
 >>>markdown
 ## Nesting - Compute the most popular names in each decade
+One of the most powerful features of Malloy is nesting queryies.  The query below shows population by decade and for each decade, shows the top names.
 >>>malloy
 run: names -> {
   group_by: decade
@@ -107,6 +117,7 @@ run: names -> {
 }
 >>>markdown
 ##  J names by decade and state
+We can have as many nests as we like and we can change how each of the nested queries are rendered.
 >>>malloy
 run: names -> {
   where: name ~ 'J%'
@@ -128,3 +139,5 @@ run: names -> {
     aggregate: total_population
   }
 }
+>>>markdown
+## Next Up: [Building with Queries](names2.malloynb)
