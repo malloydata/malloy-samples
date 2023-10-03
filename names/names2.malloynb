@@ -1,0 +1,59 @@
+>>>markdown
+## Composing with Queries
+We can add 'views' to our semantic model that are reusable.  Clicking 'Run' above the view will run the query for you.
+>>>malloy
+source: names2 is duckdb.table('usa_names.parquet') extend {
+  rename: year_born is `year`   // 'year' is a malloy reserved word
+  rename: population is `number`  // 'number' is a malloy reserve word.
+
+  measure:
+    total_population is population.sum()
+
+  dimension: 
+    decade is floor(year_born/10)*10
+
+  view: top_names is {
+    group_by: name
+    aggregate: total_population
+    limit: 6
+  }
+
+  view: by_decade is {
+    group_by: decade
+    aggregate: total_population
+    order_by: decade
+  }
+
+  view: by_state is {
+    group_by: state
+    aggregate: total_population
+  }
+}
+>>>markdown
+## Building with Queries
+By combining two queries. we can see the top names in each decade.
+>>>malloy
+run: names2 -> by_decade + {
+  nest: top_names
+  order_by: decade desc
+}
+>>>markdown
+## Fliping around the order 
+Fliping around the order shows us popularity by decade for each of the names.
+>>>malloy
+run: names2 -> top_names +{ 
+  # line_chart
+  nest: by_decade
+  # shape_map
+  nest: by_state
+}
+>>>markdown
+## Both Male and Female names.
+We can refine views with a  `where:` clause and use it multiple times in the same query.
+>>>malloy
+
+run: names2 -> by_decade + {
+  nest: top_male is top_names + {where: gender='M'}
+  nest: female_male is top_names + {where: gender='F'}
+  order_by: decade desc
+}
