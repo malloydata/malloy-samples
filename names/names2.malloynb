@@ -1,6 +1,8 @@
 >>>markdown
 ## Composing with Queries
-We can add 'views' to our semantic model that are reusable.  Clicking 'Run' above the view will run the query for you.
+We can add 'views' to our semantic model that are reusable. As we've seen earlier, the most interesting ways to look at this dataset are by `name`, time and location.  We declare `view`s for looking at this data in those ways.
+
+Clicking 'Run Query' above the view will run the query for you and show you the results.
 >>>malloy
 source: names2 is duckdb.table('usa_names.parquet') extend {
   rename: year_born is `year`   // 'year' is a malloy reserved word
@@ -30,7 +32,21 @@ source: names2 is duckdb.table('usa_names.parquet') extend {
   }
 }
 >>>markdown
-## Building with Queries
+## Running queries
+In malloy a query is expressed as `run: source -> view`.  In the [first section](names1.malloynb) all the queries were expressed literally with `{group_by ...}` but we can also just use a view named in the source.
+>>>malloy
+run: names2 -> top_names
+>>>markdown
+## Views can be refined (we can change them)
+We can, for example change the limit and add a filter.  Let's look at top 4 names in the 2000 decade that start with the letter 'S'
+>>>malloy
+run: names2 -> top_names + {
+  limit: 4
+  where: decade = 2000 and name ~ 'S%'
+}
+>>>markdown
+## Combining Views
+In the [first section](names1.malloynb) we saw how nested queries work.  
 By combining two queries. we can see the top names in each decade.
 >>>malloy
 run: names2 -> by_decade + {
