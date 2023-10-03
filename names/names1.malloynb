@@ -1,0 +1,130 @@
+>>>markdown
+# Name Analysis
+This is USA name data from the Social Security administration.  We have a table with 5 columns.  This data makes an excellent dataset to work with.
+
+* name - the name of the child
+* gender - 'M' or 'F'
+* year - the birth year of the child
+* state - the USA state that the child was born in
+* number - the number of children born with that name/gender/year/state
+>>>markdown
+## The semantic data model
+In order to analyse this data we're goint to rename a couple of columns and build some reusable calculations.  `total_population` is a measure and can be used in an `aggregate:` calculation.  Decade is computed from year and can be used in a `group_by:` or `select:`.  Click on 'Schema' to see the data that is provided.
+>>>malloy
+source: names is duckdb.table('usa_names.parquet') extend {
+  rename: year_born is `year`   // 'year' is a malloy reserved word
+  rename: population is `number`  // 'number' is a malloy reserve word.
+
+  measure:
+    total_population is population.sum()
+
+  dimension: 
+    decade is floor(year_born/10)*10
+}
+>>>markdown
+## How many people are in this dataset?
+>>>malloy
+run: names-> {
+  aggregate: total_population
+}
+>>>markdown
+## What are the most common names and gender in this dataset?
+>>>malloy
+run: names-> {
+  group_by: 
+    name
+    gender
+  aggregate: 
+    total_population
+  limit: 10
+}
+>>>markdown
+## What are the most common Female names in the dataset?
+>>>malloy
+run: names-> {
+  where: gender = 'F'
+  group_by: 
+    name
+  aggregate: 
+    total_population
+  limit: 10
+}
+>>>markdown
+## Population over time
+>>>malloy
+run: names -> {
+  group_by: decade
+  aggregate: total_population
+  order_by: decade
+}
+>>>markdown
+## Change the view to a line chart.
+>>>malloy
+# bar_chart
+run: names -> {
+  group_by: decade
+  aggregate: total_population
+  order_by: decade
+}
+>>>markdown
+## Compare 'Linda' and 'Elizabeth' over decades
+In a line chart, the third parameter is a dimension.
+>>>malloy
+# line_chart
+run: names -> {
+  where: name = 'Elizabeth' | 'Linda' 
+  group_by: decade
+  aggregate:
+    total_population
+  group_by: name
+  order_by: decade
+}
+>>>markdown
+## States.
+>>>malloy
+run: names -> {
+  group_by: state
+  aggregate: total_population
+}
+>>>malloy
+# shape_map
+run: names -> {
+  group_by: state
+  aggregate: total_population
+}
+>>>markdown
+## Nesting - Compute the most popular names in each decade
+>>>malloy
+run: names -> {
+  group_by: decade
+  aggregate: total_population
+  order_by: decade desc
+  nest: top_names is {
+    group_by: name, gender
+    aggregate: total_population
+    limit: 6
+  }
+}
+>>>markdown
+##  J names by decade and state
+>>>malloy
+run: names -> {
+  where: name ~ 'J%'
+  group_by: decade
+  order_by: decade desc
+  nest: top_names is {
+    group_by: name
+    aggregate: total_population
+    limit: 6
+  }
+  # shape_map
+  nest: by_state is {
+    group_by: state
+    aggregate: total_population
+  }
+  # line_chart 
+  nest: by_year is {
+    group_by: year_born
+    aggregate: total_population
+  }
+}
