@@ -2,33 +2,34 @@
 # Steven Spielberg
 What did he direct? When? Who does he commonly work with and on what?
 >>>malloy
-##! m4warnings
 import {movies} from "imdb.malloy" 
 >>>markdown
-## Steven Spielberg movies
+## Map of Steven Spielberg and the people that worked on them
+Build a list of title/people ids of all the people that work on movies that spielberge worked on.
 >>>malloy
-query: speiberg_movies is movies->{
+query: spielberg_people is movies->{
   where: principals.people.primaryName ~ r'Steven Spielberg'
   group_by: tconst, principals.people.nconst
 }
 
-run: speiberg_movies
+run: spielberg_people
 >>>markdown
 ## People that work with Steven Spielberg 
 >>>malloy
 run: movies -> {
   // join in the query above.
   extend: {
-    join_one: x is speiberg_movies on x.tconst=tconst
+    join_many: spielberg_people on spielberg_people.tconst=tconst
   }
-  // filter the list to speilberg movies.
-  where: x.tconst != null
+  // filter the list to speilberg movies
+  //  and remove spielberg from the list
+  where: 
+    spielberg_people.tconst != null  
+    and principals.people.nconst != spielberg_people.nconst
 
   group_by: principals.people.primaryName
   aggregate: title_count
 
-
-  where: principals.people.nconst != x.nconst
   aggregate: `years` is concat(min(startYear)::string, 
       '-', max(startYear)::string)
   limit: 20
@@ -42,7 +43,7 @@ run: movies -> {
 # dashboard
 run: movies -> titles_dashboard + { 
   extend: {
-    join_one: x is speiberg_movies on x.tconst=tconst
+    join_many: spielberg_people on spielberg_people.tconst=tconst
   }
-  where: x.tconst != null
+  where: spielberg_people.tconst != null
 }
