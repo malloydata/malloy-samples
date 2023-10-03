@@ -128,11 +128,9 @@ WITH
     platform AS channel,
     CASE
       WHEN device.category = "desktop" THEN "desktop"
-      WHEN device.category = "tablet"
-    AND app_info.id IS NULL THEN "tablet-web"
+      WHEN device.category = "tablet" AND app_info.id IS NULL THEN "tablet-web"
       WHEN device.category = "mobile" AND app_info.id IS NULL THEN "mobile-web"
-      WHEN device.category = "tablet"
-    AND app_info.id IS NOT NULL THEN "tablet-app"
+      WHEN device.category = "tablet" AND app_info.id IS NOT NULL THEN "tablet-app"
       WHEN device.category = "mobile" AND app_info.id IS NOT NULL THEN "mobile-app"
   END
     AS device,
@@ -229,18 +227,24 @@ WITH
     0
   END
     AS repeat_order_revenue,
+
+  -- count_conversions
     CASE
       WHEN event_type IN ('@{GA4_PURCHASE_EVENT}' ) THEN 1
     ELSE
     0
   END
     AS count_conversions,
+
+  -- count first_order_conversions
     CASE
       WHEN event_type='@{GA4_PURCHASE_EVENT}' AND event_id = first_order_event_id THEN 1
     ELSE
     0
   END
     AS count_first_order_conversions,
+
+    -- count repeat order conversions
     CASE
       WHEN event_type='@{GA4_PURCHASE_EVENT}' AND event_id != first_order_event_id THEN 1
     ELSE
@@ -253,6 +257,8 @@ WITH
     0
   END
     AS count_order_conversions,
+
+    -- count_registration_conversions
     CASE
       WHEN event_type='@{GA4_USER_REG_EVENT}' AND event_id = first_registration_event_id THEN 1
     ELSE
@@ -301,23 +307,29 @@ WITH
         s.session_end_ts AS session_end_ts,
         c.converted_ts AS converted_ts,
         c.min_converted_ts AS min_converted_ts,
+
+        -- aggregates
         COALESCE(SUM(c.count_conversions),0) AS count_conversions,
         COALESCE(SUM(c.count_order_conversions),0) AS count_order_conversions,
         COALESCE(SUM(c.count_first_order_conversions),0) AS count_first_order_conversions,
         COALESCE(SUM(c.count_repeat_order_conversions),0) AS count_repeat_order_conversions,
         COALESCE(SUM(c.count_registration_conversions),0) AS count_registration_conversions,
+
+        -- more groupbys:
         COALESCE(CASE
             WHEN c.count_conversions >0 THEN TRUE
           ELSE
           FALSE
         END
           ,FALSE) AS conversion_session,
+
         COALESCE(CASE
             WHEN c.count_conversions >0 THEN 1
           ELSE
           0
         END
           ,0) AS conversion_event,
+
         --used when calculating the conversion cycle number
         COALESCE(CASE
             WHEN c.count_order_conversions>0 THEN 1
@@ -325,6 +337,7 @@ WITH
           0
         END
           ,0) AS order_conversion_event,
+
         --used when calculating the order converion cycle number
         COALESCE(CASE
             WHEN c.count_registration_conversions>0 THEN 1
@@ -332,6 +345,8 @@ WITH
           0
         END
           ,0) AS registration_conversion_event,
+
+
         -- see above
         COALESCE(CASE
             WHEN c.count_first_order_conversions>0 THEN 1
@@ -339,6 +354,7 @@ WITH
           0
         END
           ,0) AS first_order_conversion_event,
+
         -- ditto
         COALESCE(CASE
             WHEN c.count_repeat_order_conversions>0 THEN 1
@@ -346,6 +362,7 @@ WITH
           0
         END
           ,0) AS repeat_order_conversion_event,
+
         -- ditto
         utm_source AS utm_source,
         CAST(NULL AS string) AS utm_content,
@@ -940,3 +957,334 @@ FROM
   pivoted
     
 """)
+
+source: events_raw is bigquery.table('bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*')
+
+source: events_base is events_raw extend {
+  dimension:
+    event_ts is timestamp_micros!timestamp(event_timestamp)
+    event_id is concat(user_pseudo_id, '-', event_name, '-' ,event_timestamp::string)
+    utm_channel is traffic_source.name
+    utm_medium is traffic_source.medium
+    utm_source is traffic_source.`source`
+    event_type is event_name
+    order_value is ecommerce.purchase_revenue
+    order_id is ecommerce.transaction_id
+    channel is platform
+
+    mobile_brand_name is device.mobile_brand_name
+    mobile_model_name is device.mobile_model_name
+    mobile_marketing_name is device.mobile_marketing_name
+    mobile_os_hardware_model is device.mobile_os_hardware_model
+    operating_system is device.operating_system
+    operating_system_version is device.operating_system_version
+    vendor_id is device.vendor_id
+    advertising_id is device.advertising_id
+    language is device.language
+    is_limited_ad_tracking is device.is_limited_ad_tracking
+    time_zone_offset_seconds is device.time_zone_offset_seconds
+
+    device_category is device.category
+    device_type is pick 'desktop' when device.category = 'desktop'
+              pick 'tablet-web' when device.category = 'tablet' and app_info.id = null
+              pick 'mobile-web' when device_category = 'mobile' and app_info.id = null 
+              pick 'tablet-app' when device_category = 'tablet' and app_info.id != null
+              pick 'mobile-app' when device_category = 'mobile' and app_info.id != null
+              else 'undefined'
+
+    device_os is device.operating_system
+    device_language is device.language
+    hostname is ''
+    browser is ''
+    continent is geo.continent
+    country is geo.country
+    region is geo.region
+    city is geo.city
+
+  measure:
+    session_id is max(event_params.value.int_value) { where: event_params.key = 'ga_session_id'}
+    session_number is max(event_params.value.int_value) { where: event_params.key = 'ga_session_number'}
+    referrer_host is max(event_params.value.string_value) { where: event_params.key = 'page_referrer'}
+    page_path is max(event_params.value.string_value) { where: event_params.key = 'page_location'}
+    page_title is max(event_params.value.string_value) { where: event_params.key = 'page_title' and event_name = 'page_view'}
+}
+
+source: events is events_base -> {
+  group_by:
+    event_ts
+    event_id
+    user_pseudo_id
+    user_id 
+    utm_channel 
+    utm_medium 
+    utm_source 
+    event_type 
+    order_value 
+    order_id 
+    channel 
+    device_category 
+    operating_system
+    language 
+    hostname 
+    browser 
+    continent 
+    country 
+    region 
+    city 
+  aggregate:
+    session_id
+    session_number
+    referrer_host
+    page_path
+    page_title
+} extend {}
+
+source: id_stitching is events -> {
+  group_by:
+    user_pseudo_id
+  aggregate:
+    first_seen_at is min(event_ts)
+    last_seen_at is max(event_ts)
+  nest: user_ids is {
+    group_by: user_id
+    aggregate: last_seen is max(event_ts)
+    order_by: last_seen desc
+    limit: 1
+  }
+} -> {
+  project:
+    user_pseudo_id
+    user_id is user_ids.user_id
+    first_seen_at
+    last_seen_at
+} extend {
+  accept: 
+    user_pseudo_id
+    user_id
+    first_seen_at
+    last_seen_at
+}
+
+// Getting "session_end_ts" uses partition-by in SQL
+// Kind of painful in Malloy
+
+source: user_sessions is events_base -> {
+  group_by:
+    user_pseudo_id
+
+  nest: fields is {
+    group_by:
+      session_start_ts is event_ts
+      user_pseudo_id
+      user_id 
+      utm_campaign is utm_channel 
+      utm_medium 
+      utm_source 
+      event_type 
+      order_value 
+      order_id 
+      channel 
+      device_category 
+      operating_system
+      language 
+      hostname 
+      browser 
+      continent 
+      country 
+      region 
+      city 
+
+    aggregate:
+      session_id
+      session_number
+      referrer_host
+      page_path
+      page_title
+
+    order_by: session_start_ts
+    calculate:
+      session_end_ts is lead(session_start_ts, 1)
+  }
+} -> {
+  project:
+      user_pseudo_id
+      fields.session_start_ts
+      fields.session_end_ts
+      fields.user_id 
+      fields.utm_campaign
+      fields.utm_medium 
+      fields.utm_source 
+      fields.event_type 
+      fields.order_value 
+      fields.order_id 
+      fields.channel 
+      fields.device_category 
+      fields.operating_system
+      fields.language 
+      fields.hostname 
+      fields.browser 
+      fields.continent 
+      fields.country 
+      fields.region
+      fields.city
+      fields.session_id
+      fields.session_number
+      fields.referrer_host
+      fields.page_path
+      fields.page_title
+} extend {}
+
+
+source: user_stitched_events is events extend {
+  join_one: id_stitching on user_pseudo_id = id_stitching.user_pseudo_id
+
+  dimension: blended_user_id is coalesce(id_stitching.user_id, user_pseudo_id)
+}
+
+source: user_stitched_sessions is user_sessions extend {
+  join_one: id_stitching on user_pseudo_id = id_stitching.user_pseudo_id
+
+  dimension: blended_user_id is coalesce(id_stitching.user_id, user_pseudo_id)
+}
+
+source: user_first_events is user_stitched_events -> {
+  group_by: blended_user_id
+  nest: first_reg is {
+    group_by: event_ts, event_id
+    where: event_type = 'first_visit'
+    order_by: event_ts asc
+    limit: 1
+  }
+  nest: first_purchase is {
+    group_by: event_ts, event_id
+    where: event_type = 'purchase'
+    order_by: event_ts asc
+    limit: 1
+  }
+} -> {
+  project: 
+    blended_user_id
+    first_registration_event_id is first_reg.event_id
+    first_order_event_id is first_purchase.event_id
+} 
+extend {
+  primary_key: blended_user_id
+}
+
+source: events_filtered is user_stitched_events extend {
+  join_one: user_first_events on blended_user_id = user_first_events.blended_user_id
+  dimension:
+    is_first_order is event_type = 'purchase' and event_id = user_first_events.first_order_event_id
+    is_repeat_order is event_type = 'purchase' and event_id != user_first_events.first_order_event_id
+    is_first_registration_event is event_type = 'first_visit' and event_id = user_first_events.first_registration_event_id
+  where:
+    event_type = 'purchase'
+    or (event_type = 'first_visit' and event_id = user_first_events.first_registration_event_id)
+}
+
+source: converting_events is events_filtered -> {
+  project:
+    blended_user_id
+    session_id
+    event_type
+    order_id
+    order_value
+    event_id
+    first_order_revenue is pick order_value when is_first_order else 0
+    repeat_order_revenue is pick order_value when is_repeat_order else 0
+    count_conversions is pick 1 when event_type = 'purchase' else 0
+    count_first_order_conversions is pick 1 when is_first_order else 0
+    count_repeat_order_conversions is pick 1 when is_repeat_order else 0
+    count_order_conversions is pick 1 when event_type = 'purchase' else 0
+    count_registration_conversions is pick 1 when is_first_registration_event else 0
+    converted_ts is event_ts
+} extend {}
+
+source: converting_sessions_deduped is converting_events -> {
+  group_by: session_id
+  aggregate:
+    blended_user_id is max(blended_user_id)
+    first_order_revenue is sum(first_order_revenue)
+    repeat_order_revenue is sum(repeat_order_revenue)
+    count_first_order_conversions is sum(count_first_order_conversions)
+    count_repeat_order_conversions is sum(count_repeat_order_conversions)
+    count_order_conversions is sum(count_order_conversions)
+    count_registration_conversions is sum(count_registration_conversions)
+    count_conversions is sum(count_registration_conversions) + sum(count_first_order_conversions) + sum(count_repeat_order_conversions)
+    converted_ts is max(converted_ts)
+    min_converted_ts is min(converted_ts)
+} extend {}
+
+source: converted_sessions_with_leadup is user_stitched_sessions -> {
+  extend: {
+    join_one: c is converting_sessions_deduped on session_id = c.session_id
+  }
+
+  group_by:
+    blended_user_id
+    session_id
+    session_start_ts
+    session_end_ts
+    c.converted_ts
+    c.min_converted_ts
+
+    conversion_session is (pick true when c.count_conversions > 0 else false) ?? false
+    conversion_event is (pick 1 when c.count_conversions > 0 else 0) ?? 0
+    order_conversion_event is (pick 1 when c.count_order_conversions > 0 else 0) ?? 0
+    registration_conversion_event is (pick 1 when c.count_registration_conversions > 0 else 0) ?? 0
+    first_order_conversion_event is (pick 1 when c.count_first_order_conversions > 0 else 0) ?? 0
+    repeat_order_conversion_event is (pick 1 when c.count_repeat_order_conversions > 0 else 0) ?? 0
+
+    utm_source
+    utm_content is null::string
+    utm_medium
+    utm_campaign
+    referrer_host
+    channel
+    is_non_direct_channel is pick false when (lower(utm_source) ? '(direct)' | '(data deleted)' | '<other>') else true
+    is_paid_channel is pick true when lower(utm_medium) ~ '%paid%' else false
+    c.first_order_revenue
+    c.repeat_order_revenue
+    city
+    continent
+    country
+    region
+
+  aggregate:
+    count_conversions is c.count_conversions.sum() ?? 0
+    count_order_conversions is c.count_order_conversions.sum() ?? 0
+    count_first_order_conversions is c.count_first_order_conversions.sum() ?? 0
+    count_repeat_order_conversions is c.count_repeat_order_conversions.sum() ?? 0
+    count_registration_conversions is c.count_registration_conversions.sum() ?? 0
+
+} extend {}
+
+source: touchpoint_and_converting_sessions_labeled is converted_sessions_with_leadup -> {
+  group_by: blended_user_id
+
+  nest: fields is {
+    project: *
+  }
+
+  nest: partitioned is {
+    group_by:
+      blended_user_id
+      converted_ts
+      session_start_ts
+
+    order_by: session_start_ts
+
+    calculate:
+      conversion_cycle_conversion_ts is first_value(converted_ts)
+      session_seq is row_number()
+  }
+} -> {
+  project:
+    fields.*
+    partitioned.conversion_cycle_conversion_ts
+    partitioned.session_seq
+
+  where:
+    partitioned.conversion_cycle_conversion_ts > partitioned.session_start_ts
+
+} extend {}
