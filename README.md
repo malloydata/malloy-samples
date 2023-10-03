@@ -9,7 +9,7 @@ If you are reading this on Github, you can run these examples directly from your
 * Install the Malloy Extension
 
 ## Getting Started
-  * [Hello World Example](names/README.md) - A very simple example with a single table shows how to query data in Malloy
+  * [Hello World Example](names/names1.malloynb) - A very simple example with a single table shows how to query data in Malloy
 
 ## Data Analysis Patterns
   * [Comparing Timeframes](patterns/yoy.malloynb) - There are several different ways of doing timeframe comparisons.  
