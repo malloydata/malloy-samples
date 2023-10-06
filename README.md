@@ -23,7 +23,8 @@ If you are reading this on Github, you can run these examples directly from your
   * [Moving Average](patterns/moving_avg.malloynb) - Moving averages can give a better idea of trends.
   * [Data from JSON API](patterns/apijson.malloynb) - We can use a JSON API endpoint as a data source. 
   * [Sessionize/Map Reduce](patterns/sessionize.malloynb) - A common data pattern is to read events and combine them into session.
-  * [Dimensional Indexes](patterns/dim_index.malloynb) - Malloy can find the most common values in your dataset. 
+  * [Dimensional Indexes](patterns/dim_index.malloynb) - Malloy can find the most common values in your dataset.
+  * [Arrays - Unnesting Data](patterns/unnest_data.malloynb) - Some functions return arrays.  How to work with them in Malloy. 
 
 ## Examples
 
