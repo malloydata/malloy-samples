@@ -1,0 +1,29 @@
+>>>markdown
+# Arrays - Unnesting Data
+Malloy can naturally read array data when it is in a source.  Currently there is no mechanism to join an array in the Malloy language so we can drop into to SQL to do this.
+
+In the source below we add a column that is based on the `SPLIT` function that returns an array.  When Malloy looks at the SQL for this query, it sees an array and adds as a nested join.  In this case we are looking at the words that appear in the 'CITY' column.  
+
+SQL is optimized so if this column isn't used in a subsequent query, it is not computed.
+>>>malloy
+source: airports is duckdb.sql("""
+  SELECT 
+    *,
+    SPLIT(city,' ') as city_words
+  FROM '../data/airports.parquet' 
+""") extend {
+  measure:
+    airport_count is count()
+}
+>>>markdown
+We can now 'city_words', the words that appear in the city column
+>>>malloy
+run: airports -> {
+  group_by: city_word is city_words.value
+  aggregate: airport_count
+  # list 
+  nest: by_city is {
+    group_by: city
+    aggregate: airport_count
+  }
+}
