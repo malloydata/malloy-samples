@@ -21,9 +21,32 @@ We can now 'city_words', the words that appear in the city column
 run: airports -> {
   group_by: city_word is city_words.value
   aggregate: airport_count
-  # list 
+  # list_detail 
   nest: by_city is {
     group_by: city
     aggregate: airport_count
   }
+}
+>>>markdown
+## Cross Joining an array
+Sometimes it is useful to join in an array of numbers.  Example below joins in some number
+>>>malloy
+source: flights is duckdb.table('../data/flights.parquet') {
+  measure: flight_count is count()
+}
+
+run: flights -> {
+  extend: {
+    join_cross: threshold is duckdb.sql(""" SELECT UNNEST([5, 10, 11, 12, 13, 15, 20]) as num""" )
+  }
+  group_by: threshold.num
+  aggregate:
+    true_pos is flight_count {where: dep_delay < threshold.num and arr_delay > 15 }
+    false_pos is flight_count {where: dep_delay < threshold.num and arr_delay >= 15}
+    false_neg is flight_count {where: dep_delay >= threshold.num and arr_delay < 15}
+    true_neg is flight_count {where: dep_delay >= threshold.num and arr_delay >= 15}
+    total is flight_count
+  order_by: num
+  where:
+    arr_delay != null and dep_delay != null
 }
