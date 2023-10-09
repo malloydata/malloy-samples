@@ -1,19 +1,21 @@
 >>>markdown
 # Name Analysis
-This is USA name data from the Social Security administration.  We have a table with 5 columns.  This data makes an excellent dataset to work with.
+This is a dataset of USA baby name popularity over time from the Social Security Administration. It's a simple dataset, but there are lots of interesting insights we can pull from it using Malloy.
+
+The dataset is a single table with 5 columns:
 
 * name - the name of the child
 * gender - 'M' or 'F'
 * year - the birth year of the child
-* state - the USA state that the child was born in
+* state - the state that the child was born in
 * number - the number of children born with that name/gender/year/state
 >>>markdown
 ## The semantic data model
-In order to analyse this data we're goint to rename a couple of columns and build some reusable calculations.  `total_population` is a measure and can be used in an `aggregate:` calculation.  Decade is computed from year and can be used in a `group_by:` or `select:`.  Click on 'Schema' to see the data that is provided.
+In order to analyze this data, we're going to rename a couple of columns and build some reusable calculations.  `total_population` is a measure and can be used in an `aggregate:` calculation.  Decade is computed from year, and can be used in a `group_by:` or `select:`.  Click on 'Schema' to see the data that is provided.
 >>>malloy
 source: names is duckdb.table('usa_names.parquet') extend {
-  rename: year_born is `year`   // 'year' is a malloy reserved word
-  rename: population is `number`  // 'number' is a malloy reserve word.
+  rename: year_born is `year`   // 'year' is a reserved keyword in Malloy
+  rename: population is `number`  // 'number' is a reserved keyword in Malloy
 
   measure:
     total_population is population.sum()
@@ -30,7 +32,7 @@ run: names-> {
 }
 >>>markdown
 ## What are the most common names and gender in this dataset?
-A way to answer this question is to produce a table sorted by total_population.  Malloy has sorts by default on the first aggregate calculation descending.
+To answer this question, the query below produces a table sorted by `total_population`. By default, Malloy sorts results in descending order by the first aggregate calculation.
 >>>malloy
 run: names-> {
   group_by: 
