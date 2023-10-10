@@ -3,6 +3,9 @@ source: airports is duckdb.table('../data/airports.parquet') extend {
 
   measure: airport_count is count()
 
+  dimension: concat_with_spaces is concat(facility_type, '  ')
+  dimension: concat_with_tab is concat(facility_type, '	')
+
   view: by_state is {
     where: state != null
     group_by: state
