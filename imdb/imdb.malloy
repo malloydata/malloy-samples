@@ -87,7 +87,7 @@ source: movies is duckdb.table('data/titles.parquet') extend {
       movie_url 
     nest:
       genre_list is by_genre
-      by_cast is by_job_category {
+      by_cast is by_job_category + {
         # list
         nest: names is by_name + {limit: 200}
       }
