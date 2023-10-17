@@ -24,10 +24,10 @@ source: names is duckdb.table('usa_names.parquet') extend {
 }
 
 // how big are the populations...
-source: cohort is from(names->{
+source: cohort is names->{
   group_by: gender, state, year_born
   aggregate: cohort_size is population 
-}) + {
+} extend {
   measure: population is cohort_size.sum()
 }
 
@@ -82,7 +82,7 @@ source: names2 is names extend {
 
    view: gender_by_state_shape_map is {
       group_by: state
-      aggregate: percent_female is population{? gender='M'}/population
+      aggregate: percent_female is population{where: gender='M'}/population
     }
 
   view: gender_neutral_names is {
@@ -90,7 +90,7 @@ source: names2 is names extend {
     aggregate: population
     nest: gender_year_line_chart 
     nest: gender_by_state_shape_map
-    having: population{? gender='F'}/population ? > .10 & < .9
+    having: population{where: gender='F'}/population ? > .10 & < .9
     limit: 10
   }
 
@@ -136,7 +136,7 @@ source: names2 is names extend {
       total_percentage is by_decade.percent_in_decade.sum()
       max_percentage is max(by_decade.percent_in_decade)
     nest: by_decade is {
-      project: by_decade.decade, by_decade.percent_in_decade
+      select: by_decade.decade, by_decade.percent_in_decade
     }
     limit: 10
   }

@@ -18,7 +18,7 @@ run: movies->  by_name + {
 ## Comedy movie stars titles time and jobs
 Filter the data to only look in the genre 'comedy' and examine the top folks.
 >>>malloy
-query: movies-> {
+run: movies-> {
   where: genres.value = 'Comedy'
   nest: star_dashboard is by_name + { 
     nest: 

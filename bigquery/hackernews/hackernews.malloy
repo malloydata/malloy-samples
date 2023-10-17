@@ -133,7 +133,7 @@ source: stories is bigquery.table('bigquery-public-data.hacker_news.full') exten
 query: data_stories is stories -> term_dashboard + {where: title ~ '%Data%' | '% data%'}
 
 
-query: stories -> posts_over_time + { 
+run: stories -> posts_over_time + { 
   where: is_interesting and faang != 'OTHER'
   group_by: faang
   limit: 100000 
