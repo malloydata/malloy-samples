@@ -4,7 +4,7 @@ source: events is duckdb.sql("""
     *,
     (event_timestamp / 1000)::bigint as event_timestamp_ms
   FROM 'ga4_events_sampled.snappy.parquet'
-  """) {
+  """) extend {
   rename:
     event_timestamp_raw is event_timestamp
 
@@ -15,10 +15,10 @@ source: events is duckdb.sql("""
 
   measure:
     is_new_user is max(new_user)
-    user_count is count(distinct user_pseudo_id)
-    session_count is count(distinct event_params.value.int_value) { where: event_params.key = 'ga_session_id' }
+    user_count is count(user_pseudo_id)
+    session_count is count(event_params.value.int_value) { where: event_params.key = 'ga_session_id' }
 
-  query: nested_index is {
+  view: nested_index is {
     index: event_params.*, user_properties.*, items.*
   }
 }
@@ -125,7 +125,7 @@ run: events -> {
 //   AND _TABLE_SUFFIX BETWEEN '20201201' AND '20201202';
 
 run: events -> {
-  project:
+  select:
     event_timestamp
     event_value
 
@@ -289,7 +289,7 @@ run: events -> {
     event_timestamp
 
   nest: ga_session is {
-    project: ga_session_id is event_params.value.int_value
+    select: ga_session_id is event_params.value.int_value
     where: event_params.key = 'ga_session_id'
   }
 
@@ -381,14 +381,14 @@ source: purchase_events is events extend {
   dimension:
     item_of_interest is 'Google Navy Speckled Tee'
 
-  query: by_country is {
+  view: by_country is {
     group_by: geo.country
     aggregate:
       total_spend
       purchase_count
   }
 
-  query: by_year is {
+  view: by_year is {
     group_by: the_year is event_timestamp.year
     aggregate:
       total_spend
@@ -465,12 +465,12 @@ run: purchase_events -> {
 }
 
 run: purchase_events -> nested_index -> {
-  project: *
+  select: *
   order_by: weight desc
 }
 
 run: purchase_events -> nested_index -> {
-  project: *
+  select: *
   where: fieldName ~ '%key'
   order_by: weight desc
 }
