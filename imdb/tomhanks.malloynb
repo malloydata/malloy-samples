@@ -10,9 +10,9 @@ query: tom_hanks_movies is movies->{
 # dashboard
 run: movies -> {
   extend: {
-    join_one: x is tom_hanks_movies with tconst
+    join_one: tom_hanks_movies with tconst
   }
-  where: x.tconst != null and startYear < 2010
+  where: tom_hanks_movies.tconst != null and startYear < 2010
   nest: works_with is by_name + {
     nest: by_role_list is by_job_category
     limit: 10

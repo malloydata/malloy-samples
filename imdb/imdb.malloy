@@ -29,15 +29,29 @@ source: movies is duckdb.table('data/titles.parquet') extend {
     percent_of_titles is title_count/all(title_count)
 
   dimension:
-    # image
+    # image {width="150px"}
     movie_image is concat('https://artifacts.flyxit.com/flyx-artifacts/',tconst,'.jpg')
     # link
     movie_url is concat('https://www.imdb.com/title/',tconst)
 
 
   view: by_title is {
-    group_by: primaryTitle, startYear, numVotes
-    order_by: 3 desc
+    group_by: 
+      # image {width="30px" }
+      movie_image
+      primaryTitle, startYear, numVotes
+    order_by: 4 desc
+  }
+
+  # list
+  view: movie_grid is {
+    # image{ width="30px"}
+    # href=movie_url
+    group_by: 
+      movie_image
+      # hidden 
+      movie_url
+    aggregate: total_ratings
   }
 
   view: by_year is {
