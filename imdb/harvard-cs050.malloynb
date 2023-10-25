@@ -4,11 +4,11 @@ Harvard's beginnning computer science class teaches a section on SQL.  The class
 
 Below is the semantic data model used to answer all the questions
 >>>malloy
-source: people is table('duckdb:data/names.parquet')
-source: principals is table('duckdb:data/principals.parquet') {
+source: people is duckdb.table('data/names.parquet')
+source: principals is duckdb.table('data/principals.parquet') extend {
   join_one: people is people on nconst = people.nconst
 }
-source: movies is table('duckdb:data/titles.parquet') + {
+source: movies is duckdb.table('data/titles.parquet') extend {
   join_many: principals on tconst = principals.tconst
   measure:
     title_count is count() 
@@ -24,7 +24,6 @@ run: movies -> {
 >>>markdown
 ## Question 2: When was Emma Stone Born?
 Write a query to determine the birth year of Emma Stone. Your query should output a table with a single column and a single row (not including the header) containing Emma Stone’s birth year.
-
 >>>malloy
 run: people -> {
   where: primaryName = 'Emma Stone'
@@ -51,7 +50,6 @@ query: movies -> {
     group_by: primaryTitle
   }
 }
-
 >>>markdown
 ## Question 5: Harry Potter Movies
  Write a Query to list the titles and release years of 
@@ -63,7 +61,6 @@ query: movies -> {
   movies will begin with the words “Harry Potter”, 
   and that if a movie title begins with the words 
   “Harry Potter”, it is a Harry Potter movie.
-
 >>>malloy
 query: movies -> {
   where: primaryTitle ~ 'Harry Potter%'
@@ -77,7 +74,6 @@ Question 6: Average Rating in 2012
  Your query should output a table with a single column and 
   a single row (not including the header) containing the
    average rating.
-
 >>>malloy
 query: movies -> {
   where: startYear = 2012
@@ -90,7 +86,6 @@ query: movies -> {
  Your query should output a table with a single column for 
   the name of each person. You may assume that there is only 
   one movie in the database  with the title Toy Story.
-
 >>>malloy
 query: movies -> {
   where: primaryTitle = 'Toy Story'
@@ -108,7 +103,6 @@ query: movies -> {
   so long as those who do have a birth year are listed 
   in order. If a person appeared in more than one movie in 2004, 
   they should only appear in your results once.
-
 >>>malloy
 query: movies -> {
   where: startYear = 2004
@@ -125,7 +119,6 @@ query: movies -> {
    the name of each person. If a person directed more than 
   one movie that received a rating of at least 9.0, they 
   should only appear in your results once.
-
 >>>malloy
 query: movies -> {
   where: averageRating >= 9
@@ -162,7 +155,6 @@ query: movies -> {
   database with the name Johnny Depp.
  You may assume that there is only one person in 
   the database with the name Helena Bonham Carter.
-
 >>>malloy
 query: johnnys_movies is movies ->{
   where: principals.people.primaryName = 'Johnny Depp'
@@ -175,7 +167,6 @@ query: movies -> {
     and  principals.people.primaryName = 'Helena Bonham Carter'
   group_by: primaryTitle
 }
-
 >>>markdown
 ## Question 12: One Degree of Kevin Bacon
  Write a SQL query to list the names of all people who 

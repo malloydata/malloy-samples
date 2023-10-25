@@ -19,6 +19,8 @@ run: movies-> by_title + {
 >>>malloy
 run: movies->by_name + { 
   limit: 20 
+  # list
+  nest: movie_grid
 } 
 >>>markdown
 ## Top Comedy Stars
@@ -26,4 +28,5 @@ run: movies->by_name + {
 run: movies->by_name + { 
   where: genres.value = 'Comedy'
   limit: 20 
+  nest: movie_grid
 } 

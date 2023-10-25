@@ -7,25 +7,25 @@ import {movies} from "imdb.malloy"
 ## Map of Steven Spielberg and the people that worked on them
 Build a list of title/people ids of all the people that work on movies that spielberge worked on.
 >>>malloy
-query: spielberg_people is movies->{
+query: spielberg_movies is movies->{
   where: principals.people.primaryName ~ r'Steven Spielberg'
-  group_by: tconst, principals.people.nconst
+  group_by: tconst // , principals.people.nconst
 }
 
-run: spielberg_people
+run: spielberg_movies + {limit: 5}
 >>>markdown
 ## People that work with Steven Spielberg 
 >>>malloy
 run: movies -> {
   // join in the query above.
   extend: {
-    join_many: spielberg_people on spielberg_people.tconst=tconst
+    join_one: spielberg_movies with tconst
   }
   // filter the list to speilberg movies
   //  and remove spielberg from the list
   where: 
-    spielberg_people.tconst != null  
-    and principals.people.nconst != spielberg_people.nconst
+    spielberg_movies.tconst != null
+    // and principals.people.nconst != spielberg_movies.nconst
 
   group_by: principals.people.primaryName
   aggregate: title_count
@@ -43,7 +43,7 @@ run: movies -> {
 # dashboard
 run: movies -> titles_dashboard + { 
   extend: {
-    join_many: spielberg_people on spielberg_people.tconst=tconst
+    join_one: spielberg_movies with tconst
   }
-  where: spielberg_people.tconst != null
+  where: spielberg_movies.tconst != null
 }
