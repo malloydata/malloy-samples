@@ -14,7 +14,6 @@ run: movies -> {
     group_by: 
       genre
       genre2 
-
     nest: title_list + {limit: 7}
     nest: top_directors
     nest: top_actors
