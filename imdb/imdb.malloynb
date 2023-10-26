@@ -8,40 +8,23 @@ Uncomment the clauses below to see different kinds of analysis that can be appli
 >>>malloy
 run: movies->by_title + { 
   limit: 20 
-
-  -- Filter the results to movies that have horror as one of their genres.
-  where: genre = 'Horror'
-
-  -- Show who worked on this movie
-  # list
-  nest: by_name
-
-  -- Show the genres of this movie
-  # list
-  nest: by_genre
+  -- where: genre2 = 'Horror'
+  -- # list
+  -- nest: by_name
+  -- # list
+  -- nest: by_genre
 } 
 >>>markdown
 ## Analyze People
 Uncomment any of the clauses below to see different ways of analysing people in the movie industry.
 >>>malloy
-# dashboard
+-- # dashboard
 run: movies->by_name + { 
-  limit: 20 
-
-  -- filter to directors
-  where: job = 'director'
-
-  nest: title_list
-
-  nest: job_list
-
-  -- show a grid of movies
-  nest: movie_grid
-
-  -- show the genre distribution over time
-  nest: genre_and_time
-
-  -- show who this person works with
-  nest: works_with
-
+  -- limit: 20 
+  -- where: job = 'director'
+  -- nest: title_list
+  -- nest: job_list
+  -- nest: movie_grid
+  -- nest: genre_and_time
+  -- nest: works_with
 } 

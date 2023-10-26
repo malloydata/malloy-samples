@@ -6,7 +6,6 @@ import {movies} from "imdb.malloy"
 
 # dashboard
 run: movies -> {
-
   where: name2 = 'Tom Hanks' and startYear < 2010
   nest: works_with is by_name + {nest: job_list limit: 10 }
   nest: title_list

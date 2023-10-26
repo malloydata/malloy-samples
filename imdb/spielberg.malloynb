@@ -10,12 +10,11 @@ run: movies -> {
   limit: 20
   where: name2 = 'Steven Spielberg'
     and name != name2
-
   group_by: name
   aggregate: title_count
   aggregate: `years` is concat(min(startYear)::string, '-', max(startYear)::string)
   order_by: title_count desc
-
+  
   nest: job_list
   nest: title_list 
 }
