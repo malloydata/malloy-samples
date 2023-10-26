@@ -15,14 +15,23 @@ source: principals is duckdb.table('data/principals.parquet') extend {
   join_one: people is people on nconst = people.nconst
 }
 
+query: genre_movie_map is duckdb.table('data/titles.parquet') -> {
+  group_by:
+    tconst
+    genre is genres.value
+}
+
 source: movies is duckdb.table('data/titles.parquet') extend {
 // all the movies
   join_many: principals on tconst = principals.tconst
+  join_many: principals2 is principals on tconst = principals2.tconst
+  join_many: genre_movie_map on tconst = genre_movie_map.tconst
   primary_key: tconst
 
   measure:
     title_count is count(tconst)
     row_count is count()
+    # format="#,###""
     total_ratings is sum(numVotes/1000.0)
     average_rating is averageRating.avg()
     # percent
@@ -33,7 +42,12 @@ source: movies is duckdb.table('data/titles.parquet') extend {
     movie_image is concat('https://artifacts.flyxit.com/flyx-artifacts/',tconst,'.jpg')
     # link
     movie_url is concat('https://www.imdb.com/title/',tconst)
-
+    genre is genres.value
+    genre2 is genre_movie_map.genre
+    job is principals.category
+    job2 is principals2.category
+    name is principals.people.primaryName
+    name2 is principals2.people.primaryName
 
   view: by_title is {
     group_by: 
@@ -54,6 +68,14 @@ source: movies is duckdb.table('data/titles.parquet') extend {
     aggregate: total_ratings
   }
 
+  # bar_chart
+  view: genre_and_time is {
+    group_by: genre is genre2
+    aggregate: title_count
+    aggregate: avg_year is startYear.avg()
+  }
+
+  # line_chart
   view: by_year is {
     group_by: startYear
     aggregate: title_count
@@ -69,9 +91,32 @@ source: movies is duckdb.table('data/titles.parquet') extend {
   }
 
   view: by_job_category is {
-    group_by: job_category is principals.category
+    group_by: job
     aggregate: title_count
   }
+
+  # list
+  view: job_list is by_job_category
+
+  # list
+  view: title_list is {
+    group_by: primaryTitle
+    aggregate: total_ratings
+  }
+
+  view: works_with is {
+    group_by: principals2.people.primaryName
+    aggregate:
+      title_count
+      percent_of_titles
+    # list
+    nest: by_job is {
+      group_by: job is principals2.category
+      aggregate: title_count
+    }
+    limit: 10
+  }
+
 
   view: by_genre is {
     group_by: genre is genres.value
@@ -82,13 +127,20 @@ source: movies is duckdb.table('data/titles.parquet') extend {
 
   }
 
-  view: by_character is {
-    group_by: principals.characters.value
-    aggregate: title_count
+  # list_detail
+  view: top_directors is  {
+    limit: 5
+    where: job = 'director'
+    group_by: name
+    aggregate: total_ratings
   }
 
-  view: by_year_and_genre is by_year + {
-    nest: by_genre
+    # list_detail
+  view: top_actors is  {
+    limit: 5
+    where: job = 'actor'
+    group_by: name
+    aggregate: total_ratings
   }
 
   # dashboard
@@ -109,7 +161,6 @@ source: movies is duckdb.table('data/titles.parquet') extend {
     order_by: 2 desc
   }
 }
-
 
 // example query
 run: movies -> by_name
