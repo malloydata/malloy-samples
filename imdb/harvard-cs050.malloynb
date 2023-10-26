@@ -10,6 +10,7 @@ source: principals is duckdb.table('data/principals.parquet') extend {
 }
 source: movies is duckdb.table('data/titles.parquet') extend {
   join_many: principals on tconst = principals.tconst
+  join_many: principals2 is principals on tconst = principals2.tconst
   measure:
     title_count is count() 
 }
@@ -19,7 +20,7 @@ List the titles of all movies released in 2008. Your query should output a table
 >>>malloy
 run: movies -> {
   where: startYear = 2008
-  project: primaryTitle
+  select: primaryTitle
 }
 >>>markdown
 ## Question 2: When was Emma Stone Born?
@@ -27,7 +28,7 @@ Write a query to determine the birth year of Emma Stone. Your query should outpu
 >>>malloy
 run: people -> {
   where: primaryName = 'Emma Stone'
-  project: birthYear
+  select: birthYear
 }
 >>>markdown
 ## Question 3: Emma Stone Titles
@@ -43,7 +44,7 @@ run: movies -> {
 ## Question 4: Movies with 10 rating
 Movies released in 2018 should be included, as should movies with release dates in the future. Write a query to determine the number of movies with an IMDb rating of 10.0. Your query should output a table with a single column and a single row (not including the header) containing the number of movies with a 10.0 rating.
 >>>malloy
-query: movies -> {
+run: movies -> {
   where: averageRating = 10
   aggregate: title_count
   nest: by_title is {
@@ -62,9 +63,9 @@ query: movies -> {
   and that if a movie title begins with the words 
   “Harry Potter”, it is a Harry Potter movie.
 >>>malloy
-query: movies -> {
+run: movies -> {
   where: primaryTitle ~ 'Harry Potter%'
-  project: primaryTitle, startYear
+  select: primaryTitle, startYear
   order_by: 2
 }
 >>>markdown
@@ -75,7 +76,7 @@ Question 6: Average Rating in 2012
   a single row (not including the header) containing the
    average rating.
 >>>malloy
-query: movies -> {
+run: movies -> {
   where: startYear = 2012
   aggregate: average_rating is averageRating.avg()
 }
@@ -87,7 +88,7 @@ query: movies -> {
   the name of each person. You may assume that there is only 
   one movie in the database  with the title Toy Story.
 >>>malloy
-query: movies -> {
+run: movies -> {
   where: primaryTitle = 'Toy Story'
   group_by: principals.people.primaryName
   order_by: 1
@@ -104,7 +105,7 @@ query: movies -> {
   in order. If a person appeared in more than one movie in 2004, 
   they should only appear in your results once.
 >>>malloy
-query: movies -> {
+run: movies -> {
   where: startYear = 2004
   group_by: 
     principals.people.primaryName 
@@ -120,7 +121,7 @@ query: movies -> {
   one movie that received a rating of at least 9.0, they 
   should only appear in your results once.
 >>>malloy
-query: movies -> {
+run: movies -> {
   where: averageRating >= 9
     and principals.category = 'director'
   group_by: 
@@ -136,7 +137,7 @@ query: movies -> {
  You may assume that there is only one person in the 
   database with the name Chadwick Boseman.
 >>>malloy
-query: movies -> {
+run: movies -> {
   where: principals.people.primaryName = 'Chadwick Boseman' 
   group_by: 
     primaryTitle
@@ -156,15 +157,10 @@ query: movies -> {
  You may assume that there is only one person in 
   the database with the name Helena Bonham Carter.
 >>>malloy
-query: johnnys_movies is movies ->{
-  where: principals.people.primaryName = 'Johnny Depp'
-  project: tconst
-}
-
-query: movies -> {
-  join_one: x is from(->johnnys_movies) with tconst
-  where: x.tconst != null
-    and  principals.people.primaryName = 'Helena Bonham Carter'
+run: movies -> {
+  where: 
+    principals.people.primaryName = 'Helena Bonham Carter'
+    and principals2.people.primaryName = 'Johnny Depp'
   group_by: primaryTitle
 }
 >>>markdown
@@ -179,15 +175,10 @@ query: movies -> {
  Kevin Bacon himself should not be included in 
   the resulting list.
 >>>malloy
-query: kevins_movies is movies ->{
-  where: principals.people.primaryName = 'Kevin Bacon'
-    and principals.people.birthYear = 1958
-  project: tconst
-}
 
-query: movies -> {
-  join_one: x is from(->kevins_movies) with tconst
-  where: x.tconst != null
+run: movies -> {
+    where: principals2.people.primaryName = 'Kevin Bacon'
+    and principals2.people.birthYear = 1958
     and principals.people.primaryName != 'Kevin Bacon'
   group_by: principals.people.primaryName
   aggregate: title_count

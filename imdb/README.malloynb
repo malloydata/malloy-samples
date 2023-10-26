@@ -7,8 +7,6 @@ To run these examples, press '.' from github.com (which will bring you into VSCo
 
 * [Basic IMDB Queries](imdb.malloynb) - Simple queries against the IMDB data model
 * [Harvard CS O50](harvard-cs050.malloynb) - Harvard beginning CS class has a section on SQL.  Here are the questions and and answers written in Malloy instead of SQL.
-* [Stars and Jobs](stars_and_jobs.malloynb) - Movie people work lots of jobs.  Take a look at the top stars, what they work on, how long they have been working and what they do.
-* [Directors](directors.malloynb) - Who are the top directors?  What did they direct? In each genres?  
 * [Steven Spielberg](spielberg.malloynb) - What did he direct? When? Who does he commonly work with and on what?
 * [Genre Analysis](genre_analysis.malloynb) - Top movies, top people, popularity over time
 * [Genre Matrix](genre_matrix.malloynb) - Genre combinations tell you what to expect in a movie.  What are the top movies in each combination pair?

@@ -3,30 +3,13 @@
 >>>malloy
 import {movies} from "imdb.malloy"
 >>>malloy
-query: tom_hanks_movies is movies->{
-  where: principals.people.primaryName ~ r'Tom Hanks'
-  group_by: tconst
-}
+
 # dashboard
 run: movies -> {
-  extend: {
-    join_one: tom_hanks_movies with tconst
-  }
-  where: tom_hanks_movies.tconst != null and startYear < 2010
-  nest: works_with is by_name + {
-    nest: by_role_list is by_job_category
-    limit: 10
-    order_by: 4 desc
-  }
-  nest: title_list_detail is  {
-    group_by: primaryTitle, startYear
-    order_by: 2 desc
-  }
-  nest: by_genre_bar_chart is {
-    where: startYear != null
-    group_by: genres.value
-    aggregate: title_count
-    aggregate: avg_year is startYear.avg()
-  }
+
+  where: name2 = 'Tom Hanks' and startYear < 2010
+  nest: works_with is by_name + {nest: job_list limit: 10 }
+  nest: title_list
+  nest: genre_and_time
   nest: titles_dashboard
 }

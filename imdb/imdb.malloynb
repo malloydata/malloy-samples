@@ -3,30 +3,45 @@
 >>>malloy
 import {movies} from "imdb.malloy"
 >>>markdown
-## Top titles
+## Analyze Titles
+Uncomment the clauses below to see different kinds of analysis that can be applied to Titles
 >>>malloy
-run: movies->by_title + { limit: 20 } 
->>>markdown
-## Top 20 horror movies
->>>malloy
-run: movies-> by_title + { 
-  where: genres.value = 'Horror'
-  limit: 20
-}
->>>markdown
-
-## Top Stars
->>>malloy
-run: movies->by_name + { 
+run: movies->by_title + { 
   limit: 20 
+
+  -- Filter the results to movies that have horror as one of their genres.
+  where: genre = 'Horror'
+
+  -- Show who worked on this movie
   # list
-  nest: movie_grid
+  nest: by_name
+
+  -- Show the genres of this movie
+  # list
+  nest: by_genre
 } 
 >>>markdown
-## Top Comedy Stars
+## Analyze People
+Uncomment any of the clauses below to see different ways of analysing people in the movie industry.
 >>>malloy
+# dashboard
 run: movies->by_name + { 
-  where: genres.value = 'Comedy'
   limit: 20 
+
+  -- filter to directors
+  where: job = 'director'
+
+  nest: title_list
+
+  nest: job_list
+
+  -- show a grid of movies
   nest: movie_grid
+
+  -- show the genre distribution over time
+  nest: genre_and_time
+
+  -- show who this person works with
+  nest: works_with
+
 } 
