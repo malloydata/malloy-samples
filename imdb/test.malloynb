@@ -1,3 +1,5 @@
+>>>markdown
+# Written as a turducken
 >>>malloy
 source: movies is duckdb.sql("""
       SELECT 
@@ -12,6 +14,29 @@ source: movies is duckdb.sql("""
   measure:
     genre_count is genres.count()
 }
+>>>markdown
+## Written as a Join
+>>>malloy
+source: movies_base is duckdb.table('data/titles.parquet') extend {
+  measure: genre_count is genres.count()
+}
+
+query: genre_facts is movies_base -> {
+  group_by: tconst
+  aggregate: 
+    has_one_genres is genre_count = 1
+    has_three_genres is genre_count = 3
+    is_comedy_or_drama is genre_count {where: genres.value ~ 'Drama' | 'Comedy'} > 0
+}
+
+source: movies2 is movies_base extend {
+  join_one: genre_facts with tconst
+  dimension:
+    has_one_genres is genre_facts.has_one_genres
+    has_three_genres is genre_facts.has_three_genres
+    is_comedy_or_drama is genre_facts.is_comedy_or_drama
+
+}
 >>>malloy
 run: movies -> {
   group_by: tconst, primaryTitle, has_three_genres, has_one_genres
@@ -23,7 +48,7 @@ run: movies -> {
   }
 }
 >>>malloy
-run: movies -> {
+run: movies2 -> {
   aggregate: title_count is count()
   where: is_comedy_or_drama
 }
