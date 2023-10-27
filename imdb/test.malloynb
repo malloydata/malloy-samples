@@ -3,7 +3,9 @@ source: movies is duckdb.sql("""
       SELECT 
         *,
         (SELECT COUNT(*) FROM UNNEST(genres)) =1 as has_one_genres,
-        (SELECT COUNT(*) FROM UNNEST(genres)) =3 as has_three_genres
+        (SELECT COUNT(*) FROM UNNEST(genres)) =3 as has_three_genres,
+        (SELECT COUNT(*) FROM UNNEST(genres) a(a) where a in ('Drama','Comedy')) > 0 
+          as is_comedy_or_drama
       FROM
       'data/titles.parquet'
       """) extend {
@@ -19,4 +21,9 @@ run: movies -> {
   nest: by_genre is {
     group_by: genres.value
   }
+}
+>>>malloy
+run: movies -> {
+  aggregate: title_count is count()
+  where: is_comedy_or_drama
 }
