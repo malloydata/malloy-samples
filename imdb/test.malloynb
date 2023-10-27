@@ -1,0 +1,22 @@
+>>>malloy
+source: movies is duckdb.sql("""
+      SELECT 
+        *,
+        (SELECT COUNT(*) FROM UNNEST(genres)) =1 as has_one_genres,
+        (SELECT COUNT(*) FROM UNNEST(genres)) =3 as has_three_genres
+      FROM
+      'data/titles.parquet'
+      """) extend {
+  measure:
+    genre_count is genres.count()
+}
+>>>malloy
+run: movies -> {
+  group_by: tconst, primaryTitle, has_three_genres, has_one_genres
+  aggregate: genre_count
+  where: has_three_genres
+  # list
+  nest: by_genre is {
+    group_by: genres.value
+  }
+}
