@@ -82,6 +82,10 @@ source: order_items is order_items_table extend {
     total_sales_2022 is total_sales { where: year(created_at) = 2022 }
     total_sales_2021 is total_sales { where: year(created_at) = 2021 }
 
+  view: sale_metrics is {
+    aggregate: total_sales, percent_of_sales, total_gross_margin, order_item_count
+  }
+
   view: top_categories is {
     top: 5
     group_by: inventory_items.product_category
@@ -91,8 +95,9 @@ source: order_items is order_items_table extend {
   view: top_brands is {
     top: 5
     group_by: inventory_items.product_brand
-    aggregate: total_sales, percent_of_sales,total_gross_margin, order_item_count
-  }
+  } + sale_metrics
+
+  view: top_brands2 is top_brands
 
   view: top_products is {
     top: 5
