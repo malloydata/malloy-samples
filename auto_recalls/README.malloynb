@@ -10,7 +10,7 @@ import 'auto_recalls.malloy'
 >>>markdown
 ### Dashboard showing top 3 manufacturers by recall count
 >>>malloy
-run: recalls -> recall_dashboard {limit: 3}
+run: recalls -> recall_dashboard + {limit: 3}
 >>>markdown
 ### Most Recent Recalls
 List of Recent Recalls
@@ -25,6 +25,6 @@ run: recalls -> by_year_manufacturer_line_chart
 >>>markdown
 ### Recalls involving Brakes.
 >>>malloy
-run: recalls -> recall_dashboard {
+run: recalls -> recall_dashboard + {
   where: `Recall Description` ~r'brake'
 }

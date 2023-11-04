@@ -35,8 +35,8 @@ WITH sales_by_department AS (
         b.product_department
         , sum(case when date_trunc('year', a.created_at) = '2021-01-01' then a.sale_price else 0 end) as sales_2021
         , sum(case when date_trunc('year', a.created_at) = '2022-01-01' then a.sale_price else 0 end) as sales_2022
-    FROM read_parquet('order_items.parquet') a
-    LEFT JOIN read_parquet('inventory_items.parquet') b on a.inventory_item_id = b.id
+    FROM read_parquet('../data/order_items.parquet') a
+    LEFT JOIN read_parquet('../data/inventory_items.parquet') b on a.inventory_item_id = b.id
     GROUP BY 1
 )
 SELECT
@@ -60,8 +60,8 @@ WITH sales_by_department_and_category AS (
         , b.product_category
         , sum(case when date_trunc('year', a.created_at) = '2021-01-01' then a.sale_price else 0 end) as sales_2021
         , sum(case when date_trunc('year', a.created_at) = '2022-01-01' then a.sale_price else 0 end) as sales_2022
-    FROM read_parquet('order_items.parquet') a
-    LEFT JOIN read_parquet('inventory_items.parquet') b on a.inventory_item_id = b.id
+    FROM read_parquet('../data/order_items.parquet') a
+    LEFT JOIN read_parquet('../data/inventory_items.parquet') b on a.inventory_item_id = b.id
     group by 1,2
 )
 SELECT
