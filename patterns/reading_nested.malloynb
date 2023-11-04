@@ -19,7 +19,7 @@ Here is a very simple Malloy model describing some interesting calculations on G
 >>>malloy
 source: ga_sessions is duckdb.table('../data/ga_sample.parquet') extend {
   measure:
-    user_count is count(distinct fullVisitorId)
+    user_count is count(fullVisitorId)
     # percent
     percent_of_users is user_count / all(user_count)
     session_count is count()
