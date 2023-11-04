@@ -3,7 +3,6 @@
 
 Flight event data contains _dep_time_, _carrier_, _origin_, _destination_ and _tail_num_  (the plane that made the flight).  The query below takes the flight event data and maps it into sessions of _flight_date_, _carrier_, and _tail_num_.  For each session, a nested list of _flight_legs_ by the aircraft on that day.  The flight legs are numbered.
 
-
 >>>malloy
 #(docs) size=large limit=5000
 run: duckdb.table('../data/flights.parquet') extend {

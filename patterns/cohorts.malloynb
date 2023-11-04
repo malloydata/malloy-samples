@@ -7,7 +7,7 @@ We'll use the following model
 source: order_items is duckdb.table('../data/order_items.parquet') extend {
   join_one: users is duckdb.table('../data/users.parquet') on user_id=users.id
   measure: 
-    user_count is count(distinct user_id)
+    user_count is count(user_id)
     order_count is count()
     total_sales is sale_price.sum()
 }

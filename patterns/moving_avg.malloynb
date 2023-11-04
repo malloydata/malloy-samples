@@ -7,7 +7,7 @@ The queries below use the following model
 >>>malloy
 source: order_items is duckdb.table('../data/order_items.parquet') extend {
   measure: 
-    user_count is count(distinct user_id)
+    user_count is count(user_id)
     order_count is count()
 }
 >>>markdown
