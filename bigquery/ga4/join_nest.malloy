@@ -9,6 +9,7 @@ source: grouping_tbl is analytics -> {
   join_many: analytics on user_session = analytics.`user_session`
 }
 
+-- This query fails:
 run: grouping_tbl -> {
   select: analytics.user_pseudo_id
 }
@@ -25,6 +26,7 @@ source: grouping_tbl2 is analytics -> {
   join_many: analytics2 on user_session = analytics2.user_session
 }
 
+-- This query now succeeds:
 run: grouping_tbl2 -> {
   select: analytics2.user_pseudo_id
 }
