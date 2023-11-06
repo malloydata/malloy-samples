@@ -1,0 +1,30 @@
+source: analytics is bigquery.table('bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*') extend {
+  dimension: user_session is pick concat(`user_pseudo_id`, ' ', `event_params`.`value`.`string_value`) when `event_params`.`key` = 'ga_session_id' else null;
+}
+
+source: grouping_tbl is analytics -> {
+  group_by: user_session
+} extend {
+  primary_key: user_session
+  join_many: analytics on user_session = analytics.`user_session`
+}
+
+run: grouping_tbl -> {
+  select: analytics.user_pseudo_id
+}
+
+-- If I explicitly unnest the user_pseudo_id with a `select` clause, I no longer get the error:
+source: analytics2 is analytics -> {
+  select: user_pseudo_id, user_session
+}
+
+source: grouping_tbl2 is analytics -> {
+  group_by: user_session
+} extend {
+  primary_key: user_session
+  join_many: analytics2 on user_session = analytics2.user_session
+}
+
+run: grouping_tbl2 -> {
+  select: analytics2.user_pseudo_id
+}
