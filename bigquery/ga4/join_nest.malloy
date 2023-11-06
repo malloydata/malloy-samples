@@ -1,4 +1,4 @@
-source: analytics is bigquery.table('bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*') extend {
+source: analytics is bigquery.table('bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_20210131') extend {
   dimension: user_session is pick concat(`user_pseudo_id`, ' ', `event_params`.`value`.`string_value`) when `event_params`.`key` = 'ga_session_id' else null;
 }
 
