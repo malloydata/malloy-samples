@@ -1,0 +1,11 @@
+import 'flights.malloy'
+
+source: airports2 is airports extend {
+  join_many: flights on code = flights.origin
+}
+
+source: airports3 is airports2 extend {
+  dimension:
+    flightscode is flights.origin
+}
+

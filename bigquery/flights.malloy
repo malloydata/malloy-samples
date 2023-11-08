@@ -1,0 +1,21 @@
+
+source: flights is bigquery.table('malloy-data.faa.flights')
+
+
+source: airports is bigquery.table('malloy-data.faa.airports') extend {
+  join_many: flights on code = flights.origin
+
+  dimension:
+    flightscode is flights.origin
+}
+
+
+source: airports_grouped is airports -> {
+  group_by: flightscode
+} extend {
+  join_many: airports on flightscode = airports.flightscode
+}
+
+run: airports_grouped -> {
+  select: airports.flightscode
+}
