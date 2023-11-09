@@ -1,0 +1,10 @@
+source: airports is bigquery.table('malloy-data.faa.airports')
+
+source: flights is bigquery.table('malloy-data.faa.flights') extend {
+    rename: id is origin
+
+    dimension: 
+      id3 is id
+
+    join_one: airports on id3 = airports.code
+}
