@@ -1,0 +1,19 @@
+import 'ga4.malloy'
+
+source: latest is events -> {
+  aggregate: latest_day is max(event_timestamp.day)
+}
+
+source: latest_events is events extend {
+  join_one: latest
+  where: event_timestamp.day = latest.latest_day
+}
+
+source: events_2 is events extend {
+  join_one: latest_events on user_pseudo_id = latest_events.user_pseudo_id and event_timestamp.day = latest_events.event_timestamp.day
+}
+
+run: events_2 -> {
+  group_by: latest_events.platform
+  aggregate: c is count()
+}
