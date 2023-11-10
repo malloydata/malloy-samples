@@ -10,7 +10,7 @@ source: latest_events is events extend {
 }
 
 source: events_2 is events extend {
-  join_one: latest_events on user_pseudo_id = latest_events.user_pseudo_id and event_timestamp.day = latest_events.event_timestamp.day
+  join_one: latest_events on user_pseudo_id = latest_events.user_pseudo_id
 }
 
 run: events_2 -> {
