@@ -1,0 +1,79 @@
+>>>malloy
+##! experimental.scalar_lenses
+source: airports is duckdb.table('../data/airports.parquet') extend {
+  primary_key: code
+  measure: airport_count is count()
+}
+
+source: ca_airports is airports extend {
+  where: state = 'CA'
+}
+
+source: santa_cruz_airports is airports extend {
+  join_one: ca_airports on code = ca_airports.code
+  where: ca_airports.county = 'SANTA CRUZ'
+}
+
+source: foo is airports extend {
+  join_one: santa_cruz_airports on code = santa_cruz_airports.code
+}
+>>>malloy
+run: foo -> {
+  aggregate: 
+    airport_count
+    santa_cruz_airports is santa_cruz_airports.airport_count 
+    ca_airports is santa_cruz_airports.ca_airports.airport_count 
+}
+>>>sql
+-- connection: duckdb
+SELECT 
+   COUNT( 1) as "airport_count",
+   (COUNT(DISTINCT santa_cruz_airports_0."code")) as "santa_cruz_airports"
+FROM '../data/airports.parquet' as foo
+LEFT JOIN (
+  SELECT santa_cruz_airports_0.*, STRUCT_PACK(
+    ca_airports_0."id", 
+    ca_airports_0."code", 
+    ca_airports_0."site_number", 
+    ca_airports_0."fac_type", 
+    ca_airports_0."fac_use", 
+    ca_airports_0."faa_region", 
+    ca_airports_0."faa_dist", 
+    ca_airports_0."city", 
+    ca_airports_0."county", 
+    ca_airports_0."state", 
+    ca_airports_0."full_name", 
+    ca_airports_0."own_type", 
+    ca_airports_0."longitude", 
+    ca_airports_0."latitude", 
+    ca_airports_0."elevation", 
+    ca_airports_0."aero_cht", 
+    ca_airports_0."cbd_dist", 
+    ca_airports_0."cbd_dir", 
+    ca_airports_0."act_date", 
+    ca_airports_0."cert", 
+    ca_airports_0."fed_agree", 
+    ca_airports_0."cust_intl", 
+    ca_airports_0."c_ldg_rts", 
+    ca_airports_0."joint_use", 
+    ca_airports_0."mil_rts", 
+    ca_airports_0."cntl_twr", 
+    ca_airports_0."major") AS ca_airports_0
+  FROM '../data/airports.parquet' AS santa_cruz_airports_0
+  LEFT JOIN '../data/airports.parquet' AS ca_airports_0
+    ON santa_cruz_airports_0."code"=ca_airports_0."code" AND (ca_airports_0."state"='CA')
+  
+  WHERE ca_airports_0."county"='SANTA CRUZ'
+) AS santa_cruz_airports_0
+  ON foo."code"=santa_cruz_airports_0."code"
+>>>sql
+SELECT 
+   COUNT( 1) as "airport_count",
+   (COUNT(DISTINCT santa_cruz_airports_0."code")) as "santa_cruz_airports",
+   (COUNT(DISTINCT ca_airports_0."code")) as "ca_airports"
+FROM '../data/airports.parquet' as foo
+LEFT JOIN '../data/airports.parquet' AS santa_cruz_airports_0
+  ON foo."code"=santa_cruz_airports_0."code"
+LEFT JOIN '../data/airports.parquet' AS ca_airports_0
+  ON santa_cruz_airports_0."code"=ca_airports_0."code" AND (ca_airports_0."state"='CA')
+WHERE  ca_airports_0."county"='SANTA CRUZ'
