@@ -13,6 +13,7 @@ run: movies->by_title + {
   -- nest: by_name
   -- # list
   -- nest: by_genre
+  aggregate: genrelist is concat(string_agg!(genre,', '), nullif(sum(0)::string,'0'))
 } 
 >>>markdown
 ## Analyze People
