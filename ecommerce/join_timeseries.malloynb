@@ -1,24 +1,26 @@
 >>>malloy
 import 'ecommerce.malloy'
 >>>malloy
-run: users -> {
-  group_by: created_at.day
-  aggregate: user_count
+query: signup_date is users -> {
+  group_by: metrics_date is created_at.day
+  aggregate: signup_count is user_count
 }
+
+run: signup_date
 >>>malloy
-run: order_items -> {
-  group_by: created_at.day
+query: order_date is order_items -> {
+  group_by: metrics_date is created_at.day
   aggregate: order_count
 }
+
+run: order_date
 >>>malloy
-run: users -> {
-  group_by: created_at.day
-  aggregate: user_count
-} extend {
-  join_one: orders is order_items -> {
-    group_by: created_at.day
-    aggregate: order_count
-    } on created_at = orders.created_at
-} -> {
-  select: created_at, user_count, orders.order_count
+source: daily_metrics is signup_date extend {
+  join_one: order_date with metrics_date
+  dimension: 
+    order_count is order_date.order_count
+}
+>>>malloy
+run: daily_metrics -> {
+  select: metrics_date, signup_count, order_count
 }
