@@ -1,0 +1,24 @@
+>>>malloy
+import 'ecommerce.malloy'
+>>>malloy
+run: users -> {
+  group_by: created_at.day
+  aggregate: user_count
+}
+>>>malloy
+run: order_items -> {
+  group_by: created_at.day
+  aggregate: order_count
+}
+>>>malloy
+run: users -> {
+  group_by: created_at.day
+  aggregate: user_count
+} extend {
+  join_one: orders is order_items -> {
+    group_by: created_at.day
+    aggregate: order_count
+    } on created_at = orders.created_at
+} -> {
+  select: created_at, user_count, orders.order_count
+}
