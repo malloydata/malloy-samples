@@ -1,0 +1,67 @@
+>>>markdown
+# Dimensional Limits
+In nesting, sometimes we want to have the same dimensions in a sequence of results.  This pattern is similar to the [Bucketing with Other](other.malloynb) example.
+>>>malloy
+##! experimental{join_types scalar_lenses}
+source: airports is duckdb.table('../data/airports.parquet') extend {
+  measure: 
+    airport_count is count()
+    avg_elevation is elevation.avg()
+}
+
+query: highest_5_states is airports-> {
+    group_by: state
+    aggregate: avg_elevation
+    limit: 5
+  }
+>>>markdown
+## Method 1, Write a query that finds the top values and joins limits the results to those values.
+>>>malloy
+run: airports -> {
+  extend: {
+    join_one: highest_5_states is airports-> {
+        group_by: state
+        aggregate: avg_elevation
+        limit: 5
+    } with state
+  }
+  where: highest_5_states.state != null
+  group_by: fac_type
+  aggregate: airport_count
+  # bar_chart
+  nest: state is {
+    group_by: state
+    aggregate: airport_count
+  }
+}
+>>>markdown
+## Direction of airports
+>>>malloy
+run: airports -> cbd_dir + airport_count
+>>>malloy
+run: airports -> {
+  // easterly airports
+  where: cbd_dir ~ '%E%'
+  
+  group_by: state
+  aggregate: airport_count
+  nest: fac_type + airport_count
+  limit: 5
+}
+>>>markdown
+Now we add a stage to flip this around.
+>>>malloy
+run: airports -> {
+  // easterly airports
+  where: cbd_dir ~ '%E%'
+  
+  group_by: state
+  aggregate: airport_count
+  nest: fac_type + airport_count
+  limit: 5
+} 
+-> {
+  group_by: fac_type.fac_type
+  aggregate: airport_count.sum()
+  nest: state + airport_count
+}
