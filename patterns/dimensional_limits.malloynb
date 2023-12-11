@@ -62,6 +62,6 @@ run: airports -> {
 } 
 -> {
   group_by: fac_type.fac_type
-  aggregate: airport_count.sum()
+  aggregate: fac_type.airport_count.sum()
   nest: state + airport_count
 }
