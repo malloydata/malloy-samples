@@ -12,60 +12,58 @@ run: order_items -> `Top Categories`
 ##### Malloy renders multiple tables side by side
 >>>malloy
 run: order_items -> {
-    nest: `Top Categories`, `Top Brands`
+  nest: `Top Categories`, `Top Brands`
 }
 >>>markdown
 ##### Malloy renders multiple tables within table rows
 >>>malloy
 run: order_items -> {
-    group_by: City
-    aggregate: Sales
-    nest: `Top Categories`, `Top Brands Margin`
+  group_by: City
+  aggregate: Sales
+  nest: `Top Categories`, `Top Brands Margin`
 }
 >>>markdown
 ##### Malloy renders uneven nested data
 >>>malloy
 run: order_items -> {
-    group_by: Customer
-    where: isTopCustomer
-    aggregate: Sales
-    nest: 
-        `Top Categories`
-        `Favorite Brands`
-        `Last 3 Purchases`
+  group_by: Customer
+  where: isTopCustomer
+  aggregate: Sales
+  nest: 
+    `Top Categories`
+    `Favorite Brands`
+    `Last 3 Purchases`
 }
 >>>markdown
 ##### Malloy renders deeply nested data
 >>>malloy
 run: order_items -> {
-    group_by: Customer
-    where: isTopCustomer
-    aggregate: Sales
-    nest: 
-        `Top Categories` + { 
-            nest: `Favorite Brands`
-        }
-        `Last 3 Purchases`
-    limit: 5
+  group_by: Customer
+  where: isTopCustomer
+  aggregate: Sales
+  nest: 
+    `Top Categories` + { nest: `Favorite Brands` }
+    `Last 3 Purchases`
+  limit: 5
 }
 >>>markdown
 ##### Malloy renders formatted numbers
 >>>malloy
 run: order_items -> {
-    aggregate: `Count` is count()
+  aggregate: `Count` is count()
 }
 -- number='0.0,,"M"'
 >>>markdown
 ##### Malloy renders charts
 >>>malloy
 run: order_items -> {
-    group_by: Customer
-    where: isTopCustomer
-    aggregate: Sales, Quantity, `Gross Margin`
-    nest: 
-      `Top Categories`
-      # bar
-      `Top Brands` 
+  group_by: Customer
+  where: isTopCustomer
+  aggregate: Sales, Quantity, `Gross Margin`
+  nest: 
+    `Top Categories`
+    # bar
+    `Top Brands` 
 }
 >>>markdown
 ##### Malloy renders customized charts
@@ -83,50 +81,49 @@ run: order_items -> {
 ##### Malloy renders view settings with overrides
 >>>malloy
 run: order_items -> {
-    group_by: inventory_items.product_brand
-    aggregate: Sales
-    nest: 
-      # size=spark
-      `Sales by Month Chart`
+  group_by: Brand
+  aggregate: Sales
+  nest: 
+    # size=spark
+    `Sales by Month Chart`
 }
 >>>markdown
 ##### Malloy renders charts at all different sizes
 >>>malloy
 run: order_items -> {
-    group_by: Customer
-    where: isTopCustomer
-    aggregate: Sales
-    nest: 
-      `default` is top_brands_bar
-      # size=spark
-      `spark` is top_brands_bar
-      # size=xs
-      `xs` is top_brands_bar
-      # size=sm
-      `sm` is top_brands_bar
-      # size=md
-      `md` is top_brands_bar
-      # size=lg
-      `lg` is top_brands_bar
-      # size=xl
-      `xl` is top_brands_bar
-      # size=2xl
-      `2xl` is top_brands_bar
-    limit: 5
+  group_by: Customer
+  where: isTopCustomer
+  aggregate: Sales
+  nest: 
+    `default` is top_brands_bar
+    # size=spark
+    `spark` is top_brands_bar
+    # size=xs
+    `xs` is top_brands_bar
+    # size=sm
+    `sm` is top_brands_bar
+    # size=md
+    `md` is top_brands_bar
+    # size=lg
+    `lg` is top_brands_bar
+    # size=xl
+    `xl` is top_brands_bar
+    # size=2xl
+    `2xl` is top_brands_bar
+  limit: 5
 }
 >>>markdown
 ##### Malloy renders deeply nested charts
 >>>malloy
 run: order_items -> {
-    group_by: City
-    aggregate: Sales, Quantity, `Gross Margin`
-    nest: `Key Brands` is {
-      group_by: Brand
-      aggregate: Sales
-      # size=spark
-      nest: `Sales by Month Chart`
-      limit: 3
-    }
-    limit: 5
-    
+  group_by: City
+  aggregate: Sales, Quantity, `Gross Margin`
+  nest: `Key Brands` is {
+    group_by: Brand
+    aggregate: Sales
+    # size=spark
+    nest: `Sales by Month Chart`
+    limit: 3
+  }
+  limit: 5
 }
