@@ -5,6 +5,15 @@
 ## renderer_next
 import {order_items} from "ecommerce_renderer.malloy"
 >>>markdown
+#### Writing a "Top Categories" view in the Malloy model
+```malloy
+view: `Top Categories` is {
+  group_by: `Product Category`
+  aggregate: Sales
+  top: 5
+}
+```
+>>>markdown
 ##### Malloy renders a single table of data
 >>>malloy
 run: order_items -> `Top Categories`
