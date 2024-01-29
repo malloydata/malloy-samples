@@ -1,0 +1,76 @@
+import 'ecommerce.malloy'
+
+run: order_items -> {
+  select: *
+  limit: 25
+}
+
+
+-- Calculate sales for each month, and compare to sales for that month in the prior year
+-- (i.e., a simple year-over-year analysis). This is do-able in Malloy with nesting and a pipelined query, but is awkward to express.
+run: duckdb.sql("""
+select
+  year(created_at) as the_year
+  , month(created_at) as the_month
+  , sum(sale_price) as this_month_sales
+  , lag(sum(sale_price)) over (partition by the_month order by the_year asc) as last_year_sales
+from '../data/order_items.parquet'
+where status = 'Complete'
+group by 1,2
+order by 1,2
+""")
+
+/*
+Malloy should look something like:
+
+run: order_items -> {
+  group_by:
+    the_year
+    the_month
+  
+  aggregate:
+    this_month_sales is sum(sale_price)
+
+  calculate:
+    last_year_sales is lag(this_month_sales) {
+      partition_by: the_month
+      order_by: the_year asc
+    }
+}
+ */
+
+-- Calculate moving sums/averages
+-- This is not do-able in Malloy currently
+run: duckdb.sql("""
+select
+  date_trunc('day', created_at) as the_date
+  , user_id
+  , sum(sale_price) as total_sales
+  , sum(total_sales) over (partition by user_id order by the_date rows between 29 preceding and current row) as last_30d_sales
+from '../data/order_items.parquet'
+where status = 'Complete'
+and user_id in (1,2,7)
+group by 1,2
+order by 2,1
+limit 1000
+""")
+
+/* 
+Malloy:
+
+run: order_items -> {
+  group_by:
+    the_date is created_at.day
+    user_id
+
+  aggregate:
+    total_sales is sum(sale_price)
+
+  calculate:
+    # NOTE: the sum_moving function doesn't actually exist yet... we have avg_moving, but not sum_moving
+    last_30d_sales is sum_moving(total_sales, 29, 0) {
+      partition_by: user_id
+      order_by: the_date
+    }
+}
+ */
