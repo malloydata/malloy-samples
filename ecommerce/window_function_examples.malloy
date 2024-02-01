@@ -1,14 +1,11 @@
 ##! experimental
+-- Three examples of using the new `partition_by` and `order_by` syntax in window functions:
 
 import 'ecommerce.malloy'
 
-run: order_items -> {
-  select: * 
-  limit: 25
-}
-
 -- sales by year, with previous year sales:
 -- uses `calculate` with `order_by`
+-- window function ordering is different from resultset ordering
 run: order_items -> {
   group_by: yr is year(created_at)
   aggregate: revenue is total_sales { where: status = 'Complete' }
