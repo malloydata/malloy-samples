@@ -1,0 +1,17 @@
+##! experimental
+
+import 'hackernews.malloy'
+
+run: stories -> {
+  group_by: poster
+  aggregate:
+    first_post is min(post_time):::date
+    last_post is max(post_time):::date
+} -> {
+  select:
+    *
+    months_between is sql_number("DATE_DIFF(${TABLE}.last_post , ${TABLE}.first_post, MONTH)")
+
+  order_by: months_between desc
+  limit: 100
+}
