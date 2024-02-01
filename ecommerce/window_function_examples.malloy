@@ -1,0 +1,63 @@
+##! experimental
+
+import 'ecommerce.malloy'
+
+run: order_items -> {
+  select: * 
+  limit: 25
+}
+
+-- sales by year, with previous year sales:
+-- uses `calculate` with `order_by`
+run: order_items -> {
+  group_by: yr is year(created_at)
+  aggregate: revenue is total_sales { where: status = 'Complete' }
+  calculate: ly_revenus is lag(revenue) { order_by: yr asc }
+  order_by: yr desc
+}
+
+-- sales and returns by month, with previous year sales and returns for that month
+-- uses `calculate` with `partition_by` and `order_by`
+run: order_items -> {
+  group_by:
+    yr is year(created_at)
+    mo is month(created_at)
+
+  aggregate:
+    revenue is total_sales { where: status = 'Complete' }
+    returns is total_sales { where: status = 'Returned' }
+
+  calculate:
+    ly_revenue is lag(revenue) {
+      partition_by: mo
+      order_by: yr
+    }
+
+    ly_returns is lag(returns) {
+      partition_by: mo
+      order_by: yr
+    }
+
+  order_by: yr, mo
+}
+
+-- Get the most recent row for each user
+-- Same pattern can be used for de-duplicating rows on primary key
+run: order_items -> {
+  select:
+    user_id
+    order_id
+    created_at
+
+  calculate:
+    row_rank is rank() {
+      partition_by: user_id
+      order_by: created_at
+    }
+} -> {
+  select:
+    user_id
+    order_id
+    created_at
+  limit: 25
+}
