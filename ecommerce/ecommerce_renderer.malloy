@@ -82,7 +82,7 @@ source: order_items is order_items_table extend {
     # percent
     percent_of_sales is total_sales/all(total_sales)
     # currency
-    total_gross_margin is gross_margin.sum()
+    total_gross_margin is total_sales - inventory_items.cost.sum()
     # currency
     `Gross Margin` is total_gross_margin
     average_gross_margin is gross_margin.avg()
