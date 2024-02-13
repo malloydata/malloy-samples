@@ -1,3 +1,5 @@
+##! experimental
+
 source: carriers is duckdb.table('../data/carriers.parquet') extend {
   primary_key: code
   measure: carrier_count is count()
@@ -140,4 +142,32 @@ source: flights is duckdb.table('../data/flights.parquet') extend {
       carriers.*,
       destination.*
   }
+}
+
+run: flights -> {
+  select: *
+  limit: 10
+}
+
+##! experimental
+
+# line_chart
+run: flights -> {
+  group_by:
+    carrier
+    the_year is dep_time.year
+    
+  aggregate: flight_count
+  calculate: year_rank is row_number() {
+    partition_by: the_year
+    order_by: flight_count desc
+  }
+} -> {
+  select:
+    the_year
+    flight_count
+    carrier
+    year_rank
+  where: year_rank <= 5
+  order_by: the_year, year_rank
 }
