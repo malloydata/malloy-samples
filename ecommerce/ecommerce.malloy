@@ -200,3 +200,7 @@ source: order_items is order_items_table extend {
     sample: true
   }
 }
+
+run: order_items -> {
+  aggregate: total_gross_margin
+}
