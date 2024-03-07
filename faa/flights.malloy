@@ -37,6 +37,8 @@ source: flights is duckdb.table('../data/flights.parquet') extend {
     total_distance is sum(distance)
     destination_count is destination.airport_count
     origin_count is origin.count()
+    # percent
+    percentage_of_flights is flight_count / all(flight_count)
 
     seats_for_sale is source.sum(aircraft.aircraft_models.seats)
     seats_owned is aircraft.sum(aircraft.aircraft_models.seats)
@@ -48,7 +50,7 @@ source: flights is duckdb.table('../data/flights.parquet') extend {
     aggregate:
       flight_count
       destination_count
-      percentage_of_flights is flight_count/all(flight_count) *100
+      percentage_of_flights
   }
 
   # line_chart
@@ -66,7 +68,7 @@ source: flights is duckdb.table('../data/flights.parquet') extend {
       flight_count
       destination_count
       carriers.carrier_count
-      percent_of_flights is flight_count/all(flight_count) *100
+      percentage_of_flights
   }
 
   view: top_destinations is {
@@ -74,8 +76,8 @@ source: flights is duckdb.table('../data/flights.parquet') extend {
       group_by: destination.code, destination.full_name
       aggregate:
         flight_count
-        percent_of_flights_to_destination
-          is flight_count/all(flight_count)*100
+        # percent
+        percent_of_flights_to_destination is percentage_of_flights
     }
 
   # line_chart

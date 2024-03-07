@@ -12,20 +12,17 @@ run: flights -> top_carriers
 run: flights -> carriers_over_time
 >>>markdown
 ### Carrier Overview
-A dashboard showing high-level information for each Carrier"
+A dashboard showing high-level information for each Carrier
 >>>malloy
 # dashboard
 run: flights -> {
   group_by: carrier_name is carriers.nickname
   aggregate:
     flight_count
-    # percent
-    percent_of_this_carriers_flights_to_all_destinations
-      is flight_count/all(flight_count)
-  nest: top_destinations + {
-    aggregate:
-      flights_to_dest_all_carriers is exclude(flight_count, carrier_name)
-    limit: 5
-  }
+    percentage_of_flights
+  nest: top_destinations + { limit: 5 }
+  nest: by_month
   nest: top_routes_map
 }
+>>>malloy
+run: flights -> carrier_dashboard
