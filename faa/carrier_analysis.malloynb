@@ -6,18 +6,23 @@ import {flights} from 'flights.malloy'
 ### Basic Statistics
 >>>malloy
 run: flights -> top_carriers
+>>>malloy
+run: flights -> by_month
 >>>markdown
-### Flights Over Time by Carrier
->>>markdown
-### Carrier Overview
-A dashboard showing high-level information for each Carrier
+### Carrier Dashboard
+The following is a single query that generates a dashboard showing high-level information for each carrier:
+- Count of flights, number of destinations, and percentage of total in the dataset
+- Table of top destinations for this carrier
+- Timeseries of flights by month
+- Topo-map visualizing destinations
+
+This showcases Malloy's ability to:
+- Use queries as larger building blocks to quickly analyze data
+- Represent queries at a higher level of abstraction that makes them easier to write and maintain
+- Inspect a dataset at multiple levels of granularity in a single query
 >>>malloy
 # dashboard
-run: flights -> {
-  group_by: carrier_name is carriers.nickname
-  aggregate:
-    flight_count
-    percentage_of_flights
+run: flights -> top_carriers + {
   nest: top_destinations + { limit: 5 }
   nest: by_month
   nest: top_routes_map
