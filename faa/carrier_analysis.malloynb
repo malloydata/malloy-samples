@@ -22,5 +22,3 @@ run: flights -> {
   nest: by_month
   nest: top_routes_map
 }
->>>malloy
-run: flights -> carrier_dashboard
