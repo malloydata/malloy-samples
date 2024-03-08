@@ -1,5 +1,6 @@
 >>>markdown
 # Carrier Analysis
+The following example looks at a dataset from the Federal Aviation Administration, looking at flight data in the US in the early 2000s.
 >>>malloy
 import {flights} from 'flights.malloy'
 >>>markdown
