@@ -12,7 +12,6 @@ This script produces three files.  Files are downloaded from https://datasets.im
 * names.parquet - information about the people that worked on the movies.
 
 This script is designed to run locally (not from the web version).  Clone the repository and launch VSCode
-
 >>>markdown
 ## Raw Data Definitions
 Define sources for all the raw data.
@@ -79,8 +78,12 @@ The first line `-- connection: duckdb` tells Malloy to use the `duckdb` database
 
 copy %{
   raw_titles -> {
-    join_one: raw_ratings on tconst = raw_ratings.tconst
-    join_one: raw_crew on tconst = raw_crew.tconst
+
+    extend: {
+      join_one: raw_ratings on tconst = raw_ratings.tconst
+      join_one: raw_crew on tconst = raw_crew.tconst
+    }
+
     where: raw_ratings.numVotes > 30000
     select:
       tconst
@@ -95,8 +98,6 @@ copy %{
       numVotes is raw_ratings.numVotes:::number
     }
 }%  to 'data/titles.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
-
-
 >>>markdown
 ## Build principals.parquet
 
@@ -107,7 +108,9 @@ Joining in titles insures that we only include rows where we have title data.
 copy 
   %{
     raw_principals -> {
-      join_one: titles is table('duckdb:data/titles.parquet') on tconst = titles.tconst
+      extend:  {
+        join_one: titles is duckdb.table('data/titles.parquet') on tconst = titles.tconst
+      }
       where: titles.tconst != null
       select: 
         tconst
@@ -122,8 +125,6 @@ copy
   }%
  to 'principals.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
 
-
-
 >>>markdown
 ## Build names.parquet
 
@@ -134,7 +135,9 @@ Only include data for people in the principals table
 copy 
   %{
   raw_names -> {
-    join_many: principals is table('duckdb:data/principals.parquet') on nconst = principals.nconst
+    extend: {
+      join_many: principals is duckdb.table('data/principals.parquet') on nconst = principals.nconst
+    }
     where: principals.nconst != null
     group_by: 
       nconst

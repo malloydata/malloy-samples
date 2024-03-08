@@ -8,8 +8,6 @@ import {flights} from 'flights.malloy'
 run: flights -> top_carriers
 >>>markdown
 ### Flights Over Time by Carrier
->>>malloy
-run: flights -> carriers_over_time
 >>>markdown
 ### Carrier Overview
 A dashboard showing high-level information for each Carrier
