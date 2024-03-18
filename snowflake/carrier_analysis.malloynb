@@ -24,4 +24,5 @@ run: flights -> {
       is flight_count/all(flight_count)
   nest: top_destinations 
   nest: by_month
+  nest: top_routes_map
 }

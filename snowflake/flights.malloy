@@ -100,7 +100,6 @@ source: flights is snowflake.table('flights') extend {
     aggregate: flight_count
     limit: 100
   }
-  -> {select: LATITUDE,LONGITUDE,latitude2,longitude2}
 
   # dashboard
   view: carrier_dashboard is {
