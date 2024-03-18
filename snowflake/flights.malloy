@@ -1,0 +1,143 @@
+source: carriers is snowflake.table('carriers') extend {
+  primary_key: CODE
+  measure: carrier_count is count()
+}
+
+source: airports is snowflake.table('airports') extend {
+  primary_key: CODE
+  measure: airport_count is count()
+  dimension: name is concat(CODE, '-', FULL_NAME )
+}
+
+source: aircraft_models is snowflake.table('aircraft_models') extend {
+  primary_key: AIRCRAFT_MODEL_CODE
+  measure: aircraft_model_count is count()
+}
+
+source: aircraft is snowflake.table('aircraft') extend {
+  primary_key: TAIL_NUM
+  measure: aircraft_count is count()
+  join_one: aircraft_models with AIRCRAFT_MODEL_CODE
+}
+
+source: flights is snowflake.table('flights') extend {
+  primary_key: ID2
+
+  // rename some fields as from their physical names
+  rename: ORIGIN_CODE is ORIGIN
+  rename: DESTINATION_CODE is DESTINATION
+
+  join_one: carriers with CARRIER
+  join_one: origin is airports with ORIGIN_CODE
+  join_one: destination is airports with DESTINATION_CODE
+  join_one: aircraft with TAIL_NUM
+
+  measure:
+    flight_count is count()
+    total_distance is sum(DISTANCE)
+    destination_count is destination.airport_count
+    origin_count is origin.count()
+
+    seats_for_sale is source.sum(aircraft.aircraft_models.SEATS)
+    seats_owned is aircraft.sum(aircraft.aircraft_models.SEATS)
+    average_plane_size is aircraft.avg(aircraft.aircraft_models.SEATS)
+    average_flight_distance is DISTANCE.avg()
+
+  view: top_carriers is {
+    group_by: carriers.NICKNAME
+    aggregate:
+      flight_count
+      destination_count
+      percentage_of_flights is flight_count/all(flight_count) *100
+  }
+
+  # line_chart
+  view: carriers_over_time is {
+    group_by: dep_month is DEP_TIME.month
+    aggregate: flight_count
+    group_by: carriers.NICKNAME
+    limit: 10000
+  }
+
+  view: top_origins is {
+    top: 5
+    group_by: origin.name
+    aggregate:
+      flight_count
+      destination_count
+      carriers.carrier_count
+      percent_of_flights is flight_count/all(flight_count) *100
+  }
+
+  view: top_destinations is {
+      top: 5
+      group_by: destination.CODE, destination.FULL_NAME
+      aggregate:
+        flight_count
+        percent_of_flights_to_destination
+          is flight_count/all(flight_count)*100
+    }
+
+  # line_chart
+  view: by_month is {
+    group_by: dep_month is DEP_TIME.month
+    aggregate: flight_count
+  }
+
+  view: by_manufacturer is {
+      group_by: aircraft.aircraft_models.MANUFACTURER
+      aggregate: flight_count, aircraft.aircraft_count
+      limit: 3
+    }
+
+  # segment_map
+  view: top_routes_map is {
+    group_by:
+      origin.LATITUDE
+      origin.LONGITUDE
+      latitude2 is destination.LATITUDE
+      longitude2 is destination.LONGITUDE
+    aggregate: flight_count
+    limit: 100
+  }
+  -> {select: LATITUDE,LONGITUDE,latitude2,longitude2}
+
+  # dashboard
+  view: carrier_dashboard is {
+    aggregate: destination_count
+    aggregate: flight_count
+    nest:
+      by_manufacturer
+      by_month
+    nest: hubs is {
+      top: 5
+      having: destination.airport_count > 1
+      group_by: hub is origin.name
+      aggregate:
+        destination_count
+        flight_count
+    }
+    nest: origin_dashboard is {
+      top: 5
+      group_by:
+        code is ORIGIN_CODE,
+        origin is origin.FULL_NAME,
+        origin.CITY
+      aggregate: flight_count
+      nest: destinations_by_month_line_chart is {
+        group_by: dep_month is DEP_TIME.month
+        aggregate: flight_count
+        group_by: destination.name
+      }
+      nest: top_routes_map
+    }
+  }
+
+  view: search_index is {
+    index:
+      *,
+      origin.*,
+      carriers.*,
+      destination.*
+  }
+}
