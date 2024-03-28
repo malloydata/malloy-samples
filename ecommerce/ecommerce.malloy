@@ -1,5 +1,4 @@
 // duckdb sources
-##! m4warnings
 source: users_table is duckdb.table('../data/users.parquet') extend {}
 source: product_table is duckdb.table('../data/products.parquet') extend {}
 source: inventory_items_table is duckdb.table('../data/inventory_items.parquet') extend {}

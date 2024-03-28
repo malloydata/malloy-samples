@@ -31,7 +31,7 @@ Examine the market for a particular class of alcohol:
 // Try this with 'TEQUILAS', 'WHISKIES', 'RUM', 'GINS'
 
 # dashboard
-run: iowa -> vendor_dashboard {
+run: iowa -> vendor_dashboard + {
   where: category_class ~ 'VODKAS'
 }
 >>>markdown
@@ -39,6 +39,6 @@ run: iowa -> vendor_dashboard {
 Examine the sales of a particular vendor.
 >>>malloy
 # dashboard
-run: iowa -> vendor_dashboard {
+run: iowa -> vendor_dashboard + {
   where: vendor_name ~ 'JIM BEAM%'
 }

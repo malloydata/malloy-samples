@@ -103,7 +103,7 @@ The rest of this pages uses the model below.  The data is an excerpt from the IM
 We use the measure `total_ratings` to determin a movie's popularity.  An individual's popularity is determined by the some of all the ratings of the movies a person has worked on.
 >>>malloy
 source: movies is duckdb.table('../imdb/data/titles.parquet') extend {
-  join_many: principals is duckdb.table('../imdb/data/principals.parquet') {
+  join_many: principals is duckdb.table('../imdb/data/principals.parquet') extend {
     join_one: people is duckdb.table('../imdb/data/names.parquet') 
       on nconst = people.nconst
   } on tconst = principals.tconst
@@ -113,7 +113,6 @@ source: movies is duckdb.table('../imdb/data/titles.parquet') extend {
 
 ## Weights can be any measure
 Often a row count will work nicely as a weight, but sometimes there is something better.  In movies, for example the sum of the number of votes will not only find the interesting most interesting movies but will also find the most interesting people.  For example the most interesting people in the dataset.
-
 >>>malloy
 #(docs) size=small limit=200
 run: movies -> {
