@@ -10,7 +10,7 @@ import 'faang.malloy'
 Stories about BigQuery over time:
 >>>malloy
 # dashboard
-run: stories -> term_dashboard {
+run: stories -> term_dashboard + {
   where: title ~ r'BigQuery'
 }
 >>>markdown
