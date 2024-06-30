@@ -1,6 +1,6 @@
 // Auto Recalls: CSV example
 ##! m4warnings
-source: recalls is duckdb.table('auto_recalls.csv') extend {
+source: recalls is duckdb.table('data/auto_recalls.csv') extend {
   measure:
     recall_count is count()
     percent_of_recalls is recall_count/all(recall_count)*100
