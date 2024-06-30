@@ -31,7 +31,7 @@ run: airports -> {
 ## Cross Joining an array
 Sometimes it is useful to join in an array of numbers.  Example below joins in some number
 >>>malloy
-source: flights is duckdb.table('../data/flights.parquet') extend {
+source: flights is duckdb.table('../faa/data/flights.parquet') extend {
   measure: flight_count is count()
 }
 

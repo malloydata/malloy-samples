@@ -15,7 +15,7 @@ Indexing could be used by LLMs to find the interesting column/term mapping in th
 We're going to take the airports table and index it.  The results are an un ordered list of distinct *fieldName/fieldValue* pairs appear in the table.  The weight, in this case is the number of rows that partciular occurs on. 
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../data/airports.parquet') -> {
+run: duckdb.table('../faa/data/airports.parquet') -> {
   index: *
 }
 >>>markdown
@@ -40,7 +40,7 @@ run: duckdb.table('../faa/data/airports.parquet') -> {
 Indexes can be used find the best way to filter a dataset.  For example supposed we'd like to find 'SANTA CRUZ' in the dataset. Upon approaching the dataset, but we don't which column might contain it.  In a UI you might imagine that you type 'SANTA' and let have suggestons for values that might be appropriate.  In the results we can see that top value, 'SANTA ROSA', appears as county on 26 rows in the table.  We can also see that 'SANTA CRUZ' is both a `city` and a `county`..
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../data/airports.parquet') -> {
+run: duckdb.table('../faa/data/airports.parquet') -> {
   index: *
 } -> {
   where: fieldValue ~ r'SANTA'
@@ -53,7 +53,7 @@ run: duckdb.table('../data/airports.parquet') -> {
 We can then write a simple query to show the rows.  It turns out that 'SANTA CRUZ' is a county in both California and Arizona.
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../data/airports.parquet') -> {
+run: duckdb.table('../faa/data/airports.parquet') -> {
   where: county ~ 'SANTA CRUZ'
   select: *
 }
@@ -63,7 +63,7 @@ run: duckdb.table('../data/airports.parquet') -> {
 It is often difficult to approach a new dataset.  The index operator provides an intersting way to quickly gain an understanding of the dataset.  By piping the results of an index another stage, we can quickly see all the interesting values for each of the interesting dimesions.  Again, the weight shows the number of rows for that particular dimension/value.
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../data/airports.parquet') -> {
+run: duckdb.table('../faa/data/airports.parquet') -> {
   index: *
 } -> {
   group_by: fieldName
@@ -80,7 +80,7 @@ run: duckdb.table('../data/airports.parquet') -> {
 With large datasets, you can also sample a small subsection using the `sample:` parameter.  Sampled indexes are great at identifing the important low cardinality fields.
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../data/airports.parquet') -> {
+run: duckdb.table('../faa/data/airports.parquet') -> {
   index: *
   sample: 5000  // sample only 5000 rows
 } -> {
