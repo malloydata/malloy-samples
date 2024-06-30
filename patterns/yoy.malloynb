@@ -7,7 +7,7 @@ There are a couple of different ways to go about this in Malloy.
 We can compare performance of different years using the same x and y-axes.  Line charts take the x-axis, y-axis and dimensional (color) axis as parameters.
 In this case, the x-axis is `month_of_year`, the y-axis is `flight_count` and the dimensional (color) axis is the year.
 >>>malloy
-source: flights is duckdb.table('../data/flights.parquet') extend {
+source: flights is duckdb.table('../faa/data/flights.parquet') extend {
   measure: flight_count is count()
 }
 >>>malloy

@@ -26,7 +26,7 @@ Adding a second query stage to filter on _string_ columns and ordering by weight
 All Malloy queries run as a single SQL query.  The `index:` operator is no different.  Click the **SQL** tab to see how this works.  
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../data/airports.parquet') -> {
+run: duckdb.table('../faa/data/airports.parquet') -> {
   index: *
 } -> {
   where: fieldType = 'string'

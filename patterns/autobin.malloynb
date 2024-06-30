@@ -2,7 +2,7 @@
 # Automatically Binning Data
 By examining the range of values over a dataset, we can compute the appropriate histogram bin size, while capturing the data at the same time.  We can then pipe the output to another query to display a histogram.
 >>>malloy
-source: airports is duckdb.table('../data/airports.parquet') extend {
+source: airports is duckdb.table('../faa/data/airports.parquet') extend {
   measure: airport_count is count()
   # bar_chart
   view: by_elevation is {

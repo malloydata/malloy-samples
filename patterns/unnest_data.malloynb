@@ -10,7 +10,7 @@ source: airports is duckdb.sql("""
   SELECT 
     *,
     SPLIT(city,' ') as city_words
-  FROM '../data/airports.parquet' 
+  FROM '../faa/data/airports.parquet' 
 """) extend {
   measure:
     airport_count is count()
