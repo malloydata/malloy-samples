@@ -11,4 +11,16 @@ run: order_items -> {
             order_count
             order_item_count
     }
+    nest: by_day is {
+        group_by: created_at.day
+        aggregate:
+            order_count
+            order_item_count
+        nest: by_item_day is {
+            group_by: inventory_item_id
+            aggregate:
+                order_count
+                order_item_count
+        }
+    }
 }
