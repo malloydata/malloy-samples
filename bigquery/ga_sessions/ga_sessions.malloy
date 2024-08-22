@@ -56,6 +56,7 @@ source:ga_sessions is bigquery.table('bigquery-public-data.google_analytics_samp
   view: page_load_times is {
     group_by: hits.page.pageTitle
     aggregate: hit_count is hits.count()
+    # bar_chart
     nest: load_bar_chart is {
       group_by: hit_seconds is floor(hits.latencyTracking.pageLoadTime / 2) * 2
       aggregate: hits_count
