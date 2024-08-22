@@ -1,0 +1,59 @@
+import 'ecommerce.malloy'
+
+-- line charts with time dimensions don't respect size params
+run: order_items -> {
+    group_by: status
+    aggregate: order_count
+    # line_chart size=spark
+    nest: by_hour is {
+        group_by: created_at.hour
+        aggregate:
+            order_count
+    }
+
+    # line_chart size=lg
+    nest: by_hour2 is {
+        group_by: created_at.hour
+        aggregate:
+            order_count
+    }
+    where: created_at >= @2022-06-01 00:00:00
+    and created_at <= @2022-06-30 00:00:00
+
+}
+
+-- with string dimensions, bar_chart works fine, and
+-- size tag works well
+run: order_items -> {
+
+    # bar_chart size=spark
+    nest: by_status is {
+        group_by: status
+        aggregate:
+            order_count
+    }
+
+    # bar_chart size=lg
+    nest: by_status2 is {
+        group_by: status
+        aggregate:
+            order_count
+    }
+    where: created_at >= @2022-06-01 00:00:00
+    and created_at <= @2022-06-30 00:00:00
+
+}
+
+-- Bar chart doesn't work with timestamp dimensions
+# bar_chart
+run: order_items -> {
+    group_by: created_at.month
+    aggregate: order_count
+}
+
+-- It does seem to work with string dimensions
+# bar_chart
+run: order_items -> {
+    group_by: status
+    aggregate: order_count
+}
