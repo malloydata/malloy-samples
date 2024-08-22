@@ -1,0 +1,14 @@
+import 'ecommerce.malloy'
+
+run: order_items -> {
+    group_by: created_at.week
+    aggregate:
+        order_count
+        order_item_count
+    nest: by_item is {
+        group_by: inventory_item_id
+        aggregate:
+            order_count
+            order_item_count
+    }
+}
