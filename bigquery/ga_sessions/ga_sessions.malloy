@@ -18,7 +18,9 @@ source:ga_sessions is bigquery.table('bigquery-public-data.google_analytics_samp
     aggregate: hits_count
     limit: 10
   }
-  view: by_adContent_bar_chart is {
+
+  # bar_chart
+  view: by_adContent is {
     group_by: device.browser
     aggregate: user_count
     group_by: device.deviceCategory
@@ -69,13 +71,14 @@ source:ga_sessions is bigquery.table('bigquery-public-data.google_analytics_samp
 
   view: by_all is {
     nest: by_source
-    nest: by_adContent_bar_chart
+    nest: by_adContent
     nest: by_region
     nest: by_category
   }
 }
 
-query: sessions_dashboard is ga_sessions -> {
+# dashboard
+run: sessions_dashboard is ga_sessions -> {
   nest:
     by_region
     by_device
