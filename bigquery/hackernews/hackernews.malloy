@@ -102,7 +102,8 @@ source: stories is bigquery.table('bigquery-public-data.hacker_news.full') exten
   }
 
   view: term_dashboard is {
-    nest: by_date_and_type_line_chart is {
+    # line_chart
+    nest: by_date_and_type is {
       group_by: posted_month is post_time.month
       aggregate: post_count
       group_by: post_type
