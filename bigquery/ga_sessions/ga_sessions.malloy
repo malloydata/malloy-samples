@@ -79,7 +79,7 @@ source:ga_sessions is bigquery.table('bigquery-public-data.google_analytics_samp
 }
 
 # dashboard
-run: sessions_dashboard is ga_sessions -> {
+query: sessions_dashboard is ga_sessions -> {
   nest:
     by_region
     by_device
