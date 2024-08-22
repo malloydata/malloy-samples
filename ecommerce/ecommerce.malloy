@@ -182,7 +182,8 @@ source: order_items is order_items_table extend {
     nest: 
       # line_chart
       by_month
-      sales_by_state_shape_map is sales_by_state
+      # shape_map
+      sales_by_state
       top_brands
       top_customers + {aggregate: order_count}
   }
