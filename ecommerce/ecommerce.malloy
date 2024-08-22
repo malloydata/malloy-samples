@@ -154,7 +154,8 @@ source: order_items is order_items_table extend {
       inventory_items.product.product_count
     nest:
       top_categories
-      by_month_line_chart is by_month
+      # line_chart
+      by_month
       top_products
     limit: 10
   }
@@ -179,8 +180,10 @@ source: order_items is order_items_table extend {
       order_count
       total_gross_margin
     nest: 
-      by_month_line_chart is by_month
-      sales_by_state_shape_map is sales_by_state
+      # line_chart
+      by_month
+      # shape_map
+      sales_by_state
       top_brands
       top_customers + {aggregate: order_count}
   }

@@ -72,6 +72,7 @@ source: recalls is duckdb.table('auto_recalls.csv') extend {
 
   # dashboard
   view: recall_dashboard is by_manufacturer + {
+    # line_chart
     nest: by_year_line_chart is by_year + {group_by: `Recall Type`}
     nest: by_type
     nest: recent_recalls + {limit: 6}
