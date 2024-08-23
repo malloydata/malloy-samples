@@ -19,7 +19,8 @@ source: airports is duckdb.table('data/airports.parquet') extend {
     group_by: faa_region
     aggregate: airport_count
     nest:
-      by_state_shape_map is by_state
+      # shape_map
+      by_state
       by_facility_type
   }
 }
