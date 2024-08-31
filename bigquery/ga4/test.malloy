@@ -1,0 +1,21 @@
+##! experimental { sql_functions }
+
+source: analytics_events is bq.table('bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_20210131') extend {
+    dimension:
+      test is sql_number("""(SELECT  e.value.int_value FROM UNNEST (${TABLE}.event_params) as e WHERE e.key = 'session_engaged')""")
+      test2 is sql_string( """ (SELECT e.value.string_value FROM UNNEST(${TABLE}.event_params) as e WHERE e.key = 'page_location') """)
+      test3 is sql_string( """ (SELECT e.value.string_value FROM UNNEST(${TABLE}.event_params) as e WHERE e.key = 'clean_event') """)
+      test4 is sql_string( """ (SELECT e.value.string_value FROM UNNEST(${TABLE}.event_params) as e WHERE e.key = 'asdkjhgalsjdhgag') """)
+}
+
+run: analytics_events -> {
+  select: 
+    test
+    test2
+    test3
+    test4
+  limit: 100
+  where: test != null 
+  or test2 != null
+  or test3 != null
+}
