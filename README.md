@@ -1,5 +1,5 @@
 # Malloy Analysis Examples (and datasets)
-
+jasdgh
 Sample update to test DCO config
 
 This repository contains example data analysis and common patterns for expressed in Malloy.  Each of the examples can be run from Notebooks.  The 'patterns' are designed to be small and simple and show off how to acomplish some task.  The examples are designed to show how to setup a more.
