@@ -1,5 +1,7 @@
 # Malloy Analysis Examples (and datasets)
 
+test3
+
 This repository contains example data analysis and common patterns for expressed in Malloy.  Each of the examples can be run from Notebooks.  The 'patterns' are designed to be small and simple and show off how to acomplish some task.  The examples are designed to show how to setup a more.
 
 If you are reading this on Github, you can run these examples directly from your web browser. 
