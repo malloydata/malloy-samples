@@ -1,0 +1,16 @@
+import 'ecommerce.malloy'
+
+// Incorrect SQL generation
+// This gives me all orders where status starts with Can
+run: order_items -> {
+  select: *
+  where: status !~ r'^Can'
+  limit: 10
+}
+
+// The query above should be equivalent to this:
+run: order_items -> {
+  select: *
+  where: NOT status ~ r'^Can'
+  limit: 10
+}
