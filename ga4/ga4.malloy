@@ -3,7 +3,7 @@ source: events is duckdb.sql("""
   SELECT
     *,
     (event_timestamp / 1000)::bigint as event_timestamp_ms
-  FROM 'ga4_events_sampled.snappy.parquet'
+  FROM 'data/ga4_events_sampled.snappy.parquet'
   """) extend {
   rename:
     event_timestamp_raw is event_timestamp
