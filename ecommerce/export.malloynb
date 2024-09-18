@@ -1,0 +1,16 @@
+>>>malloy
+import 'ecommerce.malloy'
+>>>sql
+-- connection: duckdb
+COPY
+    (
+        %{
+            inventory_items -> {
+                group_by: product.category
+                aggregate: total_cost
+            }
+        }%
+    )
+    TO 'result-snappy.parquet'
+    (FORMAT 'parquet');
+
