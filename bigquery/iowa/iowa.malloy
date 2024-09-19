@@ -1,4 +1,4 @@
-source: iowa is bigquery.table('malloy-data.iowa_liquor_sales.sales_deduped') extend {
+source: iowa is bigquery.table('bigquery-public-data.iowa_liquor_sales.sales') extend {
 
   rename: _vendor_name is vendor_name
   // dimensions
