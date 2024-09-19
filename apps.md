@@ -71,9 +71,3 @@ gcloud config set project {my_project_id} --installation
   name="Hacker News" 
   description="Posts from news.ycombinator.com" 
 -->
-
-<!-- malloy-app 
-  app="bigquery_iowa" 
-  name="Iowa Liquor Store Purchases" 
-  description="Public data from state owned Iowa Liquor Stores" 
--->
