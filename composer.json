@@ -37,10 +37,6 @@
       "path": "./bigquery/hackernews/"
     },
     {
-      "id": "bigquery_iowa",
-      "path": "./bigquery/iowa/"
-    },
-    {
       "id": "bigquery_the_met",
       "path": "./bigquery/the_met/"
     }
