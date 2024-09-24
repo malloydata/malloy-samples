@@ -28,24 +28,22 @@ import {compileMSQL} from './utils/msql';
 import {compileMalloy} from './utils/malloy';
 
 const SAMPLE_PROJECT_ROOT = path.join(__dirname, '..');
-const EXCEPT_LIST = ['build_titles.malloysql', 'apijson.malloynb', 'bigquery'];
-
-function inExceptList(fn: string) {
-  for (const except of EXCEPT_LIST) {
-    if (fn.includes(except)) {
-      return true;
-    }
-  }
-  return false;
-}
+const EXCEPT_LIST = [
+  'apijson.malloynb',
+  'bigquery',
+  'build_titles.malloysql',
+  'node_modules',
+  'tmp',
+];
 
 describe(`DuckDB`, () => {
   let modelsFound = false;
   for (const dir of fs.readdirSync(SAMPLE_PROJECT_ROOT)) {
+    if (EXCEPT_LIST.includes(dir)) continue;
     const projectPath = path.join(SAMPLE_PROJECT_ROOT, dir);
     if (!fs.statSync(projectPath).isDirectory()) continue;
     for (const fn of fs.readdirSync(projectPath)) {
-      if (inExceptList(fn)) {
+      if (EXCEPT_LIST.includes(fn)) {
         // ignore it
       } else if (fn.endsWith('.malloy')) {
         modelsFound = true;
