@@ -208,7 +208,9 @@ source: order_items is order_items_table extend {
     aggregate: 
       order_count
       total_sales
-    where: status = 'Complete'
+    where: 
+      status = 'Complete'
+      and order_date > @2022-11-01
   }
 
   view: total_orders_v is base -> {
