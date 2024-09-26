@@ -74,8 +74,8 @@ source: order_items is order_items_table extend {
     # percent
     percent_of_sales is total_sales/all(total_sales)
     # currency
-    total_gross_margin is gross_margin.sum()
-    average_gross_margin is gross_margin.avg()
+    total_gross_margin is source.sum(gross_margin)
+    average_gross_margin is source.avg(gross_margin)
     product_count is count(inventory_items.product_id)
     user_count is users.count()
     total_sales_2022 is total_sales { where: year(created_at) = 2022 }
