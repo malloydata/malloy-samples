@@ -5,7 +5,7 @@ Nested subtotals are quite painful to do in SQL, requiring either self-joins, wi
 
 To see how we do this in Malloy, let's look at the following simple model:
 >>>malloy
-source: order_items is duckdb.table('../ecommerce/data/order_items.parquet') extend {
+source: order_items is duckdb.table('data/order_items.parquet') extend {
   primary_key: id
 
   measure:

@@ -2,8 +2,8 @@
 # Percent of Total
 Malloy provides a way to compute _percent of total_ through level of detail (ungrouped aggregates) functions.  The functions `all()` and `exclude()` escape grouping in aggregate calculations.  These functions are different than window functions as they operate inline with the query and can produce correct results even when the data hits a `limit` or is fanned out.  Use cases below.
 >>>malloy
-source: flights is duckdb.table('../faa/data/flights.parquet') extend {
-  join_one: carriers is duckdb.table('../faa/data/carriers.parquet') on carrier = carriers.code
+source: flights is duckdb.table('data/flights.parquet') extend {
+  join_one: carriers is duckdb.table('data/carriers.parquet') on carrier = carriers.code
   measure: flight_count is count()
 }
 >>>markdown

@@ -3,16 +3,16 @@
 Malloy allows you to compute sums and averages correctly based on your join tree. Fan-outs based on join relationships will never impact the correctness of these aggregations. This example has `flights`, joining to `aircraft`, joining to `aircraft_model`.
 `aircraft_model` has the number of seats specified on this model of aircraft.  Code below computes sums and averages at various places in the join tree.
 >>>malloy
-source: aircraft_models is duckdb.table('../faa/data/aircraft_models.parquet') extend {
+source: aircraft_models is duckdb.table('data/aircraft_models.parquet') extend {
   primary_key: aircraft_model_code
 }
 
-source: aircraft is duckdb.table('../faa/data/aircraft.parquet') extend {
+source: aircraft is duckdb.table('data/aircraft.parquet') extend {
   primary_key: tail_num
   join_one: aircraft_models with aircraft_model_code
 }
 
-source: flights is duckdb.table('../faa/data/flights.parquet') extend {
+source: flights is duckdb.table('data/flights.parquet') extend {
   join_one: aircraft with tail_num
 }
 >>>malloy

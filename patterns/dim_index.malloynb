@@ -15,7 +15,7 @@ Indexing could be used by LLMs to find the interesting column/term mapping in th
 We're going to take the airports table and index it.  The results are an un ordered list of distinct *fieldName/fieldValue* pairs appear in the table.  The weight, in this case is the number of rows that partciular occurs on. 
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../faa/data/airports.parquet') -> {
+run: duckdb.table('data/airports.parquet') -> {
   index: *
 }
 >>>markdown
@@ -26,7 +26,7 @@ Adding a second query stage to filter on _string_ columns and ordering by weight
 All Malloy queries run as a single SQL query.  The `index:` operator is no different.  Click the **SQL** tab to see how this works.  
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../faa/data/airports.parquet') -> {
+run: duckdb.table('data/airports.parquet') -> {
   index: *
 } -> {
   where: fieldType = 'string'
@@ -40,7 +40,7 @@ run: duckdb.table('../faa/data/airports.parquet') -> {
 Indexes can be used find the best way to filter a dataset.  For example supposed we'd like to find 'SANTA CRUZ' in the dataset. Upon approaching the dataset, but we don't which column might contain it.  In a UI you might imagine that you type 'SANTA' and let have suggestons for values that might be appropriate.  In the results we can see that top value, 'SANTA ROSA', appears as county on 26 rows in the table.  We can also see that 'SANTA CRUZ' is both a `city` and a `county`..
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../faa/data/airports.parquet') -> {
+run: duckdb.table('data/airports.parquet') -> {
   index: *
 } -> {
   where: fieldValue ~ r'SANTA'
@@ -53,7 +53,7 @@ run: duckdb.table('../faa/data/airports.parquet') -> {
 We can then write a simple query to show the rows.  It turns out that 'SANTA CRUZ' is a county in both California and Arizona.
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../faa/data/airports.parquet') -> {
+run: duckdb.table('data/airports.parquet') -> {
   where: county ~ 'SANTA CRUZ'
   select: *
 }
@@ -63,7 +63,7 @@ run: duckdb.table('../faa/data/airports.parquet') -> {
 It is often difficult to approach a new dataset.  The index operator provides an intersting way to quickly gain an understanding of the dataset.  By piping the results of an index another stage, we can quickly see all the interesting values for each of the interesting dimesions.  Again, the weight shows the number of rows for that particular dimension/value.
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../faa/data/airports.parquet') -> {
+run: duckdb.table('data/airports.parquet') -> {
   index: *
 } -> {
   group_by: fieldName
@@ -80,7 +80,7 @@ run: duckdb.table('../faa/data/airports.parquet') -> {
 With large datasets, you can also sample a small subsection using the `sample:` parameter.  Sampled indexes are great at identifing the important low cardinality fields.
 >>>malloy
 #(docs) size=medium limit=100
-run: duckdb.table('../faa/data/airports.parquet') -> {
+run: duckdb.table('data/airports.parquet') -> {
   index: *
   sample: 5000  // sample only 5000 rows
 } -> {
@@ -102,9 +102,9 @@ The rest of this pages uses the model below.  The data is an excerpt from the IM
 
 We use the measure `total_ratings` to determin a movie's popularity.  An individual's popularity is determined by the some of all the ratings of the movies a person has worked on.
 >>>malloy
-source: movies is duckdb.table('../imdb/data/titles.parquet') extend {
-  join_many: principals is duckdb.table('../imdb/data/principals.parquet') extend {
-    join_one: people is duckdb.table('../imdb/data/names.parquet') 
+source: movies is duckdb.table('data/titles.parquet') extend {
+  join_many: principals is duckdb.table('data/principals.parquet') extend {
+    join_one: people is duckdb.table('data/names.parquet') 
       on nconst = people.nconst
   } on tconst = principals.tconst
   measure: total_ratings is numVotes.sum()
@@ -144,9 +144,9 @@ run: movies -> {
 
 By convention indexes in sources are named `search_index`.
 >>>malloy
-source: movies2 is duckdb.table('../imdb/data/titles.parquet') extend {
-  join_many: principals is duckdb.table('../imdb/data/principals.parquet') extend {
-    join_one: people is duckdb.table('../imdb/data/names.parquet') 
+source: movies2 is duckdb.table('data/titles.parquet') extend {
+  join_many: principals is duckdb.table('data/principals.parquet') extend {
+    join_one: people is duckdb.table('data/names.parquet') 
       on nconst = people.nconst
   } on tconst = principals.tconst
 

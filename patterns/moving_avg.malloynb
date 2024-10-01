@@ -5,7 +5,7 @@ Malloy can compute moving averages on resultsets.
 
 The queries below use the following model
 >>>malloy
-source: order_items is duckdb.table('../ecommerce/data/order_items.parquet') extend {
+source: order_items is duckdb.table('data/order_items.parquet') extend {
   measure: 
     user_count is count(user_id)
     order_count is count()
@@ -49,7 +49,7 @@ run: order_items -> {
 
 In this example, we've added two queries to the `flights` source, one showing flights by month without the moving average applied, and one with the moving average applied. We then use these queries to show charts of flight count for each airport over time.
 >>>malloy
-source: flights is duckdb.table('../faa/data/flights.parquet') extend {
+source: flights is duckdb.table('data/flights.parquet') extend {
   measure: flight_count is count()
   dimension: dep_month is dep_time.month
 
