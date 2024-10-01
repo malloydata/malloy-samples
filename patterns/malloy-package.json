@@ -1,0 +1,5 @@
+{
+    "name": "patterns",
+    "version": "1.0.0",
+    "description": "This packages contains example data analysis and common patterns expressed in Malloy. The 'patterns' are designed to be small and simple and show off how to acomplish some task." 
+}
