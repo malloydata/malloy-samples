@@ -12,10 +12,6 @@ gcloud config set project {my_project_id} --installation
 
 This set of models points at a publicly available FAA flights dataset including information on flights, airports, air crafts and aircraft models from 2000 to 2005. A wide variety of patterns and features are used in this model and any of our examples in documentation are based on this dataset, so it's a great place to start as you get to know Malloy.
 
-## [Iowa Liquor](iowa)
-
-Liquor sales in Iowa are state-controlled, with all liquor wholesale run by the state. All purchases and sales of liquor that stores make are a matter of public record. A walk through of exploring and modeling this dataset can be found [here](https://malloydata.github.io/documentation/examples/iowa/iowa.html); this makes a great introduction to Malloy.
-
 ## [E-commerce](ecommerce)
 
 This model points to a dataset for a fictitious e-commerce business. It has a  clean and typical schema for a transactional dataset. It also includes an example of an interesting brand affinity analysis (people who buy x also buy y). An example of how to use dataset can be found [here](https://malloydata.github.io/documentation/examples/ecommerce.html).
