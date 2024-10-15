@@ -25,13 +25,9 @@ import * as fs from 'fs';
 import {Connection, Runtime} from '@malloydata/malloy';
 
 export const compileMalloy = async (path: string, connection: Connection) => {
-  const srcURL = new URL(`model://${path}`);
+  const srcURL = new URL(`file://${path}`);
   const fileReader = {
-    readURL: (url: URL) => {
-      return Promise.resolve(
-        fs.readFileSync(url.toString().replace('model://', ''), 'utf-8')
-      );
-    },
+    readURL: async (url: URL) => fs.readFileSync(url, 'utf-8'),
   };
   const runtime = new Runtime(fileReader, connection);
   await runtime.getModel(srcURL);
