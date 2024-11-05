@@ -1,0 +1,5 @@
+{
+    "name": "faa",
+    "version": "1.0.0",
+    "description": "A subset of the NTSB Flights Dataset, with information about flights, carriers, aircrafts, and more."
+}
