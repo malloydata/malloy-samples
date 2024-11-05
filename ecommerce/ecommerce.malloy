@@ -225,12 +225,16 @@ source: order_items is order_items_table extend {
     order_by: order_date asc
   }
 
+  -- Example of a bar-chart with a nested bar-chart
+  -- for drilling.
+  # bar_chart
   view: nested is {
     group_by: inventory_items.product_category
     aggregate:
       order_count
 
-    nest: total_sales_v, total_orders_v 
+    # tooltip bar_chart.size=sm
+    nest: total_sales_v
   }
 }
 
