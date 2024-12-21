@@ -36,7 +36,7 @@ source: user_order_facts is
     aggregate: first_order is min(created_at)
     aggregate: most_recent_order is max(created_at)
     aggregate: lifetime_orders is count()
-    aggregate: lifetime_spend is sale_price.sum() {where: status != 'Cancelled' & 'Returned'}
+    aggregate: lifetime_spend is sale_price.sum() {where: status != 'Cancelled' and status != 'Returned'}
   } extend {
   primary_key: user_id
 

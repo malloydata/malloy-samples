@@ -1,0 +1,157 @@
+##! experimental { composite_sources }
+
+import 'ecommerce.malloy'
+
+source: dim_ecommerce_users is order_items -> {
+  group_by:
+    user_id
+    users.city
+    users.state
+    users.country
+    users.traffic_source
+    users.age
+
+  aggregate:
+    user_first_order is min(created_at)
+    user_most_recent_order is max(created_at)
+    ct is count()
+    spend is sale_price.sum() {where: status != 'Cancelled' and status != 'Returned'}
+    user_cancelled_orders is order_count {where: status = 'Cancelled'}
+    user_returned_orders is order_count {where: status = 'Returned'}
+} extend {
+  dimension: 
+    top_customer is ct > 10
+
+    lifetime_order_tier is ct ?
+      pick '1 to 3' when  < 4
+      pick '4 to 6' when < 7
+      pick '7 to 10' when < 11
+      else '11+'
+
+    spend_category is spend ?
+      pick 'Low Spend' when < 50
+      pick 'Mid Spend' when < 500
+      pick 'High Spend' when < 1000
+      pick 'VIP' when >= 1000
+      else null
+
+  measure:
+    total_spend is sum(spend)
+    order_count is sum(ct)
+    cancelled_orders is sum(user_cancelled_orders)
+    returned_orders is sum(user_returned_orders)
+    percent_cancelled is round(100.0 * cancelled_orders / order_count, 0)
+    percent_returned is round(100.0 * returned_orders / order_count, 0)
+}
+
+source: orders_by_age is duckdb.table('../data/ecommerce_rollups/orders_by_age.parquet') extend {
+  measure:
+    order_count is sum(ct)
+    total_spend is sum(spend)
+}
+
+source: orders_by_traffic_source
+is duckdb.table('../data/ecommerce_rollups/orders_by_traffic_source.parquet') extend {
+  measure:
+    order_count is sum(ct)
+    total_spend is sum(spend)
+}
+
+source: orders_by_country_traffic_source 
+is duckdb.table('../data/ecommerce_rollups/orders_by_country_traffic_source.parquet') extend {
+  measure:
+    order_count is sum(ct)
+    total_spend is sum(spend)
+}
+
+source: orders_by_city_state_country 
+is duckdb.table('../data/ecommerce_rollups/orders_by_city_state_country.parquet') extend {
+  measure:
+    order_count is sum(ct)
+    total_spend is sum(spend)
+}
+
+
+source: ecommerce_customer_rollup is compose(
+  orders_by_age,
+  orders_by_traffic_source,
+  orders_by_country_traffic_source,
+  orders_by_city_state_country,
+  dim_ecommerce_users
+) extend {
+  join_one: users on user_id = users.id
+
+  view: drill is {
+    select: 
+      user_id
+      user_first_order
+      user_most_recent_order
+      top_customer
+      lifetime_order_tier
+      spend_category
+      city
+      state
+      country
+      traffic_source
+      age
+      ct
+      spend
+
+    limit: 100
+  }
+
+  view: search_index is {
+    index:
+      traffic_source
+      state
+      city
+      country
+      spend_category
+      age
+      lifetime_order_tier
+  }
+
+  view: by_traffic_source is {
+    group_by: traffic_source
+    aggregate: 
+      order_count
+      total_spend
+  }
+
+  view: by_state is {
+    group_by: country, state
+    aggregate: 
+      order_count
+      total_spend
+  }
+
+  view: by_city is {
+    group_by: country, state, city
+    aggregate: 
+      order_count
+      total_spend
+  }
+
+  view: by_country is {
+    group_by: country
+    aggregate: 
+      order_count
+      total_spend
+  }
+
+  view: by_age is {
+    group_by: age
+    aggregate: 
+      order_count
+      total_spend
+  }
+}
+
+
+run: ecommerce_customer_rollup -> by_city
+run: ecommerce_customer_rollup -> by_age
+run: ecommerce_customer_rollup -> by_traffic_source
+
+run: ecommerce_customer_rollup -> by_city + {
+  group_by: traffic_source
+}

@@ -1,0 +1,44 @@
+>>>malloy
+import 'ecommerce_customer_rollup.malloy'
+
+-- This file is used to generate aggregated rollups for use in a composite source, defined in 'ecommerce_customer_rollup.malloy'
+>>>sql
+-- connection: duckdb
+copy %{
+  dim_ecommerce_users -> {
+    group_by: age
+    aggregate:
+      spend is total_spend
+      ct is order_count
+  }
+}%  to 'data/ecommerce_rollups/orders_by_age.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
+>>>sql
+-- connection: duckdb
+copy %{
+  dim_ecommerce_users -> {
+    group_by: traffic_source
+    aggregate:
+      spend is total_spend
+      ct is order_count
+  }
+}%  to 'data/ecommerce_rollups/orders_by_traffic_source.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
+>>>sql
+-- connection: duckdb
+copy %{
+  dim_ecommerce_users -> {
+    group_by: country, traffic_source
+    aggregate:
+      spend is total_spend
+      ct is order_count
+  }
+}%  to 'data/ecommerce_rollups/orders_by_country_traffic_source.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
+>>>sql
+-- connection: duckdb
+copy %{
+  dim_ecommerce_users -> {
+    group_by: city, state, country
+    aggregate:
+      spend is total_spend
+      ct is order_count
+  }
+}%  to 'data/ecommerce_rollups/orders_by_city_state_country.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
