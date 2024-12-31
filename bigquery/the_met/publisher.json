@@ -1,0 +1,5 @@
+{
+    "name": "bq-the-met",
+    "version": "1.0.0",
+    "description":  "Looks at a catalog of over 200,000 public domain items from The Met (The Metropolitan Museum of Art). The catalog includes metadata about each piece of art, along with an image or images of the artifact."
+}

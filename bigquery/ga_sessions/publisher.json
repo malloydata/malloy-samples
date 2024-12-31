@@ -1,0 +1,5 @@
+{
+    "name": "bq-ga-sessions",
+    "version": "1.0.0",
+    "description": "Analyzing GA Session Data with Malloy. Malloy is ideally suited to working with nested data, and this is the place to see why. See how easily data at any level of nesting can be accessed and aggregated without needlessly complex queries or use of CTEs."
+}
