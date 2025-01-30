@@ -79,13 +79,13 @@ export const compileMSQL = async (path: string, connection: Connection) => {
       )}`;
   }
 
-  const files = {
+  const urlReader = {
     readURL: async (url: URL) => {
       const path = fileURLToPath(url);
       return fs.readFileSync(path, 'utf-8');
     },
   };
-  const runtime = new Runtime(files, connection);
+  const runtime = new Runtime({urlReader, connection});
 
   const importBaseURL = url;
   const mm = runtime.loadModel(malloyStatements, {importBaseURL});
