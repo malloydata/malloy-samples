@@ -26,3 +26,31 @@ run: product2 -> {
         ungrouped_brand_row_count_aggregation is all(count(), brand)
 }
 
+source: product3 is product2 extend {
+    view: view_with_extend is {
+
+        extend: {
+            measure:
+                test_measure1 is all(count(), brand)
+                test_measure2 is all(count())
+        }
+
+        group_by:
+            brand
+            category
+
+        aggregate:
+            test_measure1
+            test_measure2
+    }
+}
+
+-- This query compiles fine:
+run: product3 -> view_with_extend + {
+    group_by: department
+}
+
+-- This query, which is logically equivalent, does not:
+run: product3 -> {
+    group_by: department
+} + view_with_extend
