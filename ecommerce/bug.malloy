@@ -1,0 +1,28 @@
+import 'ecommerce.malloy'
+
+source: product2 is product extend {
+
+    measure:
+        row_count is count()
+        ungrouped_all_row_count_measure is all(count())
+        ungrouped_brand_row_count_measure is all(count(), brand)
+}
+
+run: product2 -> {
+    group_by:
+        brand
+        category
+
+    aggregate:
+        row_count
+
+        ungrouped_all_row_count_measure
+        ungrouped_all_row_count_aggregation is all(count())
+
+        -- These two columns should have the same value
+        -- But they don't; the measure version of the ungrouped_brand_row_count
+        -- returns the same value as the ungrouped_all_row_count.
+        ungrouped_brand_row_count_measure
+        ungrouped_brand_row_count_aggregation is all(count(), brand)
+}
+
