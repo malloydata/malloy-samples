@@ -26,9 +26,9 @@ import {Connection, Runtime} from '@malloydata/malloy';
 
 export const compileMalloy = async (path: string, connection: Connection) => {
   const srcURL = new URL(`file://${path}`);
-  const fileReader = {
+  const urlReader = {
     readURL: async (url: URL) => fs.readFileSync(url, 'utf-8'),
   };
-  const runtime = new Runtime(fileReader, connection);
+  const runtime = new Runtime({urlReader, connection});
   await runtime.getModel(srcURL);
 };
