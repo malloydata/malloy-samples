@@ -1,0 +1,68 @@
+>>>markdown
+# Rewriting nested pipelines on dialects that don't have coorelated subqueries against Arrays
+lloyd tabb - 2025-03-09
+
+Presto, MySQL, and Snowflake (and more) don't support the ability to write coorelated subqueries against arrays.  This notebook explains a strategy we can use to implement this feature by rewriting the Malloy queries.  In general, I think we need a Malloy query re-writer to do things like dead code elimination in queries.  This mechanism can be applied after compilation but before code generation.
+
+## Example
+The following code is generates a historgram per stage.  The historgram first collects values figures out minimum and maximum values and in the second stage groups the raw data into buckets.
+>>>malloy
+source: airports is duckdb.table('../data/airports.parquet') extend {
+  measure: airport_count is count()
+}
+
+run: airports -> {
+    group_by: state
+    aggregate: airport_count
+    # bar_chart
+    nest: by_elevation is {
+        aggregate: bin_size is (max(elevation) - min(elevation)) / 30
+        nest: data is  {
+        group_by: elevation
+        aggregate: row_count is count()
+        }
+    } -> {
+        group_by: elevation is 
+        floor(data.elevation / bin_size) * nullif(bin_size, 0) + bin_size / 2
+        aggregate: airport_count is data.row_count.sum()
+        order_by: elevation
+    }
+}
+>>>markdown
+# The Rewrite
+
+In order to rewrite this query we do two things.
+
+1) We run the query nesting the first stage.
+2) We add a new stage at in the main query
+    * In this new stage, any normal output field shows up in the group by.
+    * the second stage (or nth stage) all the the field reference in the nested query are prefixed with nested query
+3) We add an order by in the outer stage to retain ordering.
+>>>malloy
+run: airports -> {
+    group_by: state
+    aggregate: airport_count
+    # bar_chart
+    nest: by_elevation1 is {
+        aggregate: bin_size is (max(elevation) - min(elevation)) / 30
+        nest: data is  {
+        group_by: elevation
+        aggregate: row_count is count()
+        }
+    }
+} -> {
+  group_by: state, airport_count
+  # bar_chart
+  nest: by_elevation is {
+        group_by: elevation is 
+        floor(by_elevation1.data.elevation / by_elevation1.bin_size) 
+            * nullif(by_elevation1.bin_size, 0) + by_elevation1.bin_size / 2
+        aggregate: airport_count is by_elevation1.data.row_count.sum()
+        order_by: elevation
+  }
+  order_by: airport_count desc
+}
+>>>markdown
+The technique should work for an number of nested pipelines simultaneously.  (so if you had more than on nested view with multiple stages, it should work).
+
+I think the can be entirely done by looking at intermediate code.
