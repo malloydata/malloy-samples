@@ -22,7 +22,8 @@
  */
 
 import * as fs from 'fs';
-import {Connection, Runtime} from '@malloydata/malloy';
+import type {Connection} from '@malloydata/malloy';
+import {Runtime} from '@malloydata/malloy';
 
 export const compileMalloy = async (path: string, connection: Connection) => {
   const srcURL = new URL(`file://${path}`);
