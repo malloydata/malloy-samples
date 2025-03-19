@@ -23,13 +23,11 @@
 
 import {fileURLToPath, pathToFileURL} from 'url';
 import * as fs from 'fs';
-import {
-  MalloySQLParser,
-  MalloySQLSQLStatement,
-  MalloySQLStatementType,
-} from '@malloydata/malloy-sql';
-import {Connection, LogMessage, MalloyError, Runtime} from '@malloydata/malloy';
-import {EmbeddedMalloyQuery} from '@malloydata/malloy-sql/dist/types';
+import type {MalloySQLSQLStatement} from '@malloydata/malloy-sql';
+import {MalloySQLParser, MalloySQLStatementType} from '@malloydata/malloy-sql';
+import type {Connection, LogMessage} from '@malloydata/malloy';
+import {MalloyError, Runtime} from '@malloydata/malloy';
+import type {EmbeddedMalloyQuery} from '@malloydata/malloy-sql/dist/types';
 
 const fixLogRange = (
   uri: string,

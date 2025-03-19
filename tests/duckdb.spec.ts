@@ -36,7 +36,7 @@ const EXCEPT_LIST = [
   'tmp',
 ];
 
-describe(`DuckDB`, () => {
+describe('DuckDB', () => {
   let modelsFound = false;
   for (const dir of fs.readdirSync(SAMPLE_PROJECT_ROOT)) {
     if (EXCEPT_LIST.includes(dir)) continue;
