@@ -29,7 +29,7 @@ import {compileMSQL} from './utils/msql';
 
 const SAMPLE_PROJECT_ROOT = path.join(__dirname, '..', 'bigquery');
 
-describe(`BigQuery`, () => {
+describe('BigQuery', () => {
   let modelsFound = false;
   for (const dir of fs.readdirSync(SAMPLE_PROJECT_ROOT)) {
     const projectPath = path.join(SAMPLE_PROJECT_ROOT, dir);

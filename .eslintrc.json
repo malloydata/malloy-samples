@@ -13,7 +13,8 @@
     "no-console": "warn",
     "prettier/prettier": "error",
     "sort-keys": "off",
-    "no-duplicate-imports": "error",
+    "no-duplicate-imports": "off",
+    "@typescript-eslint/no-duplicate-imports": "error",
     "no-restricted-imports": [
       "error",
       {
@@ -29,7 +30,7 @@
     "no-throw-literal": "error",
     "@typescript-eslint/consistent-type-imports": [
       "error",
-      {"prefer": "no-type-imports"}
+      {"prefer": "type-imports"}
     ],
     "@typescript-eslint/no-unused-vars": [
       "warn",
@@ -39,5 +40,14 @@
       "warn",
       {"prefer": "parameter-property"}
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["scripts/**"],
+      "rules": {
+        "no-console": "off",
+        "node/no-unpublished-import": "off"
+      }
+    }
+  ]
 }
