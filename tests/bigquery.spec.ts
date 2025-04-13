@@ -23,17 +23,18 @@
 
 import fs from 'fs';
 import path from 'path';
-import {BigQueryConnection} from '@malloydata/db-bigquery';
-import {compileMalloy} from './utils/malloy';
-import {compileMSQL} from './utils/msql';
+import { BigQueryConnection } from '@malloydata/db-bigquery';
+import { compileMalloy } from './utils/malloy';
+import { compileMSQL } from './utils/msql';
 
-const SAMPLE_PROJECT_ROOT = path.join(__dirname, '..', 'bigquery');
+const SAMPLE_PROJECT_ROOT = path.join(__dirname, '..');
 
 describe('BigQuery', () => {
   let modelsFound = false;
   for (const dir of fs.readdirSync(SAMPLE_PROJECT_ROOT)) {
     const projectPath = path.join(SAMPLE_PROJECT_ROOT, dir);
-    if (!fs.statSync(projectPath).isDirectory()) continue;
+    // ignore non-directory or non-bigquery directories
+    if (!fs.statSync(projectPath).isDirectory() || !dir.startsWith('bigquery')) continue;
     for (const fn of fs.readdirSync(projectPath)) {
       if (fn.endsWith('.malloy')) {
         modelsFound = true;

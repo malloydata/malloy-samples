@@ -23,14 +23,13 @@
 
 import fs from 'fs';
 import path from 'path';
-import {DuckDBConnection} from '@malloydata/db-duckdb';
-import {compileMSQL} from './utils/msql';
-import {compileMalloy} from './utils/malloy';
+import { DuckDBConnection } from '@malloydata/db-duckdb';
+import { compileMSQL } from './utils/msql';
+import { compileMalloy } from './utils/malloy';
 
 const SAMPLE_PROJECT_ROOT = path.join(__dirname, '..');
 const EXCEPT_LIST = [
   'apijson.malloynb',
-  'bigquery',
   'build_titles.malloysql',
   'node_modules',
   'tmp',
@@ -41,7 +40,8 @@ describe('DuckDB', () => {
   for (const dir of fs.readdirSync(SAMPLE_PROJECT_ROOT)) {
     if (EXCEPT_LIST.includes(dir)) continue;
     const projectPath = path.join(SAMPLE_PROJECT_ROOT, dir);
-    if (!fs.statSync(projectPath).isDirectory()) continue;
+    // ignore non-directory or non-duckdb directories
+    if (!fs.statSync(projectPath).isDirectory() || dir.startsWith('bigquery')) continue;
     for (const fn of fs.readdirSync(projectPath)) {
       if (EXCEPT_LIST.includes(fn)) {
         // ignore it
