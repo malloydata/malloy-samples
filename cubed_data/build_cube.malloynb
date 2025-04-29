@@ -1,0 +1,86 @@
+>>>markdown
+# Roll up the flight data into a cube
+>>>sql
+-- connection: duckdb
+COPY (
+  WITH cube_table as (
+    SELECT 
+      dep_time::date as dep_date,
+      carrier,
+      origin,
+      destination,
+      tail_num,
+      sum(distance) as _total_distance,
+      count(distinct carrier) as _carrier_count,
+      count(distinct origin) as _origin_count,
+      count(distinct destination) as _destination_count,
+      count(tail_num) as _plane_count,
+      count(*) as _flight_count,
+      GROUPING_ID(dep_date, carrier, origin, destination, tail_num) as gid
+    FROM '../data/flights.parquet'
+    GROUP BY cube (dep_date, carrier, origin, destination, tail_num)
+  )
+  SELECT 
+    array_to_string([ 
+      if(~gid & 16,'dep_date', null),
+      if(~gid & 8,'carrier', null),  
+      if(~gid & 4,'origin', null),  
+      if(~gid & 2,'destination', null), 
+      if(~gid & 1,'tail_num', null),   
+    ],'.') as agg_level,
+    *
+  FROM cube_table
+) to 'flights_cubed.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
+>>>malloy
+source: flights_cubed is duckdb.table('./flights_cubed.parquet') extend {
+    measure: row_count is count()
+}
+>>>malloy
+query: agg_levels is flights_cubed -> {
+  group_by:
+    agg_level
+  aggregate:
+    c is row_count
+  order_by: c desc
+}
+
+query: agg_level_values is duckdb.sql("""
+  SELECT DISTINCT col FROM (
+    SELECT
+      UNNEST(split(agg_level, '.')) as col
+    FROM %{agg_levels}
+  )
+""")
+
+query: describe_cube is agg_levels -> {
+  join_cross: agg_level_values
+  group_by:
+    key is agg_level
+  # list
+  nest: except_fields is {
+    where: agg_level !~  concat('%',agg_level_values.col,'%')
+    aggregate: except is string_agg(concat('`',agg_level_values.col,'`'),',')
+  }
+  group_by: c
+  order_by: c desc
+} -> {
+  select: key, except_fields.except, c
+  order_by: c 
+  limit: 10000
+}
+>>>malloy
+run: describe_cube -> {
+  select: text is concat(
+"""
+source: `cube:""",key,"""` is flights_cubed extend {
+  where: agg_level = '""",key,"""';
+  except: """, except, """
+}""" 
+  )
+}
+>>>malloy
+run: describe_cube -> {
+    aggregate: c is concat("""
+      source: flights_cube_base is compose(""",string_agg(concat('`cube:',key,'`')) ,""")
+    """)
+}

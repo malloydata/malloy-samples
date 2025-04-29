@@ -1,0 +1,14 @@
+##! experimental {access_modifiers}
+
+import {flights_cube_base} from 'flights_cube.malloy'
+
+source: flights is flights_cube_base include {
+  public: *
+  internal: 
+    _total_distance, _carrier_count, _origin_count,
+    _destination_count, _plane_count, _flight_count
+}  extend {
+  measure:
+    flight_count is _flight_count.sum()
+    total_distance is _total_distance.sum()
+}
