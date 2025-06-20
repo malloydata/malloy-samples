@@ -46,13 +46,12 @@ source: recalls is duckdb.table('data/auto_recalls.csv') extend {
       aggregate:
         recall_count
     }
-  }
-  -> {
+  } -> {
     where: top_manufacturers.Manufacturer = x.Manufacturer
     # x
     group_by: x.recall_year
     # y
-    group_by: x.recall_count
+    aggregate: x.recall_count.sum()
     # series
     group_by: x.Manufacturer
     limit: 100000
