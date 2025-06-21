@@ -4,8 +4,8 @@ It is often useful to see how groups of people behave over time.  The most simpl
 
 We'll use the following model
 >>>malloy
-source: order_items is duckdb.table('../data/order_items.parquet') extend {
-  join_one: users is duckdb.table('../data/users.parquet') on user_id=users.id
+source: order_items is duckdb.table('data/order_items.parquet') extend {
+  join_one: users is duckdb.table('data/users.parquet') on user_id=users.id
   measure: 
     user_count is count(user_id)
     order_count is count()
