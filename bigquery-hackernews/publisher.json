@@ -1,0 +1,5 @@
+{
+    "name": "bigquery-hackernews",
+    "version": "1.0.0",
+    "description": "All the Hacker News (https://news.ycombinator.com) posts, ever. This is just a fun dataset. Includes examples of using regular expressions to parse data, pick (Malloy's improvement upon CASE statements), and imports to spin off a specific analysis of posts about FAANG companies."
+}

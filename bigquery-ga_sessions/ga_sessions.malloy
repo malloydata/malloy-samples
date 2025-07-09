@@ -1,0 +1,88 @@
+source:ga_sessions is bigquery.table('bigquery-public-data.google_analytics_sample.ga_sessions_20170801') extend {
+  dimension: start_time is timestamp_seconds!timestamp(visitStartTime)
+
+  measure:
+    user_count is count(fullVisitorId)
+    session_count is count()
+    total_visits is totals.visits.sum()
+    total_hits is totals.hits.sum()
+    total_page_views is totals.pageviews.sum()
+    t2 is totals.pageviews.sum()
+    total_productRevenue is hits.product.productRevenue.sum()
+    hits_count is hits.count()
+    sold_count is hits.count() { where: hits.product.productQuantity > 0 }
+
+  view: by_source is {
+    where: trafficSource.`source` != '(direct)'
+    group_by: trafficSource.`source`
+    aggregate: hits_count
+    limit: 10
+  }
+
+  # bar_chart
+  view: by_adContent is {
+    group_by: device.browser
+    aggregate: user_count
+    group_by: device.deviceCategory
+  }
+  view: by_region is {
+    where: geoNetwork.region !~ '%demo%'
+    group_by: geoNetwork.region
+    aggregate: user_count
+    limit: 10
+  }
+
+  # bar_chart
+  view: by_device is {
+    group_by: device.browser
+    aggregate: user_count
+    group_by: device.deviceCategory
+  }
+
+  # bar_chart
+  view: by_category is {
+    group_by: category is hits.product.v2ProductCategory
+    aggregate: total_productRevenue
+    aggregate: sold_count
+    limit: 10
+  }
+
+  # bar_chart
+  view: by_hour_of_day is {
+    group_by: gsession_hour is hour(start_time)
+    aggregate: session_count
+    order_by: 1
+  }
+  view: page_load_times is {
+    group_by: hits.page.pageTitle
+    aggregate: hit_count is hits.count()
+    # bar_chart
+    nest: load_bar_chart is {
+      group_by: hit_seconds is floor(hits.latencyTracking.pageLoadTime / 2) * 2
+      aggregate: hits_count
+    }
+    limit: 10
+  }
+
+  view: by_page_title is { where: totals.transactionRevenue > 0
+    group_by: hits.page.pageTitle
+    aggregate: hits_count
+    aggregate: sold_count
+  }
+
+  view: by_all is {
+    nest: by_source
+    nest: by_adContent
+    nest: by_region
+    nest: by_category
+  }
+}
+
+# dashboard
+query: sessions_dashboard is ga_sessions -> {
+  nest:
+    by_region
+    by_device
+    by_source
+    by_category
+}

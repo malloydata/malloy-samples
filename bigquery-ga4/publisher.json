@@ -1,0 +1,5 @@
+{
+    "name": "bigquery-ga4",
+    "version": "1.0.0",
+    "description": "Google Analytics 4 data from BigQuery"
+}

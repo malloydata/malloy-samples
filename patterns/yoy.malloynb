@@ -7,7 +7,7 @@ There are a couple of different ways to go about this in Malloy.
 We can compare performance of different years using the same x and y-axes.  Line charts take the x-axis, y-axis and dimensional (color) axis as parameters.
 In this case, the x-axis is `month_of_year`, the y-axis is `flight_count` and the dimensional (color) axis is the year.
 >>>malloy
-source: flights is duckdb.table('../data/flights.parquet') extend {
+source: flights is duckdb.table('data/flights.parquet') extend {
   measure: flight_count is count()
 }
 >>>malloy
@@ -61,9 +61,9 @@ run: flights -> {
 ## Bonus: Relative timeframes and expression reuse
 You might like to write queries that automatically adjust based on the current timeframe.  The query below uses date arithmetic to filter the data to time frames relative to now.  These measures probably aren't generally useful in the model so we use the `extend:` operation to add these measure so they are only locally accessable within the query.
 >>>malloy
-source: inventory_items is duckdb.table('../data/inventory_items.parquet') 
+source: inventory_items is duckdb.table('data/inventory_items.parquet') 
 
-source: order_items is duckdb.table('../data/order_items.parquet') extend {
+source: order_items is duckdb.table('data/order_items.parquet') extend {
   join_one: inventory_items  on inventory_item_id = inventory_items.id
   measure: order_item_count is count()
 

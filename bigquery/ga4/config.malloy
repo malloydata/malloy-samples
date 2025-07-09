@@ -1,2 +1,0 @@
-// Update this source to point to your own GA4 export table in BigQuery:
-source: events_table is bigquery.table('bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*')
