@@ -12,6 +12,7 @@ source: recalls is duckdb.table('auto_recalls.csv') extend {
       'https://www.nhtsa.gov/recalls?nhtsaId=',
       `NHTSA ID`
     )
+    recall_year is year(`Report Received Date`)
   view: by_manufacturer is {
     group_by: `Manufacturer`
     aggregate:
@@ -28,11 +29,19 @@ source: recalls is duckdb.table('auto_recalls.csv') extend {
   }
 
   view: by_year is {
-    group_by: recall_year is year(`Report Received Date`)
+    group_by: recall_year 
     aggregate:
       recall_count
     order_by: recall_year
   }
+
+  view: by_year_moving_avg is {
+    group_by: recall_year
+    calculate:
+      recall_count_moving_avg is avg_moving(recall_count, 5)
+    order_by: recall_year
+  }
+
 
   # line_chart
   view: by_year_manufacturer_line_chart is {

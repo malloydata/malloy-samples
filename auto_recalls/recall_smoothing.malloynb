@@ -1,0 +1,106 @@
+>>>markdown
+# Using nesting to better control charting.
+>>>malloy
+import "auto_recalls.malloy"
+>>>markdown
+### `by_year`
+>>>malloy
+# line_chart
+run: recalls -> by_year
+>>>markdown
+###    `by_year_moving_avg`
+>>>malloy
+# line_chart
+run: recalls -> by_year_moving_avg
+>>>markdown
+### dimensionalized smoothed using tabluar query
+Using tablular query has both the date and values in the query.
+>>>malloy
+# line_chart
+run: recalls -> {
+    group_by: 
+        # series
+        Manufacturer
+        # x
+        recall_year 
+    aggregate:
+      # y
+      recall_count
+    order_by: recall_year
+    limit: 100000
+
+}
+>>>markdown
+### chart above smoothed
+
+* notice
+
+1) We are required to write the avg_moving function in the query, it isn't in the model
+2) if we want to modify the the dimension (Manufacturer), we have to edit query in two places.
+3) We can't really take advantage of modeling.
+>>>malloy
+# line_chart
+run: recalls -> {
+    group_by: 
+        # series
+        Manufacturer
+        # x
+        recall_year 
+    calculate:
+      # y
+      recall_count_moving is avg_moving( recall_count, 5) {partition_by: Manufacturer order_by: recall_year}
+    order_by: recall_year
+    limit: 100000
+}
+>>>markdown
+### Using Nesting...
+1) we are able to use modeled components
+>>>malloy
+run: recalls -> {
+    group_by: Manufacturer
+    aggregate: recall_count
+    # line_chart
+    nest: by_year
+}
+>>>markdown
+### We can easily change dimensionality
+>>>malloy
+run: recalls -> {
+    group_by: Component
+    aggregate: recall_count
+    # line_chart
+    nest: by_year
+}
+>>>markdown
+### We can easily smooth using modeled components
+>>>malloy
+run: recalls -> {
+    group_by: Manufacturer
+    aggregate: recall_count
+    # line_chart
+    nest: by_year_moving_avg
+}
+>>>markdown
+## if the renderer were smarter, it could render this as a single visualization
+The second stage simply re-aranges the data so our charting library can deal with it.  This could be coded into the library.
+>>>malloy
+# line_chart
+run: recalls -> {
+    group_by: Manufacturer
+    aggregate: recall_count
+    # line_chart
+    nest: by_year_moving_avg
+    limit: 3
+} 
+// re-arange the data so our charting library can deal with it.
+-> {
+    group_by: 
+      # series
+      Manufacturer
+      # x
+      by_year_moving_avg.recall_year
+    # y
+    aggregate: by_year_moving_avg.recall_count_moving_avg.sum()
+    limit: 10000
+    order_by: recall_year
+}
