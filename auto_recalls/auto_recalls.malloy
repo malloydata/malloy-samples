@@ -13,6 +13,7 @@ source: recalls is duckdb.table('auto_recalls.csv') extend {
       `NHTSA ID`
     )
     recall_year is year(`Report Received Date`)
+    recall_decade is floor(year(`Report Received Date`)/10)*10
   view: by_manufacturer is {
     group_by: `Manufacturer`
     aggregate:
@@ -41,6 +42,37 @@ source: recalls is duckdb.table('auto_recalls.csv') extend {
       recall_count_moving_avg is avg_moving(recall_count, 5)
     order_by: recall_year
   }
+
+  view: by_year_percent_of_first is {
+    group_by: recall_year
+    calculate:
+      # percent
+      recall_count_percent_of_first is recall_count/first_value(recall_count) {order_by: recall_year}
+    order_by: recall_year
+  }
+
+ 
+  view: decade_over_decade is {
+    group_by: recall_decade
+
+    # line_chart
+    nest: by_year is {
+      group_by: year_offset is recall_year - recall_decade
+      aggregate: recall_count
+      order_by: year_offset
+    }
+  }
+  -> {
+    group_by: 
+      # series
+      recall_decade
+      # x
+      by_year.year_offset
+    # y
+    aggregate: by_year.recall_count.sum()
+    limit: 10000
+    order_by: year_offset
+}
 
 
   # line_chart
