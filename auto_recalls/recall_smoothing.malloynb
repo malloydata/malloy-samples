@@ -1,5 +1,14 @@
 >>>markdown
 # Using nesting to better control charting.
+
+I'm proposing that each of the metrics have auto generated time series.  With modification to our charting library, we should be a ble to reuse these timeseries charts with any dimensionality.
+
+* by_dau_day
+* by_dau_day_moving_avg_7
+* by_dau_day_percent_of_first
+* by_dau_week_over_week
+* by_dau_month_over_month
+* by_dau_year_over_year
 >>>malloy
 import {recalls} from "auto_recalls.malloy"
 >>>markdown
@@ -61,6 +70,7 @@ run: recalls -> {
     aggregate: recall_count
     # line_chart
     nest: by_year
+    limit: 3
 }
 >>>markdown
 ### We can easily change dimensionality
