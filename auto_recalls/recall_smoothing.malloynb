@@ -131,17 +131,47 @@ run: recalls -> {
 }
 >>>markdown
 ### Period over period
+Period over period uses the same technique to build nested series easily and understandably.
+>>>malloy
+# line_chart
+run: recalls -> {
+    group_by: recall_decade
+
+    # line_chart
+    nest: by_year is {
+      group_by: year_offset is recall_year - recall_decade
+      aggregate: recall_count
+      order_by: year_offset
+    }
+  }
+  -> {
+    group_by: 
+      # series
+      recall_decade
+      # x
+      by_year.year_offset
+    # y
+    aggregate: by_year.recall_count.sum()
+    limit: 10000
+    order_by: year_offset
+}
+>>>markdown
+### Placed in the model, it is easy to sue.
 >>>malloy
 # line_chart
 run: recalls -> decade_over_decade + {
     where: recall_year >= 1970
 }
+>>>markdown
+### Filtering let's you create specfic graphs.
 >>>malloy
 # line_chart
 run: recalls -> decade_over_decade + {
     where: Manufacturer ~'Ford%'
     where: recall_year >= 1970
 }
+>>>markdown
+### Nesting lets you expand across 
 >>>malloy
 run: recalls -> {
     group_by: Manufacturer
