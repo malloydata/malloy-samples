@@ -1,7 +1,0 @@
-[
-    {
-        "type": "bigquery",
-        "name": "bigquery",
-        "bigqueryConnection": { }
-    }
-]
