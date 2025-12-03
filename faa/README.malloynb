@@ -10,3 +10,7 @@ Analysis
 * [Aircraft Manufacturer Analysis](aircraft_analysis.malloynb)
 * [Destination Analysis](destination_analysis.malloynb)
 * [Sessionization - Tracking individual planes](sessionization.malloynb)
+>>>malloy
+import "airports.malloy"
+
+run: airports -> by_facility_type
