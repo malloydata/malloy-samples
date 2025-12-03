@@ -1,3 +1,4 @@
+
 >>>markdown
 # Automobile Recalls
 This data is the entire recall dataset from the NHTSA.  Source data can be found.
@@ -6,7 +7,10 @@ https://catalog.data.gov/dataset/recalls-data
 
 ## Explore Auto Recalls
 >>>malloy
+##(filters) ["recalls.Manufacturer", "recalls.Major Recall", "recalls.Subject"]
 import 'auto_recalls.malloy'
+>>>markdown
+
 >>>markdown
 ### Dashboard showing top 3 manufacturers by recall count
 >>>malloy

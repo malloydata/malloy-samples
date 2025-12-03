@@ -1,6 +1,17 @@
 source: carriers is duckdb.table('data/carriers.parquet') extend {
   primary_key: code
   measure: carrier_count is count()
+  rename:
+  nickname_old is nickname
+  name_old is name
+
+  dimension:
+    #(filter) {"type": "Star"}
+    nickname is nickname_old 
+
+    #(index_values) n=-1
+    #(filter) {"type": "Retrieval"}
+    name is name_old 
 }
 
 source: airports is duckdb.table('data/airports.parquet') extend {
@@ -26,6 +37,17 @@ source: flights is duckdb.table('data/flights.parquet') extend {
   // rename some fields as from their physical names
   rename: origin_code is origin
   rename: destination_code is destination
+
+  dimension:
+    #(filter) {"type": "Star"}
+    origin_code2 is origin_code
+    
+    #(filter) {"type": "Star"}
+    destination_code2 is destination_code
+
+    #(filter) {"type": "DateMinMax"}
+    flight_departure is dep_time
+
 
   join_one: carriers with carrier
   join_one: origin is airports with origin_code

@@ -1,7 +1,8 @@
 >>>markdown
 # Carrier Analysis
 >>>malloy
-import {flights} from 'flights.malloy'
+##(filters) ["flights.origin_code2", "carriers.name", "carriers.nickname", "flights.flight_departure"]
+import {flights, carriers} from 'flights.malloy'
 >>>markdown
 ### Basic Statistics
 >>>malloy
@@ -14,8 +15,6 @@ run: flights -> carriers_over_time
 ### Carrier Overview
 A dashboard showing high-level information for each Carrier"
 >>>malloy
-// broken: https://github.com/malloydata/malloy/issues/1474
-
 # dashboard
 run: flights -> {
   group_by: carrier_name is carriers.nickname
