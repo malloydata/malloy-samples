@@ -1,0 +1,282 @@
+// Renderer Examples
+// This file demonstrates all major Malloy renderer features
+// Run any view to see the visualization
+
+import "ecommerce.malloy"
+
+source: examples is order_items extend {
+  dimension:
+    created_month is created_at.month
+
+  // ============================================================
+  // BAR CHARTS
+  // ============================================================
+
+  // Basic bar chart - axes inferred from query structure
+  # bar_chart
+  view: example_basic_bar is {
+    group_by: inventory_items.product_category
+    aggregate: total_sales
+    limit: 10
+  }
+
+  // Stacked bar chart - use .stack with explicit # x and # series tags
+  # bar_chart.stack
+  view: example_stacked_bar is {
+    group_by:
+      # x
+      inventory_items.product_category
+      # series
+      inventory_items.product_department
+    aggregate: order_item_count
+    limit: 10
+  }
+
+  // Dimension series - 2 dimensions with # x and # series for grouped bars (side by side)
+  # bar_chart
+  view: example_dimension_series is {
+    group_by:
+      # x
+      inventory_items.product_category
+      # series
+      inventory_items.product_department
+    aggregate: order_item_count
+    limit: 10
+  }
+
+  // Measure series - multiple # y aggregates create different colored bars
+  # bar_chart
+  view: example_measure_series is {
+    group_by: inventory_items.product_category
+    # y
+    aggregate: total_sales
+    # y
+    aggregate: total_gross_margin
+    limit: 10
+  }
+
+  // ============================================================
+  // INDEPENDENT AXES
+  // ============================================================
+
+  // Default: nested charts share the same Y-axis scale
+  view: example_shared_axes is {
+    group_by: inventory_items.product_category
+    aggregate: total_sales
+    # bar_chart
+    nest: by_status is {
+      group_by: status
+      aggregate: order_item_count
+      limit: 5
+    }
+    limit: 3
+  }
+
+  // Independent Y-axis - each nested chart scales to its own data
+  view: example_independent_axes is {
+    group_by: inventory_items.product_category
+    aggregate: total_sales
+    # bar_chart { y.independent }
+    nest: by_status is {
+      group_by: status
+      aggregate: order_item_count
+      limit: 5
+    }
+    limit: 3
+  }
+
+  // ============================================================
+  // LINE CHARTS
+  // ============================================================
+
+  // Basic time series
+  # line_chart
+  view: example_time_series is {
+    group_by: created_month
+    aggregate: total_sales
+    order_by: created_month
+    limit: 100
+  }
+
+  // Multiple lines using series
+  # line_chart { series.limit=5 }
+  view: example_many_lines is {
+    # x
+    group_by: created_month
+    # series
+    group_by: inventory_items.product_category
+    aggregate: total_sales
+    order_by: created_month
+    limit: 1000
+  }
+
+  // ============================================================
+  // TABLES
+  // ============================================================
+
+  // Pivot - dimensions become column headers
+  view: example_pivot is {
+    group_by: inventory_items.product_category
+    aggregate: total_sales
+    # pivot
+    nest: by_status is {
+      group_by: status
+      aggregate: order_item_count
+    }
+    limit: 5
+  }
+
+  // Column width control
+  view: example_column_width is {
+    group_by:
+      # column { width=sm }
+      inventory_items.product_category
+      # column { width=lg }
+      inventory_items.product_name
+    aggregate:
+      # column { width=md }
+      total_sales
+    limit: 10
+  }
+
+  // ============================================================
+  // DASHBOARDS
+  // ============================================================
+
+  // Basic dashboard with KPIs and charts
+  # dashboard
+  view: example_dashboard is {
+    aggregate:
+      # label='Total Revenue'
+      total_sales
+      # label='Orders'
+      order_count
+      # label='Margin'
+      total_gross_margin
+
+    # bar_chart
+    nest: top_categories is {
+      group_by: inventory_items.product_category
+      aggregate: total_sales
+      limit: 5
+    }
+
+    # line_chart
+    nest: monthly_trend is {
+      group_by: created_month
+      aggregate: total_sales
+      order_by: created_month
+    }
+  }
+
+  // Dashboard with break for layout control
+  # dashboard
+  view: example_dashboard_with_break is {
+    aggregate: total_sales, order_count
+
+    # bar_chart
+    nest: by_category is {
+      group_by: inventory_items.product_category
+      aggregate: total_sales
+      limit: 5
+    }
+
+    # break
+    nest: by_brand is {
+      group_by: inventory_items.product_brand
+      aggregate: total_sales
+      limit: 10
+    }
+  }
+
+  // ============================================================
+  // TOOLTIPS
+  // ============================================================
+
+  // Simple value tooltips
+  # bar_chart
+  view: example_tooltip_values is {
+    group_by: inventory_items.product_category
+    aggregate: total_sales
+    # tooltip
+    aggregate: order_item_count
+    # tooltip
+    aggregate: total_gross_margin
+    limit: 10
+  }
+
+  // Chart tooltips - mini-charts on hover
+  # bar_chart
+  view: example_tooltip_chart is {
+    group_by: inventory_items.product_category
+    aggregate: total_sales
+    # tooltip bar_chart.size=xs
+    nest: by_status is {
+      group_by: status
+      aggregate: order_item_count
+      limit: 5
+    }
+    limit: 10
+  }
+
+  // ============================================================
+  // NUMBER FORMATTING
+  // ============================================================
+
+  // Various number formats
+  view: example_number_formats is {
+    aggregate:
+      # currency
+      revenue is total_sales
+
+      # percent
+      margin_pct is total_gross_margin / total_sales
+
+      # number="#,##0.00"
+      avg_order is total_sales / order_count
+  }
+
+  // ============================================================
+  // LISTS
+  // ============================================================
+
+  // List - comma-separated values
+  view: example_list is {
+    group_by: inventory_items.product_category
+    aggregate: total_sales
+    # list
+    nest: top_brands is {
+      group_by: inventory_items.product_brand
+      aggregate: total_sales
+      order_by: total_sales desc
+      limit: 3
+    }
+    limit: 5
+  }
+
+  // List detail - value with detail in parentheses
+  view: example_list_detail is {
+    group_by: inventory_items.product_category
+    aggregate: total_sales
+    # list_detail
+    nest: top_brands is {
+      group_by: inventory_items.product_brand
+      aggregate: order_item_count
+      order_by: order_item_count desc
+      limit: 3
+    }
+    limit: 5
+  }
+
+  // ============================================================
+  // CHART TITLES
+  // ============================================================
+
+  // Custom title and subtitle (# label doesn't work for chart axes)
+  # bar_chart { title='Revenue by Category' subtitle='Top 10 categories by total sales' }
+  view: example_chart_title is {
+    group_by: inventory_items.product_category
+    aggregate: total_sales
+    limit: 10
+  }
+}
