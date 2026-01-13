@@ -1,6 +1,6 @@
 // Auto Recalls: CSV example
 ##! m4warnings
-source: recalls is duckdb.table('auto_recalls.csv') extend {
+source: recalls is duckdb.table('data/auto_recalls.csv') extend {
   measure:
     recall_count is count()
     percent_of_recalls is recall_count/all(recall_count)*100
@@ -46,13 +46,12 @@ source: recalls is duckdb.table('auto_recalls.csv') extend {
       aggregate:
         recall_count
     }
-  }
-  -> {
+  } -> {
     where: top_manufacturers.Manufacturer = x.Manufacturer
     # x
     group_by: x.recall_year
     # y
-    group_by: x.recall_count
+    aggregate: x.recall_count.sum()
     # series
     group_by: x.Manufacturer
     limit: 100000

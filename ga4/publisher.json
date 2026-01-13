@@ -1,0 +1,5 @@
+{
+    "name": "ga4",
+    "version": "1.0.0",
+    "description": "Public data from Google Analytics with examples of how to compute user and events statistics." 
+}
