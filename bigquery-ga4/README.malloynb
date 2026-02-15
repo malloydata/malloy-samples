@@ -1,0 +1,39 @@
+>>>markdown
+# Analyzing GA4 Data with Malloy
+
+This folder contains a basic Malloy model on top of GA4 data in BigQuery, along with some queries to start your analysis.
+>>>malloy
+import 'ga4.malloy'
+>>>markdown
+Calculate number of page views and unique users with page views by day:
+>>>malloy
+run: events -> {
+  group_by: event_timestamp.day
+
+  aggregate:
+    event_count is source.count()
+    distinct_users is source.count(user_pseudo_id)
+
+  where: (event_name ? 'page_view')
+
+  limit: 25
+}
+>>>markdown
+Run one of the saved views from the `purchase_events` source. Saved views are pre-defined queries that can be executed, and composed with each other:
+>>>malloy
+run: purchase_events -> revenue_by_day + { limit: 10 }
+>>>markdown
+Nesting allows for interesting composition of different slices of the data. In the above query, we looked at revenue by day. We can also nest queries to look at how those days break down by another dimension, such as device category:
+>>>malloy
+run: purchase_events -> revenue_by_day + {
+  limit: 10
+  nest: revenue_by_device_category
+}
+>>>markdown
+Queries can be arbitrarily nested, and more than one nest can be applied to a query. For example, n addition to looking at breakdown by category, we can look at breakdown by country as well:
+>>>malloy
+run: purchase_events -> revenue_by_day + {
+  limit: 10
+  nest: revenue_by_device_category
+  nest: revenue_by_country + { top: 5 }
+}

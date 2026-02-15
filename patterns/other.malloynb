@@ -5,7 +5,7 @@ Often you want to limit the number of group-by values in a table, and bucket eve
 
 In the `top_states_by_eleveation` query below, we have a query with two stages. The first stage calculates the top states and nests the data to be aggregated. The second pipeline stage produces the actual aggregation.
 >>>malloy
-source: airports is duckdb.table('../data/airports.parquet') extend {
+source: airports is duckdb.table('data/airports.parquet') extend {
   measure: 
     airport_count is count()
     avg_elevation is elevation.avg()

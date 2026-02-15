@@ -1,10 +1,10 @@
-source: airports is duckdb.table('../data/airports.parquet') extend {
+source: airports is duckdb.table('data/airports.parquet') extend {
   rename: facility_type is fac_type
 
   measure: airport_count is count()
 
   view: by_state is {
-    where: state != null
+    where: state is not null
     group_by: state
     aggregate: airport_count
   }

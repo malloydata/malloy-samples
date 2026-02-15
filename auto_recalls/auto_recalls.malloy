@@ -1,6 +1,6 @@
 // Auto Recalls: CSV example
 ##! m4warnings
-source: recalls is duckdb.table('auto_recalls.csv') extend {
+source: recalls is duckdb.table('data/auto_recalls.csv') extend {
   measure:
     recall_count is count()
     percent_of_recalls is recall_count/all(recall_count)*100
@@ -12,6 +12,30 @@ source: recalls is duckdb.table('auto_recalls.csv') extend {
       'https://www.nhtsa.gov/recalls?nhtsaId=',
       `NHTSA ID`
     )
+
+  rename:
+   Subject_old is Subject
+   Manufacturer_old is Manufacturer
+   `Corrective Action_old` is `Corrective Action`
+   `Consequence Summary_old` is `Consequence Summary`
+
+  dimension:
+    #(index_values) n=-1
+    #(filter) {"type": "Retrieval"}
+    Subject is Subject_old
+
+    #(filter) {"type": "Star"}
+    Manufacturer is Manufacturer_old
+
+    #(index_values) n=-1
+    `Corrective Action` is `Corrective Action_old`
+
+    #(index_values) n=-1
+    `Consequence Summary` is `Consequence Summary_old`
+
+    #(filter) {"type": "Boolean"}
+    `Major Recall` is ifnull(`Potentially Affected`, 0) > 100000
+
   view: by_manufacturer is {
     group_by: `Manufacturer`
     aggregate:
@@ -52,11 +76,11 @@ source: recalls is duckdb.table('auto_recalls.csv') extend {
     # x
     group_by: x.recall_year
     # y
-    group_by: x.recall_count
+    aggregate: recall_count is x.recall_count.sum()
     # series
     group_by: x.Manufacturer
     limit: 100000
-    order_by: 1, 3
+    order_by: 1, 2
   }
 
   view: recent_recalls is {
