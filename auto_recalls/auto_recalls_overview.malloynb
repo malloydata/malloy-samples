@@ -1,0 +1,39 @@
+
+>>>markdown
+# Automobile Recalls
+The complete recall dataset from the [NHTSA](https://www.nhtsa.gov/) (National Highway Traffic Safety Administration), covering 26,000+ recalls from 1966 to 2022.
+
+Source data: https://catalog.data.gov/dataset/recalls-data
+
+## Explore Auto Recalls
+>>>malloy
+##(filters) ["recalls.manufacturer", "recalls.is_major_recall", "recalls.recall_subject"]
+import 'auto_recalls.malloy'
+>>>markdown
+
+>>>markdown
+### Top 5 Manufacturers — Recall Trends Over Time
+>>>malloy
+run: recalls -> by_year_manufacturer_line_chart
+>>>markdown
+### Recall Dashboard — Top 3 Manufacturers
+>>>malloy
+run: recalls -> recall_dashboard + {limit: 3}
+>>>markdown
+### Most Recent Recalls
+>>>malloy
+run: recalls -> recent_recalls + {limit: 10}
+>>>markdown
+### Biggest Recalls of All Time (by vehicles affected)
+>>>malloy
+run: recalls -> biggest_recalls + {limit: 10}
+>>>markdown
+### Recalls by Component
+>>>malloy
+run: recalls -> by_component + {limit: 15}
+>>>markdown
+### Recalls Involving Brakes
+>>>malloy
+run: recalls -> recall_dashboard + {
+  where: `Recall Description` ~r'brake'
+}

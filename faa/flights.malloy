@@ -1,78 +1,268 @@
-source: carriers is duckdb.table('data/carriers.parquet') extend {
+##! experimental.access_modifiers
+
+#(doc) Airline carriers with name and nickname.
+source: carriers is duckdb.table('data/carriers.parquet')
+include {
+  #(doc "Carrier code (e.g. WN, DL, AA)")
+  public: code
+  #(doc "Carrier full name")
+  public: name
+  #(doc "Carrier short name")
+  public: nickname
+}
+extend {
   primary_key: code
-  measure: carrier_count is count()
-  rename:
-  nickname_old is nickname
-  name_old is name
+
+  measure:
+    #(doc) Distinct carrier count
+    carrier_count is count()
+}
+
+#(doc) FAA airport facilities with location and metadata.
+source: airports is duckdb.table('data/airports.parquet')
+include {
+  #(doc "Airport code (e.g. SFO, LAX)")
+  public: code
+  #(doc "Full airport name")
+  public: full_name
+  #(doc "City")
+  public: city
+  #(doc "County")
+  public: county
+  #(doc "State")
+  public: state
+  #(doc "FAA region")
+  public: faa_region
+  #(doc "Facility type")
+  public: fac_type
+  #(doc "Major airport flag: Y or N")
+  public: major
+  #(doc "Latitude")
+  public: latitude
+  #(doc "Longitude")
+  public: longitude
+  #(doc "Elevation in feet")
+  public: elevation
+  #(doc "Has control tower")
+  public: cntl_twr
+  internal: id
+  internal: site_number
+  internal: fac_use
+  internal: faa_dist
+  internal: own_type
+  internal: aero_cht
+  internal: cbd_dist
+  internal: cbd_dir
+  internal: act_date
+  internal: cert
+  internal: fed_agree
+  internal: cust_intl
+  internal: c_ldg_rts
+  internal: joint_use
+  internal: mil_rts
+}
+extend {
+  primary_key: code
 
   dimension:
-    #(filter) {"type": "Star"}
-    nickname is nickname_old 
+    #(doc) Display name combining code and full name
+    name is concat(code, '-', full_name)
 
-    #(index_values) n=-1
-    #(filter) {"type": "Retrieval"}
-    name is name_old 
+  measure:
+    #(doc) Distinct airport count
+    airport_count is count()
 }
 
-source: airports is duckdb.table('data/airports.parquet') extend {
-  primary_key: code
-  measure: airport_count is count()
-  dimension: name is concat(code, '-', full_name )
+#(doc) Aircraft model specifications including manufacturer, seat count, and engine details.
+source: aircraft_models is duckdb.table('data/aircraft_models.parquet')
+include {
+  #(doc "Aircraft model code (PK)")
+  public: aircraft_model_code
+  #(doc "Aircraft manufacturer (e.g. BOEING, CESSNA)")
+  public: manufacturer
+  #(doc "Model designation")
+  public: model
+  #(doc "Number of seats")
+  public: seats
+  #(doc "Number of engines")
+  public: engines
+  #(doc "Cruising speed in knots")
+  public: speed
+  #(doc "Maximum weight in pounds")
+  public: weight
+  internal: aircraft_type_id
+  internal: aircraft_engine_type_id
+  internal: aircraft_category_id
+  internal: amateur
 }
-
-source: aircraft_models is duckdb.table('data/aircraft_models.parquet') extend {
+extend {
   primary_key: aircraft_model_code
-  measure: aircraft_model_count is count()
+
+  measure:
+    #(doc) Distinct aircraft model count
+    aircraft_model_count is count()
 }
 
-source: aircraft is duckdb.table('data/aircraft.parquet') extend {
+#(doc) Registered aircraft with tail numbers and model linkage.
+source: aircraft is duckdb.table('data/aircraft.parquet')
+include {
+  #(doc "Tail number (unique aircraft identifier)")
+  public: tail_num
+  #(doc "FK to aircraft_models")
+  public: aircraft_model_code
+  #(doc "Year the aircraft was built")
+  public: year_built
+  #(doc "Registrant name")
+  public: name
+  #(doc "Registrant street address")
+  public: address1
+  #(doc "Registrant street address line 2")
+  public: address2
+  #(doc "Registrant city")
+  public: city
+  #(doc "Registrant state")
+  public: state
+  #(doc "Registrant ZIP code")
+  public: zip
+  #(doc "FAA region")
+  public: region
+  #(doc "County")
+  public: county
+  #(doc "Country")
+  public: country
+  #(doc "Certification type")
+  public: certification
+  #(doc "Aircraft status code")
+  public: status_code
+  #(doc "Fractional ownership flag")
+  public: fract_owner
+  #(doc "Date of last registration action")
+  public: last_action_date
+  #(doc "Certificate issue date")
+  public: cert_issue_date
+  #(doc "Airworthiness date")
+  public: air_worth_date
+  #(doc "Internal aircraft ID")
+  public: id
+  #(doc "Aircraft serial number")
+  public: aircraft_serial
+  #(doc "Engine code")
+  public: aircraft_engine_code
+  #(doc "Aircraft type ID")
+  public: aircraft_type_id
+  #(doc "Engine type ID")
+  public: aircraft_engine_type_id
+  #(doc "Registrant type ID")
+  public: registrant_type_id
+  #(doc "Mode S transponder code")
+  public: mode_s_code
+}
+extend {
   primary_key: tail_num
-  measure: aircraft_count is count()
+
+  #(doc) Aircraft model specs (manufacturer, seats, engines)
   join_one: aircraft_models with aircraft_model_code
+
+  measure:
+    #(doc) Distinct aircraft count
+    aircraft_count is count()
 }
 
-source: flights is duckdb.table('data/flights.parquet') extend {
+#(doc) Individual flight records from the FAA NTSB dataset. Use for route analysis, carrier performance, delay patterns, and fleet utilization. Note: this is a partial sample for demonstration only.
+source: flights is duckdb.table('data/flights.parquet')
+include {
+  #(doc "Flight record identifier")
+  public: id2
+  #(doc "Carrier code")
+  public: carrier
+  #(doc "Origin airport code")
+  public: origin
+  #(doc "Destination airport code")
+  public: destination
+  #(doc "Flight number")
+  public: flight_num
+  #(doc "Aircraft tail number")
+  public: tail_num
+  #(doc "Departure time")
+  public: dep_time
+  #(doc "Arrival time")
+  public: arr_time
+  #(doc "Departure delay in minutes (negative = early)")
+  public: dep_delay
+  #(doc "Arrival delay in minutes (negative = early)")
+  public: arr_delay
+  #(doc "Whether the flight was cancelled: Y or N")
+  public: cancelled
+  #(doc "Whether the flight was diverted: Y or N")
+  public: diverted
+  #(doc "Flight distance in miles")
+  public: distance
+  #(doc "Flight time in minutes")
+  public: flight_time
+  #(doc "Taxi-in time in minutes")
+  public: taxi_in
+  #(doc "Taxi-out time in minutes")
+  public: taxi_out
+}
+extend {
   primary_key: id2
 
-  // rename some fields as from their physical names
   rename: origin_code is origin
   rename: destination_code is destination
 
-  dimension:
-    #(filter) {"type": "Star"}
-    origin_code2 is origin_code
-    
-    #(filter) {"type": "Star"}
-    destination_code2 is destination_code
-
-    #(filter) {"type": "DateMinMax"}
-    flight_departure is dep_time
-
-
+  #(doc) Airline carrier details
   join_one: carriers with carrier
+  #(doc) Origin airport
   join_one: origin is airports with origin_code
+  #(doc) Destination airport
   join_one: destination is airports with destination_code
+  #(doc) Aircraft details and model specs
   join_one: aircraft with tail_num
 
+  dimension:
+    #(doc) Departure date and time (alias for filter use)
+    flight_departure is dep_time
+
   measure:
+    #(doc) Total number of flights
+    # number=auto
     flight_count is count()
+
+    #(doc) Total distance flown across all flights
+    # number=auto
     total_distance is sum(distance)
+
+    #(doc) Distinct destination airports
     destination_count is destination.airport_count
+
+    #(doc) Distinct origin airports
     origin_count is origin.count()
 
+    #(doc) Total seats across all flights (one seat counted per flight)
+    # number=auto
     seats_for_sale is source.sum(aircraft.aircraft_models.seats)
+
+    #(doc) Total seats across all distinct aircraft
+    # number=auto
     seats_owned is aircraft.sum(aircraft.aircraft_models.seats)
+
+    #(doc) Average seat count per aircraft model
     average_plane_size is aircraft.avg(aircraft.aircraft_models.seats)
+
+    #(doc) Average flight distance in miles
     average_flight_distance is distance.avg()
 
+  #(doc) Carrier rankings by flight count and destination reach
   view: top_carriers is {
     group_by: carriers.nickname
     aggregate:
       flight_count
       destination_count
-      percentage_of_flights is flight_count/all(flight_count) *100
+      # percent
+      percentage_of_flights is flight_count / nullif(all(flight_count), 0)
   }
 
+  #(doc) Flight volume by carrier over time
   # line_chart
   view: carriers_over_time is {
     group_by: dep_month is dep_time.month
@@ -81,6 +271,7 @@ source: flights is duckdb.table('data/flights.parquet') extend {
     limit: 10000
   }
 
+  #(doc) Top 5 origin airports by flight count
   view: top_origins is {
     top: 5
     group_by: origin.name
@@ -88,30 +279,35 @@ source: flights is duckdb.table('data/flights.parquet') extend {
       flight_count
       destination_count
       carriers.carrier_count
-      percent_of_flights is flight_count/all(flight_count) *100
+      # percent
+      percent_of_flights is flight_count / nullif(all(flight_count), 0)
   }
 
+  #(doc) Top 5 destination airports by flight count
   view: top_destinations is {
-      top: 5
-      group_by: destination.code, destination.full_name
-      aggregate:
-        flight_count
-        percent_of_flights_to_destination
-          is flight_count/all(flight_count)*100
-    }
+    top: 5
+    group_by: destination.code, destination.full_name
+    aggregate:
+      flight_count
+      # percent
+      percent_of_flights_to_destination is flight_count / nullif(all(flight_count), 0)
+  }
 
+  #(doc) Monthly flight volume trend
   # line_chart
   view: by_month is {
     group_by: dep_month is dep_time.month
     aggregate: flight_count
   }
 
+  #(doc) Flights and aircraft by manufacturer
   view: by_manufacturer is {
-      group_by: aircraft.aircraft_models.manufacturer
-      aggregate: flight_count, aircraft.aircraft_count
-      limit: 3
-    }
+    group_by: aircraft.aircraft_models.manufacturer
+    aggregate: flight_count, aircraft.aircraft_count
+    limit: 3
+  }
 
+  #(doc) Top 100 routes visualized on a map
   # segment_map
   view: top_routes_map is {
     group_by:
@@ -122,8 +318,9 @@ source: flights is duckdb.table('data/flights.parquet') extend {
     aggregate: flight_count
     limit: 100
   }
-  -> {select: latitude,longitude,latitude2,longitude2}
+  -> { select: latitude, longitude, latitude2, longitude2 }
 
+  #(doc) Carrier overview dashboard with hubs, routes, and monthly trends
   # dashboard
   view: carrier_dashboard is {
     aggregate: destination_count

@@ -1,7 +1,6 @@
 >>>markdown
 # Carrier Analysis
 >>>malloy
-##(filters) ["flights.origin_code2", "carriers.name", "carriers.nickname", "flights.flight_departure"]
 import {flights, carriers} from 'flights.malloy'
 >>>markdown
 ### Basic Statistics

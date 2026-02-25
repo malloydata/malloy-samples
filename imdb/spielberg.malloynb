@@ -12,7 +12,7 @@ run: movies -> {
     and name != name2
   group_by: name
   aggregate: title_count
-  aggregate: `years` is concat(min(startYear)::string, '-', max(startYear)::string)
+  aggregate: `years` is concat(replace(min(startYear)::string, '.0', ''), '-', replace(max(startYear)::string, '.0', ''))
   order_by: title_count desc
   
   nest: job_list
