@@ -1,40 +1,27 @@
-##! experimental.access_modifiers
-
-#(doc) Hacker News posts from BigQuery public dataset. Includes stories, comments, jobs, polls, and poll options with scores, timestamps, and poster info.
 source: stories is bigquery.table('bigquery-public-data.hacker_news.full') extend {
   rename:
-    #(doc) Username of the poster
     poster is `by`
-    #(doc) Post type: story, comment, job, poll, pollopt
     post_type is `type`
 
   dimension:
-    #(doc) Post timestamp converted from Unix epoch seconds
     post_time is timestamp_seconds!timestamp(`time`)
-
-    #(doc) Extracted domain from the URL
     site is regexp_extract(
       regexp_extract(url, r'^http://([^\\/]*)\\/'),
       r'([^\\.]+\\.[^\\.]+(?:\\.[A-Za-z][A-Za-z])?)$'
     )
 
-    #(doc) Score with null replaced by 0
-    safe_score is ifnull(score, 0)
-
-    #(doc) Engagement tier based on score
-    score_class is safe_score ?
+  dimension: safe_score is ifnull(score, 0)
+  dimension: score_class is safe_score ?
       pick 'blah' when < 5
       pick 'hmmm' when < 10
       pick 'oooh' when < 100
       else 'wow'
 
-    #(doc) Minimum score threshold for "interesting" posts
+  dimension:
     threshold is 10
-
-    #(doc) Whether the post meets the interesting threshold
     is_interesting is safe_score >= threshold
 
-    #(doc) FAANG company classification based on title keywords
+  dimension:
     faang is title ?
       pick 'Facebook' when ~ r'(Facebook|Instagram|Whatsapp)'
       pick 'Apple' when ~ r'(Apple|iPhone|IOS|Macbook)'
@@ -43,82 +30,64 @@ source: stories is bigquery.table('bigquery-public-data.hacker_news.full') exten
       pick 'Google' when ~ r'(Google|GOOG|Alphabet|GCloud|Chrome)'
       else 'OTHER'
 
+
   measure:
-    #(doc) Total post count
-    # number=auto
     post_count is count()
-
-    #(doc) Posts meeting the interesting score threshold
     interesting_post_count is post_count { where: is_interesting }
-
-    #(doc) Percentage of posts that are interesting
-    # percent
-    percent_interesting is interesting_post_count / nullif(post_count, 0)
-
-    #(doc) Date of the earliest post
+    percent_interesting is floor(interesting_post_count / post_count * 100)
     first_post_date is min(post_time).day
 
-  #(doc) Post count by month
   view: by_date is {
     group_by: posted_month is post_time.month
     aggregate: post_count
   }
 
-  #(doc) Monthly post volume trend
   # line_chart
   view: posts_over_time is {
     group_by: posted_month is post_time.month
     aggregate: post_count
   }
 
-  #(doc) Annual interesting post rate
   view: percent_interesting_over_time is {
     group_by: posted_year is post_time.year
     aggregate: percent_interesting
   }
 
-  #(doc) Story posts by month
   view: stories_by_month is {
     where: post_type = 'story'
     nest: by_date
   }
 
-  #(doc) Job posts by month
   view: jobs_by_month is {
     where: post_type = 'job'
     nest: by_date
   }
 
-  #(doc) Post distribution by type
   view: by_post_type is {
     group_by: post_type
     aggregate: post_count
   }
 
-  #(doc) Post count by engagement tier
   # bar_chart
   view: by_score_class is {
     group_by: score_class
     aggregate: post_count
   }
 
-  #(doc) Top 10 most prolific posters
   view: top_posters is {
     top: 10
-    where: poster is not null
+    where: poster != null
     group_by: poster
     aggregate: interesting_post_count, post_count
   }
 
-  #(doc) Top 10 linked domains
   view: top_sites is {
     top: 10
-    where: site is not null
+    where: site != null
     group_by: site
     aggregate: post_count
   }
 
-  #(doc) 100 most recent stories with metadata
   view: recent_stories is {
     top: 100
     where: post_type = 'story'
@@ -132,7 +101,6 @@ source: stories is bigquery.table('bigquery-public-data.hacker_news.full') exten
       url
   }
 
-  #(doc) Topic dashboard with timeline, top posters, top sites, and recent stories
   view: term_dashboard is {
     # line_chart
     nest: by_date_and_type is {
@@ -143,11 +111,10 @@ source: stories is bigquery.table('bigquery-public-data.hacker_news.full') exten
     nest:
       top_posters
       top_sites
-      recent_stories + { limit: 20 }
+      recent_stories + {limit: 20}
   }
 
-  #(doc) Poster performance dashboard with engagement trends and best stories
-  view: poster_dashboard is top_posters + {
+  view: poster_dashboard is top_posters + {        -- reuses and refines the top_posters query
     where: post_type = 'story'
     aggregate:
       percent_interesting
@@ -157,17 +124,18 @@ source: stories is bigquery.table('bigquery-public-data.hacker_news.full') exten
       percent_interesting_over_time
       by_score_class
       top_sites
-    nest: best_stories is recent_stories + {
+    nest: best_stories is recent_stories + {               -- reuses and refines the stories query
       top: 10
       order_by: score desc
     }
   }
 }
 
-query: data_stories is stories -> term_dashboard + { where: title ~ '%Data%' | '% data%' }
+query: data_stories is stories -> term_dashboard + {where: title ~ '%Data%' | '% data%'}
 
-run: stories -> posts_over_time + {
+
+run: stories -> posts_over_time + { 
   where: is_interesting and faang != 'OTHER'
   group_by: faang
-  limit: 100000
+  limit: 100000 
 }

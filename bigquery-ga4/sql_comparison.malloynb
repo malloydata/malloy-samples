@@ -130,7 +130,7 @@ run: purchase_events -> {
 
   aggregate:
     session_count
-    avg_spend_per_session is total_spend / nullif(session_count, 0)
+    avg_spend_per_session is total_spend / session_count
 
   where:
     event_timestamp.day ? @2020-11-01 to @2021-02-01

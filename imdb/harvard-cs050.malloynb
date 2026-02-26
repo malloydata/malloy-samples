@@ -4,22 +4,13 @@ Harvard's beginnning computer science class teaches a section on SQL.  The class
 
 Below is the semantic data model used to answer all the questions
 >>>malloy
-source: people is duckdb.table('data/names.parquet') extend {
-  # number="####"
-  rename: birth_year is birthYear
-  # number="####"
-  rename: death_year is deathYear
-}
+source: people is duckdb.table('data/names.parquet')
 source: principals is duckdb.table('data/principals.parquet') extend {
   join_one: people is people on nconst = people.nconst
 }
 source: movies is duckdb.table('data/titles.parquet') extend {
   join_many: principals on tconst = principals.tconst
   join_many: principals2 is principals on tconst = principals2.tconst
-  # number="####"
-  rename: start_year is startYear
-  # number="####"
-  rename: end_year is endYear
   measure:
     title_count is count() 
 }
@@ -28,7 +19,7 @@ source: movies is duckdb.table('data/titles.parquet') extend {
 List the titles of all movies released in 2008. Your query should output a table with a single column for the title of each movie.
 >>>malloy
 run: movies -> {
-  where: start_year = 2008
+  where: startYear = 2008
   select: primaryTitle
 }
 >>>markdown
@@ -37,7 +28,7 @@ Write a query to determine the birth year of Emma Stone. Your query should outpu
 >>>malloy
 run: people -> {
   where: primaryName = 'Emma Stone'
-  select: birth_year
+  select: birthYear
 }
 >>>markdown
 ## Question 3: Emma Stone Titles
@@ -45,7 +36,7 @@ You may assume that there is only one person in the database with the name Emma 
 >>>malloy
 run: movies -> {
   where: principals.people.primaryName = 'Emma Stone' 
-    and start_year >= 2018
+    and startYear >= 2018
   group_by: primaryTitle
   order_by: 1
 }
@@ -74,7 +65,7 @@ run: movies -> {
 >>>malloy
 run: movies -> {
   where: primaryTitle ~ 'Harry Potter%'
-  select: primaryTitle, start_year
+  select: primaryTitle, startYear
   order_by: 2
 }
 >>>markdown
@@ -86,7 +77,7 @@ Question 6: Average Rating in 2012
    average rating.
 >>>malloy
 run: movies -> {
-  where: start_year = 2012
+  where: startYear = 2012
   aggregate: average_rating is averageRating.avg()
 }
 >>>markdown
@@ -115,10 +106,10 @@ run: movies -> {
   they should only appear in your results once.
 >>>malloy
 run: movies -> {
-  where: start_year = 2004
+  where: startYear = 2004
   group_by: 
     principals.people.primaryName 
-    principals.people.birth_year
+    principals.people.birthYear
   order_by: 1
 } 
 >>>markdown
@@ -187,7 +178,7 @@ run: movies -> {
 
 run: movies -> {
     where: principals2.people.primaryName = 'Kevin Bacon'
-    and principals2.people.birth_year = 1958
+    and principals2.people.birthYear = 1958
     and principals.people.primaryName != 'Kevin Bacon'
   group_by: principals.people.primaryName
   aggregate: title_count

@@ -1,42 +1,21 @@
-##! experimental.access_modifiers
-
-#(doc) US baby name popularity by state, gender, and year (1910–present) from the Social Security Administration. Use for name trends, regional patterns, gender analysis, and generational comparisons.
-source: names is duckdb.table('usa_names.parquet')
-extend {
+source: names is duckdb.table('usa_names.parquet') extend {
   rename: year_born is `year`
-
-  measure:
-    #(doc) Total births
-    # number=auto
-    population is `number`.sum()
-
-    #(doc) Births per 100K of total population
-    births_per_100k is floor(population / nullif(all(population), 0) * 100000)
-
-  dimension:
-    #(doc) Decade of birth (e.g. 1950, 1960)
-    decade is floor(year_born / 10) * 10
-
-  #(doc) Top 10 names by total births
+  measure: population is `number`.sum()
+  dimension: decade is floor(year_born/10)*10
+  measure: births_per_100k is floor(population/all(population)*100000)
   view: by_name is {
     group_by: name
     aggregate: population
     limit: 10
   }
-
-  #(doc) Births per 100K by state
   view: by_state is {
     group_by: state
     aggregate: births_per_100k
   }
-
-  #(doc) Total births by gender
   view: by_gender is {
     group_by: gender
     aggregate: population
   }
-
-  #(doc) Births per 100K by decade
   view: by_decade is {
     group_by: decade
     aggregate: births_per_100k
@@ -44,21 +23,19 @@ extend {
   }
 }
 
-source: cohort is names -> {
+// how big are the populations...
+source: cohort is names->{
   group_by: gender, state, year_born
-  aggregate: cohort_size is population
+  aggregate: cohort_size is population 
 } extend {
   measure: population is cohort_size.sum()
 }
 
-#(doc) Extended names source with cohort-relative popularity metrics. Joins cohort data for per-capita comparisons.
 source: names2 is names extend {
-  join_one: cohort on
-    gender = cohort.gender
-    and state = cohort.state
+  join_one: cohort on 
+    gender = cohort.gender 
+    and state = cohort.state 
     and year_born = cohort.year_born
-
-  #(doc) Name popularity over time with geographic distribution
   view: names_chart is {
     group_by: name
     aggregate: births_per_100k
@@ -67,31 +44,30 @@ source: names2 is names extend {
       group_by: year_born
       aggregate: population
     }
-    # shape_map
+    # shape_mape 
     nest: by_state is {
       group_by: state
-      aggregate: per_100k is population / nullif(exclude(population, name), 0) * 100000
+      aggregate: per_100k is population/exclude(population,name)*100000
     }
     limit: 10
   }
-
-  #(doc) Names that are disproportionately popular in specific states relative to national average
   view: iconic_names_by_state is {
     group_by: name, state, gender
-    aggregate:
+    aggregate: 
       all_name is all(population, name)
-      name_popularity is all(population, name) / nullif(all(population), 0)
-      state_popularity is population / nullif(all(population, state), 0)
-  }
+      name_popularity is all(population, name) / all(population)
+      state_popularity is population / all(population, state)
+      // popularity is (population / all(population, state))/ ( population / all(population, state))
+  } 
   -> {
-    where: all_name > 3000
+    where: all_name > 3000 
     group_by: state
     nest: by_gender is {
       group_by: gender
       nest: name_list_detail is {
-        group_by:
-          name
-          popularity is state_popularity / nullif(name_popularity, 0)
+        group_by: 
+          name, 
+          popularity is state_popularity / name_popularity   
         limit: 20
         order_by: 2 desc
       }
@@ -100,7 +76,6 @@ source: names2 is names extend {
     limit: 20
   }
 
-  #(doc) Birth population by year split by gender
   # line_chart
   view: gender_year is {
     group_by: year_born
@@ -108,24 +83,21 @@ source: names2 is names extend {
     group_by: gender is gender ? pick 'Female' when 'F' else 'Male'
   }
 
-  #(doc) Male birth ratio by state (for gender distribution maps)
-  # shape_map
-  view: gender_by_state is {
-    group_by: state
-    aggregate: percent_female is population { where: gender = 'M' } / nullif(population, 0)
-  }
+   # shape_map
+   view: gender_by_state is {
+      group_by: state
+      aggregate: percent_female is population{where: gender='M'}/population
+    }
 
-  #(doc) Names that are roughly equally popular for both genders
   view: gender_neutral_names is {
     group_by: name
     aggregate: population
     nest: gender_year
     nest: gender_by_state
-    having: population { where: gender = 'F' } / nullif(population, 0) ? > .10 & < .9
+    having: population{where: gender='F'}/population ? > .10 & < .9
     limit: 10
   }
 
-  #(doc) Dashboard exploring a single name across time, geography, and gender
   # dashboard
   view: kelly_time_space_dashboard is {
     where: name = 'Kelly'
@@ -143,24 +115,29 @@ source: names2 is names extend {
     }
   }
 
-  #(doc) Names that had two peak decades of popularity — resurgent names
-  view: resurgent_names is {
+  // --
+  // Name: Resurgent Names top 2 decades (step 2)
+  // The first stage to the query finds the top two decades
+  //  (see the previous example)
+  // The second stage computes the difference between years
+  //  and the total percentage in both decades (good for filtering)
+  view:  resurgent_names is {
     group_by: name
     aggregate: population
     nest: by_decade is {
       group_by: decade
-      aggregate: percent_in_decade is population / nullif(all(population), 0)
+      aggregate: percent_in_decade is population/all(population)
       order_by: 2 desc
       limit: 2
     }
   }
   -> {
-    where: population > 3000
-    group_by:
+    where: population > 3000 
+    group_by: 
       name
       population
     aggregate:
-      years_apart is max(by_decade.decade) - min(by_decade.decade)
+      years_apart is max(by_decade.decade)-min(by_decade.decade)
       total_percentage is by_decade.percent_in_decade.sum()
       max_percentage is max(by_decade.percent_in_decade)
     nest: by_decade is {
@@ -169,7 +146,6 @@ source: names2 is names extend {
     limit: 10
   }
 
-  #(doc) Multi-name comparison dashboard showing trends, gender splits, and geographic patterns
   # dashboard
   view: name_dashboard is {
     where: name = 'Lloyd' | 'Anika' | 'Jessie' | 'Kelly' | 'Todd' | 'Chris'
@@ -197,11 +173,11 @@ source: names2 is names extend {
       # shape_map
       nest: by_state is {
         group_by: state
-        aggregate: per_100k is population / nullif(cohort.population, 0) * 100000
+        aggregate: per_100k is population/cohort.population * 100000
       }
       peak_decade_state is {
         group_by: state, decade
-        aggregate: per_100k is population / nullif(cohort.population, 0) * 100000
+        aggregate: per_100k is population/cohort.population * 100000
         limit: 5
       }
     }
@@ -210,4 +186,5 @@ source: names2 is names extend {
   view: search_index is {
     index: name, state by population
   }
+  // these should move into the markdown file
 }

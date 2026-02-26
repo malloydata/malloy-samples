@@ -7,7 +7,6 @@ import 'ga4.malloy'
 >>>markdown
 Calculate number of page views and unique users with page views by day:
 >>>malloy
-# line_chart
 run: events -> {
   group_by: event_timestamp.day
 

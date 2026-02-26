@@ -73,7 +73,7 @@ run: events -> {
 
 run: events -> {
   aggregate:
-    avg_transaction_per_purchaser is count() / nullif(user_count, 0)
+    avg_transaction_per_purchaser is count() / user_count
 
   where:
     (event_name ? 'in_app_purchase' | 'purchase')
@@ -217,7 +217,7 @@ run: events -> {
   aggregate:
     user_count is count()
     total_page_views is sum(page_view_count)
-    avg_page_views is sum(page_view_count) / nullif(count(), 0)
+    avg_page_views is sum(page_view_count) / count()
 }
 
 -- Example: Sequence of pageviews.
@@ -356,7 +356,7 @@ run: purchase_events -> {
     } extend {} on user_pseudo_id = purchasers.user_pseudo_id
 
     dimension:
-      is_purchaser is purchasers.user_pseudo_id is not null
+      is_purchaser is purchasers.user_pseudo_id != null
   }
 
   group_by: items.item_name
@@ -395,7 +395,7 @@ run: purchase_events -> {
 
   aggregate:
     session_count
-    avg_spend_per_session is total_spend / nullif(session_count, 0)
+    avg_spend_per_session is total_spend / session_count
 
   where:
     event_timestamp.day ? @2020-11-01 to @2021-02-01
@@ -409,7 +409,7 @@ run: purchase_events -> {
   group_by: device.operating_system
   aggregate:
     total_spend
-    pct_of_total is total_spend / nullif(all(total_spend), 0)
+    pct_of_total is total_spend / all(total_spend)
 }
 
 run: purchase_events -> nested_index -> {
