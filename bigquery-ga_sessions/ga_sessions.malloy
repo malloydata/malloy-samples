@@ -1,17 +1,43 @@
-source:ga_sessions is bigquery.table('bigquery-public-data.google_analytics_sample.ga_sessions_20170801') extend {
-  dimension: start_time is timestamp_seconds!timestamp(visitStartTime)
+##! experimental.access_modifiers
+
+#(doc) Google Analytics Universal session data from BigQuery public dataset. Single day sample (2017-08-01) with nested hits, products, traffic sources, and device info.
+source: ga_sessions is bigquery.table('bigquery-public-data.google_analytics_sample.ga_sessions_20170801') extend {
+  dimension:
+    #(doc) Session start time converted from Unix epoch seconds
+    start_time is timestamp_seconds!timestamp(visitStartTime)
 
   measure:
+    #(doc) Distinct visitor count
+    # number=auto
     user_count is count(fullVisitorId)
+
+    #(doc) Total sessions
+    # number=auto
     session_count is count()
+
+    #(doc) Total visits (from session totals)
     total_visits is totals.visits.sum()
+
+    #(doc) Total hits (from session totals)
+    # number=auto
     total_hits is totals.hits.sum()
+
+    #(doc) Total page views (from session totals)
+    # number=auto
     total_page_views is totals.pageviews.sum()
-    t2 is totals.pageviews.sum()
+
+    #(doc) Total product revenue across all hits
+    # currency=usd
     total_productRevenue is hits.product.productRevenue.sum()
+
+    #(doc) Total hit count (from nested hits array)
+    # number=auto
     hits_count is hits.count()
+
+    #(doc) Hits where products were actually sold (quantity > 0)
     sold_count is hits.count() { where: hits.product.productQuantity > 0 }
 
+  #(doc) Top 10 non-direct traffic sources by hit count
   view: by_source is {
     where: trafficSource.`source` != '(direct)'
     group_by: trafficSource.`source`
@@ -19,12 +45,15 @@ source:ga_sessions is bigquery.table('bigquery-public-data.google_analytics_samp
     limit: 10
   }
 
+  #(doc) User count by browser and device category
   # bar_chart
-  view: by_adContent is {
+  view: by_browser is {
     group_by: device.browser
     aggregate: user_count
     group_by: device.deviceCategory
   }
+
+  #(doc) Top 10 regions by user count (excluding demo data)
   view: by_region is {
     where: geoNetwork.region !~ '%demo%'
     group_by: geoNetwork.region
@@ -32,27 +61,23 @@ source:ga_sessions is bigquery.table('bigquery-public-data.google_analytics_samp
     limit: 10
   }
 
-  # bar_chart
-  view: by_device is {
-    group_by: device.browser
-    aggregate: user_count
-    group_by: device.deviceCategory
-  }
-
+  #(doc) Top 10 product categories by revenue and sales count
   # bar_chart
   view: by_category is {
     group_by: category is hits.product.v2ProductCategory
-    aggregate: total_productRevenue
-    aggregate: sold_count
+    aggregate: total_productRevenue, sold_count
     limit: 10
   }
 
+  #(doc) Session distribution by hour of day
   # bar_chart
   view: by_hour_of_day is {
     group_by: gsession_hour is hour(start_time)
     aggregate: session_count
     order_by: 1
   }
+
+  #(doc) Page load time distribution by page title
   view: page_load_times is {
     group_by: hits.page.pageTitle
     aggregate: hit_count is hits.count()
@@ -64,25 +89,28 @@ source:ga_sessions is bigquery.table('bigquery-public-data.google_analytics_samp
     limit: 10
   }
 
-  view: by_page_title is { where: totals.transactionRevenue > 0
+  #(doc) Pages with transaction revenue — hit count and sales
+  view: by_page_title is {
+    where: totals.transactionRevenue > 0
     group_by: hits.page.pageTitle
-    aggregate: hits_count
-    aggregate: sold_count
+    aggregate: hits_count, sold_count
   }
 
+  #(doc) Combined overview with source, browser, region, and category breakdowns
   view: by_all is {
     nest: by_source
-    nest: by_adContent
+    nest: by_browser
     nest: by_region
     nest: by_category
   }
 }
 
+#(doc) Session overview dashboard combining region, device, source, and category views
 # dashboard
 query: sessions_dashboard is ga_sessions -> {
   nest:
     by_region
-    by_device
+    by_browser
     by_source
     by_category
 }

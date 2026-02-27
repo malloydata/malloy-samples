@@ -1,49 +1,141 @@
-// Auto Recalls: CSV example
-##! m4warnings
-source: recalls is duckdb.table('data/auto_recalls.csv') extend {
-  measure:
-    recall_count is count()
-    percent_of_recalls is recall_count/all(recall_count)*100
-    total_defects is `Potentially Affected`.sum()
+##! experimental.access_modifiers
 
+#(doc) NHTSA automobile recall data (1966–2022). Use for recall trends, manufacturer safety analysis, component failure patterns, and identifying major recalls.
+source: recalls is duckdb.table('data/auto_recalls.csv')
+
+include {
+  internal: `Report Received Date`
+
+  #(doc "NHTSA recall identifier (e.g. 22V444000)")
+  public: `NHTSA ID`
+
+  #(doc "Recall type: Vehicle, Equipment, Tire, or Child Seat")
+  public: `Recall Type`
+
+  internal: Manufacturer
+  internal: Subject
+  internal: Component
+
+  #(doc "Manufacturer's internal campaign tracking number")
+  public: `Mfr Campaign Number`
+
+  #(doc "Number of vehicles or units potentially affected by this recall")
+  public: `Potentially Affected`
+
+  #(doc "Full description of the recall and affected models/years")
+  public: `Recall Description`
+
+  #(doc "Description of potential safety consequences if not remedied")
+  public: `Consequence Summary`
+
+  #(doc "Corrective action or remedy for the recall")
+  public: `Corrective Action`
+
+  internal: `Recall Link`
+}
+extend {
+  primary_key: `NHTSA ID`
+
+  dimension:
+    #(doc) Direct link to the NHTSA recall page
     # link
-  dimension:
-    recall_url is concat(
-      'https://www.nhtsa.gov/recalls?nhtsaId=',
-      `NHTSA ID`
-    )
+    recall_url is concat('https://www.nhtsa.gov/recalls?nhtsaId=', `NHTSA ID`)
 
-  rename:
-   Subject_old is Subject
-   Manufacturer_old is Manufacturer
-   `Corrective Action_old` is `Corrective Action`
-   `Consequence Summary_old` is `Consequence Summary`
+    #(doc) Date the recall was reported to NHTSA
+    recall_date is `Report Received Date`::date
 
-  dimension:
+    #(doc) Year the recall was reported (truncated to Jan 1)
+    recall_year is `Report Received Date`.year
+
     #(index_values) n=-1
     #(filter) {"type": "Retrieval"}
-    Subject is Subject_old
+    #(doc) Short description of the recall issue
+    recall_subject is Subject
 
     #(filter) {"type": "Star"}
-    Manufacturer is Manufacturer_old
+    #(doc) Manufacturer name
+    manufacturer is Manufacturer
 
-    #(index_values) n=-1
-    `Corrective Action` is `Corrective Action_old`
-
-    #(index_values) n=-1
-    `Consequence Summary` is `Consequence Summary_old`
+    #(filter) {"type": "Star"}
+    #(doc) Vehicle component affected (e.g. STEERING, AIR BAGS, TIRES)
+    component is Component
 
     #(filter) {"type": "Boolean"}
-    `Major Recall` is ifnull(`Potentially Affected`, 0) > 100000
+    #(doc) Whether 100,000+ vehicles/units are potentially affected
+    is_major_recall is ifnull(`Potentially Affected`, 0) > 100000
 
-  view: by_manufacturer is {
-    group_by: `Manufacturer`
+  measure:
+    #(doc) Total number of recalls
+    recall_count is count()
+
+    #(doc) Share of total recalls as a percentage
+    # percent
+    percent_of_recalls is recall_count / nullif(all(recall_count), 0)
+
+    #(doc) Total vehicles/units potentially affected across all recalls
+    # number=auto
+    total_affected is `Potentially Affected`.sum()
+
+    #(doc) Average vehicles/units potentially affected per recall
+    # number=auto
+    avg_affected is total_affected / nullif(recall_count, 0)
+
+  #(doc) Key recall metrics: total recalls, total affected, and average affected per recall
+  # big_value
+  view: summary is {
     aggregate:
+      # label="Recalls" # number=auto
       recall_count
-      total_defects
-      percent_of_recalls
+      # label="Total Affected" # number=auto
+      total_affected
+      # label="Avg per Recall" # number=auto
+      avg_affected
   }
 
+  #(doc) Recall count trend over time by year
+  # line_chart
+  view: by_year is {
+    group_by: recall_year
+    aggregate: recall_count
+    order_by: recall_year
+  }
+
+  #(doc) Recall trends over time for the top 5 manufacturers by volume
+  # line_chart
+  view: by_year_manufacturer_line_chart is {
+    nest: top_manufacturers is {
+      group_by: manufacturer
+      aggregate: recall_count
+      limit: 5
+    }
+    nest: x is {
+      group_by: manufacturer, recall_year is year(`Report Received Date`)
+      aggregate: recall_count
+    }
+  }
+  -> {
+    where: top_manufacturers.manufacturer = x.manufacturer
+    # x
+    group_by: x.recall_year
+    # y
+    aggregate: recall_count is x.recall_count.sum()
+    # series
+    group_by: x.manufacturer
+    limit: 100000
+    order_by: 1, 2
+  }
+
+  #(doc) Recall count, total affected, and share by manufacturer
+  view: by_manufacturer is {
+    group_by: manufacturer
+    aggregate:
+      recall_count
+      total_affected
+      percent_of_recalls
+    order_by: recall_count desc
+  }
+
+  #(doc) Recall count and share by recall type (Vehicle, Equipment, Tire, Child Seat)
   view: by_type is {
     group_by: `Recall Type`
     aggregate:
@@ -51,60 +143,41 @@ source: recalls is duckdb.table('data/auto_recalls.csv') extend {
       percent_of_recalls
   }
 
-  view: by_year is {
-    group_by: recall_year is year(`Report Received Date`)
+  #(doc) Recall count and total affected by vehicle component
+  view: by_component is {
+    group_by: component
     aggregate:
       recall_count
-    order_by: recall_year
+      total_affected
+    order_by: recall_count desc
   }
 
-  # line_chart
-  view: by_year_manufacturer_line_chart is {
-    nest: top_manufacturers is {
-      group_by: Manufacturer
-      aggregate: recall_count
-      limit: 5
-    }
-    nest: x is {
-      group_by: Manufacturer, recall_year is year(`Report Received Date`)
-      aggregate:
-        recall_count
-    }
-  }
-  -> {
-    where: top_manufacturers.Manufacturer = x.Manufacturer
-    # x
-    group_by: x.recall_year
-    # y
-    aggregate: recall_count is x.recall_count.sum()
-    # series
-    group_by: x.Manufacturer
-    limit: 100000
-    order_by: 1, 2
-  }
-
+  #(doc) Most recently reported recalls with key details
   view: recent_recalls is {
     group_by:
-      recall_date is `Report Received Date`::string
+      recall_date
       `NHTSA ID`
       recall_url
-      Manufacturer
-      Subject
+      manufacturer
+      recall_subject
       `Potentially Affected`
-    order_by: 1 desc
+    order_by: recall_date desc
     limit: 10
   }
 
+  #(doc) Recalls with the most vehicles/units potentially affected
   view: biggest_recalls is recent_recalls + {
     order_by: `Potentially Affected` desc
   }
 
+  #(doc) Overview dashboard: top manufacturers with trend, type breakdown, and notable recalls
   # dashboard
   view: recall_dashboard is by_manufacturer + {
-    # line_chart
-    nest: by_year_line_chart is by_year + {group_by: `Recall Type`}
+    nest:
+      # line_chart
+      recalls_over_time is by_year + { group_by: `Recall Type` }
     nest: by_type
-    nest: recent_recalls + {limit: 6}
-    nest: biggest_recalls + {limit: 6}
+    nest: recent_recalls + { limit: 6 }
+    nest: biggest_recalls + { limit: 6 }
   }
 }

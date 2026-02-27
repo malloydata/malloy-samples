@@ -1,152 +1,315 @@
-// duckdb sources
-source: users_table is duckdb.table('data/users.parquet') extend {}
-source: product_table is duckdb.table('data/products.parquet') extend {}
-source: inventory_items_table is duckdb.table('data/inventory_items.parquet') extend {}
-source: order_items_table is duckdb.table('data/order_items.parquet')
+##! experimental.access_modifiers
 
-
-source: users is users_table extend {
+#(doc) Customer accounts with demographics and acquisition source.
+source: users is duckdb.table('data/users.parquet')
+include {
+  #(doc "User identifier")
+  public: id
+  #(doc "First name")
+  public: first_name
+  #(doc "Last name")
+  public: last_name
+  #(doc "Email address")
+  public: email
+  #(doc "Age in years")
+  public: age
+  #(doc "Gender: Male or Female")
+  public: gender
+  #(doc "City")
+  public: city
+  #(doc "State or region")
+  public: state
+  #(doc "Country")
+  public: country
+  #(doc "Postal code")
+  public: zip
+  #(doc "Latitude coordinate")
+  public: latitude
+  #(doc "Longitude coordinate")
+  public: longitude
+  #(doc "Acquisition channel: Organic, Search, Email, Display, or Facebook")
+  public: traffic_source
+  #(doc "Account creation timestamp")
+  public: created_at
+}
+extend {
   primary_key: id
-  dimension: full_name is concat(
-    upper(substr(first_name, 1, 1)), lower(substr(first_name,2)),
-    ' ',
-    upper(substr(last_name, 1, 1)), lower(substr(last_name,2))
-  )
-  measure: user_count is count()
+
+  dimension:
+    #(doc) Full name (title-cased first + last)
+    full_name is concat(
+      upper(substr(first_name, 1, 1)), lower(substr(first_name, 2)),
+      ' ',
+      upper(substr(last_name, 1, 1)), lower(substr(last_name, 2))
+    )
+
+  measure:
+    #(doc) Distinct user count
+    user_count is count()
 }
 
-source: product is product_table extend {
+#(doc) Product catalog with pricing and categorization.
+source: product is duckdb.table('data/products.parquet')
+include {
+  #(doc "Product identifier")
+  public: id
+  #(doc "Product display name")
+  public: name
+  #(doc "Brand name")
+  public: brand
+  #(doc "Product category (e.g. Jeans, Sweaters, Accessories)")
+  public: category
+  #(doc "Department: Men or Women")
+  public: department
+  #(doc "Wholesale cost")
+  public: cost
+  #(doc "Retail list price")
+  public: retail_price
+  #(doc "Stock keeping unit hash")
+  public: sku
+  #(doc "Distribution center identifier")
+  public: distribution_center_id
+}
+extend {
   primary_key: id
-  measure: product_count is count()
+
+  measure:
+    #(doc) Distinct product count
+    product_count is count()
 }
 
-source: inventory_items is inventory_items_table extend {
+#(doc) Inventory items linking products to stock, with denormalized product attributes and cost.
+source: inventory_items is duckdb.table('data/inventory_items.parquet')
+include {
+  #(doc "Inventory item identifier")
+  public: id
+  #(doc "FK to products table")
+  public: product_id
+  #(doc "Brand (denormalized from product)")
+  public: product_brand
+  #(doc "Category (denormalized from product)")
+  public: product_category
+  #(doc "Department (denormalized from product)")
+  public: product_department
+  #(doc "Distribution center (denormalized from product)")
+  public: product_distribution_center_id
+  #(doc "Product name (denormalized)")
+  public: product_name
+  #(doc "Retail price (denormalized)")
+  public: product_retail_price
+  #(doc "SKU (denormalized)")
+  public: product_sku
+  #(doc "Wholesale cost of this inventory item")
+  public: cost
+  #(doc "When this inventory item was received")
+  public: created_at
+  #(doc "When this item was sold (null if unsold)")
+  public: sold_at
+}
+extend {
   primary_key: id
 
+  #(doc) Joins to the product catalog for canonical product attributes
   join_one: product with product_id
 
   measure:
+    #(doc) Total inventory items
     inventory_item_count is count(id)
+    #(doc) Total wholesale cost of inventory
+    # currency=usd
     total_cost is cost.sum()
 }
 
-source: user_order_facts is 
-  order_items_table ->  {
+source: user_order_facts is
+  duckdb.table('data/order_items.parquet') -> {
     group_by: user_id
-    aggregate: first_order is min(created_at)
-    aggregate: most_recent_order is max(created_at)
-    aggregate: lifetime_orders is count()
-    aggregate: lifetime_spend is sale_price.sum() {where: status != 'Cancelled' & 'Returned'}
-  } extend {
+    aggregate:
+      first_order is min(created_at)
+      most_recent_order is max(created_at)
+      lifetime_orders is count()
+      lifetime_spend is sale_price.sum() { where: status != 'Cancelled' | 'Returned' }
+  }
+extend {
   primary_key: user_id
 
-  dimension: top_customer is lifetime_orders > 10
-  dimension: lifetime_order_tier is lifetime_orders ?
-    pick '1 to 3' when  < 4
-    pick '4 to 6' when < 7
-    pick '7 to 10' when < 11
-    else '11+'
+  dimension:
+    #(doc) Whether the user has placed more than 10 orders
+    top_customer is lifetime_orders > 10
 
-  dimension: spend_category is lifetime_spend ?
-    pick 'Low Spend' when < 50
-    pick 'Mid Spend' when < 500
-    pick 'High Spend' when < 1000
-    pick 'VIP' when >= 1000
-    else null
+    #(doc) Order frequency tier based on lifetime order count
+    lifetime_order_tier is lifetime_orders ?
+      pick '1 to 3' when < 4
+      pick '4 to 6' when < 7
+      pick '7 to 10' when < 11
+      else '11+'
+
+    #(doc) Spend tier based on total non-cancelled/returned spend
+    spend_category is lifetime_spend ?
+      pick 'Low Spend' when < 50
+      pick 'Mid Spend' when < 500
+      pick 'High Spend' when < 1000
+      pick 'VIP' when >= 1000
+      else null
 }
 
-source: order_items is order_items_table extend {
+#(doc) Order line items. Primary fact table for ecommerce analysis — revenue, margins, customer behavior, product performance.
+source: order_items is duckdb.table('data/order_items.parquet')
+include {
+  #(doc "Order line item identifier")
+  public: id
+  #(doc "Parent order identifier")
+  public: order_id
+  #(doc "FK to users table")
+  public: user_id
+  #(doc "FK to inventory_items table")
+  public: inventory_item_id
+  #(doc "Actual sale price for this line item")
+  public: sale_price
+  #(doc "Order status: Complete, Cancelled, Returned, Processing, or Shipped")
+  public: status
+  #(doc "When the order was placed")
+  public: created_at
+  #(doc "When the order shipped (null if not shipped)")
+  public: shipped_at
+  #(doc "When the order was delivered (null if not delivered)")
+  public: delivered_at
+  #(doc "When the item was returned (null if not returned)")
+  public: returned_at
+}
+extend {
   primary_key: id
 
   join_one:
+    #(doc) Customer who placed the order
     users with user_id
+    #(doc) Inventory item sold in this line
     inventory_items with inventory_item_id
+    #(doc) Pre-computed customer lifetime metrics
     user_order_facts with user_id
 
   dimension:
+    #(doc) Profit margin on this item (sale price minus cost)
+    # currency=usd
     gross_margin is sale_price - inventory_items.cost
 
   measure:
+    #(doc) Distinct order count
+    # number=auto
     order_count is count(order_id)
-    order_item_count is count()
-    # currency
-    total_sales is sale_price.sum()
-    # percent
-    percent_of_sales is total_sales/all(total_sales)
-    # currency
-    total_gross_margin is sale_price.sum() - inventory_items.cost.sum()
-    # currency
-    average_gross_margin is total_gross_margin/order_item_count
 
+    #(doc) Total order line items
+    # number=auto
+    order_item_count is count()
+
+    #(doc) Total revenue from all line items
+    # currency=usd
+    total_sales is sale_price.sum()
+
+    #(doc) Share of total sales as a percentage
+    # percent
+    percent_of_sales is total_sales / nullif(all(total_sales), 0)
+
+    #(doc) Total gross margin (revenue minus cost of goods sold)
+    # currency=usd
+    total_gross_margin is sale_price.sum() - inventory_items.cost.sum()
+
+    #(doc) Average gross margin per line item
+    # currency=usd
+    average_gross_margin is total_gross_margin / nullif(order_item_count, 0)
+
+    #(doc) Distinct products sold
     product_count is count(inventory_items.product_id)
+
+    #(doc) Distinct customers
+    # number=auto
     user_count is users.count()
+
+    #(doc) Total sales in 2022
+    # currency=usd
     total_sales_2022 is total_sales { where: year(created_at) = 2022 }
+
+    #(doc) Total sales in 2021
+    # currency=usd
     total_sales_2021 is total_sales { where: year(created_at) = 2021 }
 
+  #(doc) Top 5 product categories by sales
   view: top_categories is {
     top: 5
     group_by: inventory_items.product_category
     aggregate: total_sales
   }
 
+  #(doc) Top 5 brands by sales with margin and order details
   view: top_brands is {
     top: 5
     group_by: inventory_items.product_brand
-    aggregate: total_sales, percent_of_sales,total_gross_margin, order_item_count
+    aggregate: total_sales, percent_of_sales, total_gross_margin, order_item_count
   }
 
+  #(doc) Top 5 products by sales with margin and order details
   view: top_products is {
     top: 5
     group_by: inventory_items.product_name
     aggregate: total_sales, percent_of_sales, total_gross_margin, order_item_count
   }
 
+  #(doc) Top 5 customers by total spend
   view: top_customers is {
     top: 5
     group_by: users.full_name, user_id
     aggregate: total_sales, order_item_count
   }
 
+  #(doc) Most recent purchases with item details
   view: recent_purchases is {
     top: 5
     group_by: id, order_id, created_at, sale_price, inventory_items.product_name
     order_by: created_at desc
   }
 
+  #(doc) Sales by calendar year
   view: by_year is {
     group_by: created_year is year(created_at)
     aggregate: total_sales
   }
 
+  #(doc) Sales by month (time-truncated for charting)
   view: by_month is {
     group_by: created_month is created_at.month
     aggregate: total_sales
   }
 
+  #(doc) Sales by customer state/region
   view: sales_by_state is {
     group_by: users.state
     aggregate: total_sales
   }
 
+  #(doc) Monthly sales for 2022 only
   view: sales_by_month_2022 is {
     where: created_at = @2022
     group_by: order_month is created_at.month
     aggregate: total_sales
   }
 
+  #(doc) Order count by fulfillment status
   view: orders_by_status is {
     group_by: status
     aggregate: order_count
   }
 
+  #(doc) Customers ranked by return frequency and value
   view: frequent_returners is {
     group_by: users.full_name, user_id
-    aggregate: 
-      count_returns is order_item_count { where: status = 'Returned'}
-      percent_purchases_returned is round(100.0 * order_item_count { where: status = 'Returned'} / order_item_count, 0)
-      value_returned is total_sales { where: status = 'Returned'}
+    aggregate:
+      count_returns is order_item_count { where: status = 'Returned' }
+      # percent
+      percent_purchases_returned is order_item_count { where: status = 'Returned' } / nullif(order_item_count, 0)
+      # currency=usd
+      value_returned is total_sales { where: status = 'Returned' }
   }
 
+  #(doc) Brand performance dashboard with category breakdown, monthly trend, and top products
   view: brand_dashboard is {
     group_by: inventory_items.product.brand
     aggregate:
@@ -162,6 +325,8 @@ source: order_items is order_items_table extend {
     limit: 10
   }
 
+  #(doc) Customer detail dashboard with history, categories, brands, and recent orders
+  # dashboard
   view: customer_dashboard is {
     top: 5
     group_by: users.full_name, user_id, users.city, users.state, users.country
@@ -176,31 +341,35 @@ source: order_items is order_items_table extend {
       recent_purchases
   }
 
+  #(doc) High-level business overview with monthly trend, geographic distribution, top brands and customers
+  # dashboard
   view: business_overview_dashboard is {
     aggregate:
       total_sales
       order_count
       total_gross_margin
-    nest: 
+    nest:
       # line_chart
       by_month
       # shape_map
       sales_by_state
       top_brands
-      top_customers + {aggregate: order_count}
+      top_customers + { aggregate: order_count }
   }
-  
 
+  #(doc) Year-over-year sales comparison (2021 vs 2022) with growth metrics
   view: sales_summary_yoy is {
     aggregate:
       total_sales_2022
       sales_growth is total_sales_2022 - total_sales_2021
-      sales_yoy is total_sales_2022 / nullif(total_sales_2021,0) - 1
-      growth_contribution is (total_sales_2022 - total_sales_2021) / all(total_sales_2022 - total_sales_2021)
+      # percent
+      sales_yoy is total_sales_2022 / nullif(total_sales_2021, 0) - 1
+      # percent
+      growth_contribution is (total_sales_2022 - total_sales_2021) / nullif(all(total_sales_2022 - total_sales_2021), 0)
   }
 
   view: search_index is {
-    index: *, users.*, inventory_items.* 
+    index: *, users.*, inventory_items.*
     sample: true
   }
 }

@@ -1,0 +1,33 @@
+>>>markdown
+# Destination Analysis
+A deep dive into destinations.
+>>>malloy
+import {flights} from 'flights.malloy'
+>>>markdown
+### Flight Traffic YOY by Destination
+For each destination, shows flights in 2003 and 2004, as well as the delta and growth between the two years
+>>>malloy
+run: flights -> {
+  extend: {
+    measure:
+      flight2004 is flight_count {where: dep_time = @2004}
+      flight2003 is flight_count {where: dep_time = @2003} 
+  }
+  group_by: destination.name
+  aggregate: 
+    flight2004 
+    flight2003
+    delta is flight2004 - flight2003
+    # percent
+    growth is (flight2004 - flight2003)/flight2003
+}
+>>>markdown
+### Carrier Popularity Over Time By Destination
+Returns a line chart of carrier flights over time for each destination
+>>>malloy
+run: flights -> {
+  group_by: destination.name
+  aggregate: flight_count
+  nest: carriers_over_time
+  limit: 10
+}

@@ -4,7 +4,7 @@ source: airports is duckdb.table('data/airports.parquet') extend {
   measure: airport_count is count()
 
   view: by_state is {
-    where: state is not null
+    where: state != null
     group_by: state
     aggregate: airport_count
   }
