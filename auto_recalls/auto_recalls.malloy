@@ -6,29 +6,29 @@ source: recalls is duckdb.table('data/auto_recalls.csv')
 include {
   internal: `Report Received Date`
 
-  #(doc "NHTSA recall identifier (e.g. 22V444000)")
+  #(doc) NHTSA recall identifier (e.g. 22V444000)
   public: `NHTSA ID`
 
-  #(doc "Recall type: Vehicle, Equipment, Tire, or Child Seat")
+  #(doc) Recall type: Vehicle, Equipment, Tire, or Child Seat
   public: `Recall Type`
 
   internal: Manufacturer
   internal: Subject
   internal: Component
 
-  #(doc "Manufacturer's internal campaign tracking number")
+  #(doc) Manufacturer's internal campaign tracking number
   public: `Mfr Campaign Number`
 
-  #(doc "Number of vehicles or units potentially affected by this recall")
+  #(doc) Number of vehicles or units potentially affected by this recall
   public: `Potentially Affected`
 
-  #(doc "Full description of the recall and affected models/years")
+  #(doc) Full description of the recall and affected models/years
   public: `Recall Description`
 
-  #(doc "Description of potential safety consequences if not remedied")
+  #(doc) Description of potential safety consequences if not remedied
   public: `Consequence Summary`
 
-  #(doc "Corrective action or remedy for the recall")
+  #(doc) Corrective action or remedy for the recall
   public: `Corrective Action`
 
   internal: `Recall Link`

@@ -3,55 +3,55 @@
 #(doc) FAA airport facilities database. Use for airport counts by state, region, and facility type.
 source: airports is duckdb.table('data/airports.parquet')
 include {
-  #(doc "Internal FAA identifier")
+  #(doc) Internal FAA identifier
   public: id
-  #(doc "Airport code (e.g. SFO, LAX)")
+  #(doc) Airport code (e.g. SFO, LAX)
   public: code
-  #(doc "FAA site number")
+  #(doc) FAA site number
   public: site_number
-  #(doc "Facility type: AIRPORT, HELIPORT, SEAPLANE BASE, etc.")
+  #(doc) Facility type: AIRPORT, HELIPORT, SEAPLANE BASE, etc.
   public: fac_type
-  #(doc "Facility use: PU (public) or PR (private)")
+  #(doc) Facility use: PU (public) or PR (private)
   public: fac_use
-  #(doc "FAA region")
+  #(doc) FAA region
   public: faa_region
-  #(doc "FAA district office")
+  #(doc) FAA district office
   public: faa_dist
-  #(doc "City where airport is located")
+  #(doc) City where airport is located
   public: city
-  #(doc "County")
+  #(doc) County
   public: county
-  #(doc "State (null for non-US territories)")
+  #(doc) State (null for non-US territories)
   public: state
-  #(doc "Full airport name")
+  #(doc) Full airport name
   public: full_name
-  #(doc "Ownership type: PU (public) or PR (private)")
+  #(doc) Ownership type: PU (public) or PR (private)
   public: own_type
-  #(doc "Latitude")
+  #(doc) Latitude
   public: latitude
-  #(doc "Longitude")
+  #(doc) Longitude
   public: longitude
-  #(doc "Elevation in feet")
+  #(doc) Elevation in feet
   public: elevation
-  #(doc "Aeronautical chart")
+  #(doc) Aeronautical chart
   public: aero_cht
-  #(doc "Distance from central business district")
+  #(doc) Distance from central business district
   public: cbd_dist
-  #(doc "Direction from central business district")
+  #(doc) Direction from central business district
   public: cbd_dir
-  #(doc "Activation date")
+  #(doc) Activation date
   public: act_date
   internal: cert
   internal: fed_agree
   internal: cust_intl
   internal: c_ldg_rts
-  #(doc "Joint use agreement")
+  #(doc) Joint use agreement
   public: joint_use
-  #(doc "Military landing rights")
+  #(doc) Military landing rights
   public: mil_rts
-  #(doc "Has control tower: Y or N")
+  #(doc) Has control tower: Y or N
   public: cntl_twr
-  #(doc "Major airport: Y or N")
+  #(doc) Major airport: Y or N
   public: major
 }
 extend {

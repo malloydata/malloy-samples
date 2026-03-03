@@ -3,33 +3,33 @@
 #(doc) Customer accounts with demographics and acquisition source.
 source: users is duckdb.table('data/users.parquet')
 include {
-  #(doc "User identifier")
+  #(doc) User identifier
   public: id
-  #(doc "First name")
+  #(doc) First name
   public: first_name
-  #(doc "Last name")
+  #(doc) Last name
   public: last_name
-  #(doc "Email address")
+  #(doc) Email address
   public: email
-  #(doc "Age in years")
+  #(doc) Age in years
   public: age
-  #(doc "Gender: Male or Female")
+  #(doc) Gender: Male or Female
   public: gender
-  #(doc "City")
+  #(doc) City
   public: city
-  #(doc "State or region")
+  #(doc) State or region
   public: state
-  #(doc "Country")
+  #(doc) Country
   public: country
-  #(doc "Postal code")
+  #(doc) Postal code
   public: zip
-  #(doc "Latitude coordinate")
+  #(doc) Latitude coordinate
   public: latitude
-  #(doc "Longitude coordinate")
+  #(doc) Longitude coordinate
   public: longitude
-  #(doc "Acquisition channel: Organic, Search, Email, Display, or Facebook")
+  #(doc) Acquisition channel: Organic, Search, Email, Display, or Facebook
   public: traffic_source
-  #(doc "Account creation timestamp")
+  #(doc) Account creation timestamp
   public: created_at
 }
 extend {
@@ -51,23 +51,23 @@ extend {
 #(doc) Product catalog with pricing and categorization.
 source: product is duckdb.table('data/products.parquet')
 include {
-  #(doc "Product identifier")
+  #(doc) Product identifier
   public: id
-  #(doc "Product display name")
+  #(doc) Product display name
   public: name
-  #(doc "Brand name")
+  #(doc) Brand name
   public: brand
-  #(doc "Product category (e.g. Jeans, Sweaters, Accessories)")
+  #(doc) Product category (e.g. Jeans, Sweaters, Accessories)
   public: category
-  #(doc "Department: Men or Women")
+  #(doc) Department: Men or Women
   public: department
-  #(doc "Wholesale cost")
+  #(doc) Wholesale cost
   public: cost
-  #(doc "Retail list price")
+  #(doc) Retail list price
   public: retail_price
-  #(doc "Stock keeping unit hash")
+  #(doc) Stock keeping unit hash
   public: sku
-  #(doc "Distribution center identifier")
+  #(doc) Distribution center identifier
   public: distribution_center_id
 }
 extend {
@@ -81,29 +81,29 @@ extend {
 #(doc) Inventory items linking products to stock, with denormalized product attributes and cost.
 source: inventory_items is duckdb.table('data/inventory_items.parquet')
 include {
-  #(doc "Inventory item identifier")
+  #(doc) Inventory item identifier
   public: id
-  #(doc "FK to products table")
+  #(doc) FK to products table
   public: product_id
-  #(doc "Brand (denormalized from product)")
+  #(doc) Brand (denormalized from product)
   public: product_brand
-  #(doc "Category (denormalized from product)")
+  #(doc) Category (denormalized from product)
   public: product_category
-  #(doc "Department (denormalized from product)")
+  #(doc) Department (denormalized from product)
   public: product_department
-  #(doc "Distribution center (denormalized from product)")
+  #(doc) Distribution center (denormalized from product)
   public: product_distribution_center_id
-  #(doc "Product name (denormalized)")
+  #(doc) Product name (denormalized)
   public: product_name
-  #(doc "Retail price (denormalized)")
+  #(doc) Retail price (denormalized)
   public: product_retail_price
-  #(doc "SKU (denormalized)")
+  #(doc) SKU (denormalized)
   public: product_sku
-  #(doc "Wholesale cost of this inventory item")
+  #(doc) Wholesale cost of this inventory item
   public: cost
-  #(doc "When this inventory item was received")
+  #(doc) When this inventory item was received
   public: created_at
-  #(doc "When this item was sold (null if unsold)")
+  #(doc) When this item was sold (null if unsold)
   public: sold_at
 }
 extend {
@@ -155,25 +155,25 @@ extend {
 #(doc) Order line items. Primary fact table for ecommerce analysis — revenue, margins, customer behavior, product performance.
 source: order_items is duckdb.table('data/order_items.parquet')
 include {
-  #(doc "Order line item identifier")
+  #(doc) Order line item identifier
   public: id
-  #(doc "Parent order identifier")
+  #(doc) Parent order identifier
   public: order_id
-  #(doc "FK to users table")
+  #(doc) FK to users table
   public: user_id
-  #(doc "FK to inventory_items table")
+  #(doc) FK to inventory_items table
   public: inventory_item_id
-  #(doc "Actual sale price for this line item")
+  #(doc) Actual sale price for this line item
   public: sale_price
-  #(doc "Order status: Complete, Cancelled, Returned, Processing, or Shipped")
+  #(doc) Order status: Complete, Cancelled, Returned, Processing, or Shipped
   public: status
-  #(doc "When the order was placed")
+  #(doc) When the order was placed
   public: created_at
-  #(doc "When the order shipped (null if not shipped)")
+  #(doc) When the order shipped (null if not shipped)
   public: shipped_at
-  #(doc "When the order was delivered (null if not delivered)")
+  #(doc) When the order was delivered (null if not delivered)
   public: delivered_at
-  #(doc "When the item was returned (null if not returned)")
+  #(doc) When the item was returned (null if not returned)
   public: returned_at
 }
 extend {

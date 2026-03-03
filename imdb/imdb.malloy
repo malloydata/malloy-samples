@@ -7,17 +7,17 @@
 #(doc) People in the film industry — actors, directors, composers, crew.
 source: people is duckdb.table('data/names.parquet')
 include {
-  #(doc "Person identifier (e.g. nm0000001)")
+  #(doc) Person identifier (e.g. nm0000001)
   public: nconst
-  #(doc "Full name")
+  #(doc) Full name
   public: primaryName
-  #(doc "Birth year")
+  #(doc) Birth year
   # number="####"
   public: birthYear
-  #(doc "Death year (null if living)")
+  #(doc) Death year (null if living)
   # number="####"
   public: deathYear
-  #(doc "Primary professions (comma-separated)")
+  #(doc) Primary professions (comma-separated)
   public: primaryProfession
 }
 extend {
@@ -27,17 +27,17 @@ extend {
 #(doc) Mapping of people to titles — links cast and crew to the movies they worked on.
 source: principals is duckdb.table('data/principals.parquet')
 include {
-  #(doc "Title identifier FK")
+  #(doc) Title identifier FK
   public: tconst
-  #(doc "Credit ordering position")
+  #(doc) Credit ordering position
   public: ordering
-  #(doc "Person identifier FK")
+  #(doc) Person identifier FK
   public: nconst
-  #(doc "Job category: actor, actress, director, producer, writer, composer, etc.")
+  #(doc) Job category: actor, actress, director, producer, writer, composer, etc.
   public: category
-  #(doc "Specific job title")
+  #(doc) Specific job title
   public: job
-  #(doc "Character names played (array)")
+  #(doc) Character names played (array)
   public: characters
 }
 extend {
@@ -54,31 +54,31 @@ query: genre_movie_map is duckdb.table('data/titles.parquet') -> {
 #(doc) Movie and TV titles from IMDb (filtered to titles with 10K+ ratings). Use for popularity analysis, genre trends, cast/crew exploration, and filmography research.
 source: movies is duckdb.table('data/titles.parquet')
 include {
-  #(doc "Title identifier (e.g. tt0117500)")
+  #(doc) Title identifier (e.g. tt0117500)
   public: tconst
-  #(doc "Display title")
+  #(doc) Display title
   public: primaryTitle
-  #(doc "Original language title")
+  #(doc) Original language title
   public: originalTitle
-  #(doc "Adult content flag: 0 or 1")
+  #(doc) Adult content flag: 0 or 1
   public: isAdult
-  #(doc "Release year")
+  #(doc) Release year
   # number="####"
   public: startYear
-  #(doc "End year (for TV series)")
+  #(doc) End year (for TV series)
   # number="####"
   public: endYear
-  #(doc "Runtime in minutes")
+  #(doc) Runtime in minutes
   public: runtimeMinutes
-  #(doc "Genre tags (array)")
+  #(doc) Genre tags (array)
   public: genres
-  #(doc "IMDb average user rating (0-10)")
+  #(doc) IMDb average user rating (0-10)
   public: averageRating
-  #(doc "Number of user votes — proxy for popularity")
+  #(doc) Number of user votes — proxy for popularity
   public: numVotes
-  #(doc "Director person IDs (array)")
+  #(doc) Director person IDs (array)
   public: directors
-  #(doc "Writer person IDs (array)")
+  #(doc) Writer person IDs (array)
   public: writers
 }
 extend {
