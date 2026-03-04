@@ -3,12 +3,14 @@
 #(doc) US baby name popularity by state, gender, and year (1910–present) from the Social Security Administration. Use for name trends, regional patterns, gender analysis, and generational comparisons.
 source: names is duckdb.table('usa_names.parquet')
 extend {
-  rename: year_born is `year`
+  rename: 
+    year_born is `year`
+    count_per_year is `number`
 
   measure:
     #(doc) Total births
     # number=auto
-    population is `number`.sum()
+    population is count_per_year.sum()
 
     #(doc) Births per 100K of total population
     births_per_100k is floor(population / nullif(all(population), 0) * 100000)
@@ -43,7 +45,30 @@ extend {
     order_by: 1 asc
   }
 }
+include {
+  #(doc) Baby name
+  #(index_values) n=-1
+  public: name
+  #(doc) US state postal code
+  #(index_values) n=-1
+  public: state
+  #(doc) Gender: F or M
+  #(index_values) n=-1
+  public: gender
+  #(doc) Birth year
+  public: year_born
+  #(doc) Number of births for this name/gender/state/year combination
+  public: count_per_year
+  public: population
+  public: births_per_100k
+  public: decade
+  public: by_name
+  public: by_state
+  public: by_gender
+  public: by_decade
+}
 
+#(doc) Gender-state-year cohort aggregation for per-capita calculations.
 source: cohort is names -> {
   group_by: gender, state, year_born
   aggregate: cohort_size is population
@@ -57,6 +82,18 @@ source: names2 is names extend {
     gender = cohort.gender
     and state = cohort.state
     and year_born = cohort.year_born
+
+  dimension:
+    #(doc) Gender display label: Female or Male
+    gender_label is gender ? pick 'Female' when 'F' else 'Male'
+
+  measure:
+    #(doc) Male birth ratio (male births / total births)
+    # percent
+    male_ratio is population { where: gender = 'M' } / nullif(population, 0)
+
+    #(doc) Births per 100K of the gender-state-year cohort
+    cohort_per_100k is population / nullif(cohort.population, 0) * 100000
 
   #(doc) Name popularity over time with geographic distribution
   view: names_chart is {
@@ -105,14 +142,14 @@ source: names2 is names extend {
   view: gender_year is {
     group_by: year_born
     aggregate: population
-    group_by: gender is gender ? pick 'Female' when 'F' else 'Male'
+    group_by: gender is gender_label
   }
 
   #(doc) Male birth ratio by state (for gender distribution maps)
   # shape_map
   view: gender_by_state is {
     group_by: state
-    aggregate: percent_female is population { where: gender = 'M' } / nullif(population, 0)
+    aggregate: percent_female is male_ratio
   }
 
   #(doc) Names that are roughly equally popular for both genders
@@ -197,11 +234,11 @@ source: names2 is names extend {
       # shape_map
       nest: by_state is {
         group_by: state
-        aggregate: per_100k is population / nullif(cohort.population, 0) * 100000
+        aggregate: per_100k is cohort_per_100k
       }
       peak_decade_state is {
         group_by: state, decade
-        aggregate: per_100k is population / nullif(cohort.population, 0) * 100000
+        aggregate: per_100k is cohort_per_100k
         limit: 5
       }
     }

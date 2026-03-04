@@ -6,8 +6,10 @@ include {
   #(doc) Carrier code (e.g. WN, DL, AA)
   public: code
   #(doc) Carrier full name
+  #(index_values) n=-1
   public: name
   #(doc) Carrier short name
+  #(index_values) n=-1
   public: nickname
 }
 extend {
@@ -22,18 +24,23 @@ extend {
 source: airports is duckdb.table('data/airports.parquet')
 include {
   #(doc) Airport code (e.g. SFO, LAX)
+  #(index_values) n=-1
   public: code
   #(doc) Full airport name
+  #(index_values) n=-1
   public: full_name
   #(doc) City
+  #(index_values) n=-1
   public: city
   #(doc) County
   public: county
   #(doc) State
+  #(index_values) n=-1
   public: state
   #(doc) FAA region
   public: faa_region
   #(doc) Facility type
+  #(index_values) n=-1
   public: fac_type
   #(doc) Major airport flag: Y or N
   public: major
@@ -79,8 +86,10 @@ include {
   #(doc) Aircraft model code (PK)
   public: aircraft_model_code
   #(doc) Aircraft manufacturer (e.g. BOEING, CESSNA)
+  #(index_values) n=-1
   public: manufacturer
   #(doc) Model designation
+  #(index_values) n=-1
   public: model
   #(doc) Number of seats
   public: seats
@@ -252,14 +261,17 @@ extend {
     #(doc) Average flight distance in miles
     average_flight_distance is distance.avg()
 
+    #(doc) Share of total flights as a percentage
+    # percent
+    percent_of_flights is flight_count / nullif(all(flight_count), 0)
+
   #(doc) Carrier rankings by flight count and destination reach
   view: top_carriers is {
     group_by: carriers.nickname
     aggregate:
       flight_count
       destination_count
-      # percent
-      percentage_of_flights is flight_count / nullif(all(flight_count), 0)
+      percentage_of_flights is percent_of_flights
   }
 
   #(doc) Flight volume by carrier over time
@@ -279,8 +291,7 @@ extend {
       flight_count
       destination_count
       carriers.carrier_count
-      # percent
-      percent_of_flights is flight_count / nullif(all(flight_count), 0)
+      percent_of_flights
   }
 
   #(doc) Top 5 destination airports by flight count
@@ -289,8 +300,7 @@ extend {
     group_by: destination.code, destination.full_name
     aggregate:
       flight_count
-      # percent
-      percent_of_flights_to_destination is flight_count / nullif(all(flight_count), 0)
+      percent_of_flights_to_destination is percent_of_flights
   }
 
   #(doc) Monthly flight volume trend

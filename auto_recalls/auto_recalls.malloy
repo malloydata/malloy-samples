@@ -10,6 +10,7 @@ include {
   public: `NHTSA ID`
 
   #(doc) Recall type: Vehicle, Equipment, Tire, or Child Seat
+  #(index_values) n=-1
   public: `Recall Type`
 
   internal: Manufacturer
@@ -52,10 +53,12 @@ extend {
     #(doc) Short description of the recall issue
     recall_subject is Subject
 
+    #(index_values) n=-1
     #(filter) {"type": "Star"}
     #(doc) Manufacturer name
     manufacturer is Manufacturer
 
+    #(index_values) n=-1
     #(filter) {"type": "Star"}
     #(doc) Vehicle component affected (e.g. STEERING, AIR BAGS, TIRES)
     component is Component

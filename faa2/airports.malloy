@@ -6,24 +6,30 @@ include {
   #(doc) Internal FAA identifier
   public: id
   #(doc) Airport code (e.g. SFO, LAX)
+  #(index_values) n=-1
   public: code
   #(doc) FAA site number
   public: site_number
   #(doc) Facility type: AIRPORT, HELIPORT, SEAPLANE BASE, etc.
+  #(index_values) n=-1
   public: fac_type
   #(doc) Facility use: PU (public) or PR (private)
   public: fac_use
   #(doc) FAA region
+  #(index_values) n=-1
   public: faa_region
   #(doc) FAA district office
   public: faa_dist
   #(doc) City where airport is located
+  #(index_values) n=-1
   public: city
   #(doc) County
   public: county
   #(doc) State (null for non-US territories)
+  #(index_values) n=-1
   public: state
   #(doc) Full airport name
+  #(index_values) n=-1
   public: full_name
   #(doc) Ownership type: PU (public) or PR (private)
   public: own_type
@@ -55,6 +61,8 @@ include {
   public: major
 }
 extend {
+  primary_key: code
+
   measure:
     #(doc) Total number of airports
     airport_count is count()

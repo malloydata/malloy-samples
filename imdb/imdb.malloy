@@ -10,6 +10,7 @@ include {
   #(doc) Person identifier (e.g. nm0000001)
   public: nconst
   #(doc) Full name
+  #(index_values) n=-1
   public: primaryName
   #(doc) Birth year
   # number="####"
@@ -34,6 +35,7 @@ include {
   #(doc) Person identifier FK
   public: nconst
   #(doc) Job category: actor, actress, director, producer, writer, composer, etc.
+  #(index_values) n=-1
   public: category
   #(doc) Specific job title
   public: job
@@ -57,6 +59,7 @@ include {
   #(doc) Title identifier (e.g. tt0117500)
   public: tconst
   #(doc) Display title
+  #(index_values) n=-1
   public: primaryTitle
   #(doc) Original language title
   public: originalTitle
@@ -115,6 +118,7 @@ extend {
     movie_url is concat('https://www.imdb.com/title/', tconst)
 
     #(doc) Genre from the genres array
+    #(index_values) n=-1
     genre is genres.value
 
     #(doc) Genre via the cross-join map (for matrix queries)
@@ -131,6 +135,10 @@ extend {
 
     #(doc) Person name from the second principals join (for co-starring queries)
     name2 is principals2.people.primaryName
+
+    #(doc) Release year (alias for startYear)
+    # number="####"
+    production_year is startYear
 
   #(doc) Title listing with poster, year, and vote count
   view: by_title is {
@@ -154,7 +162,6 @@ extend {
   }
 
   #(doc) Genre distribution with average release year
-  # bar_chart
   view: genre_and_time is {
     group_by: genre is genre2
     aggregate: title_count
@@ -240,8 +247,7 @@ extend {
   view: titles_dashboard is {
     group_by:
       movie_image
-      # number="####"
-      production_year is startYear
+      production_year
       primaryTitle
       runtimeMinutes
       movie_url
@@ -255,5 +261,3 @@ extend {
     order_by: 2 desc
   }
 }
-
-run: movies -> by_name
