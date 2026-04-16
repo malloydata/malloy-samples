@@ -7,7 +7,6 @@ Source data: https://catalog.data.gov/dataset/recalls-data
 
 ## Explore Auto Recalls
 >>>malloy
-##(filters) ["recalls.manufacturer", "recalls.is_major_recall", "recalls.recall_subject"]
 import 'auto_recalls.malloy'
 >>>markdown
 
