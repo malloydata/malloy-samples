@@ -1,8 +1,0 @@
-import 'auto_recalls.malloy'
-
-#(filter) name=Manufacturer dimension=Manufacturer type=equal required
-#(filter) name=Subject dimension=Subject type=like
-#(filter) name="Recall After" dimension="Report Received Date" type=greater_than
-#(filter) name="Recall Before" dimension="Report Received Date" type=less_than
-#(doc) Manufacturer-scoped view of NHTSA recall data. Requires a manufacturer filter to be set.
-source: manufacturer_recalls is recalls extend {}
