@@ -1,41 +1,17 @@
-##! experimental.access_modifiers
-
+// Auto Recalls: CSV example
+##! m4warnings
+#(filter) name=Manufacturer dimension=Manufacturer type=in
+#(filter) name=Subject dimension=Subject type=like
+#(filter) name="Major Recall" dimension="Major Recall" type=equal
+#(filter) name="Recall After" dimension="Report Received Date" type=greater_than
+#(filter) name="Recall Before" dimension="Report Received Date" type=less_than
 #(doc) NHTSA automobile recall data (1966–2022). Use for recall trends, manufacturer safety analysis, component failure patterns, and identifying major recalls.
-source: recalls is duckdb.table('data/auto_recalls.csv')
-
-include {
-  internal: `Report Received Date`
-
-  #(doc) NHTSA recall identifier (e.g. 22V444000)
-  public: `NHTSA ID`
-
-  #(doc) Recall type: Vehicle, Equipment, Tire, or Child Seat
-  #(index_values) n=-1
-  public: `Recall Type`
-
-  internal: Manufacturer
-  internal: Subject
-  internal: Component
-
-  #(doc) Manufacturer's internal campaign tracking number
-  public: `Mfr Campaign Number`
-
-  #(doc) Number of vehicles or units potentially affected by this recall
-  public: `Potentially Affected`
-
-  #(doc) Full description of the recall and affected models/years
-  public: `Recall Description`
-
-  #(doc) Description of potential safety consequences if not remedied
-  public: `Consequence Summary`
-
-  #(doc) Corrective action or remedy for the recall
-  public: `Corrective Action`
-
-  internal: `Recall Link`
-}
-extend {
+source: recalls is duckdb.table('data/auto_recalls.csv') extend {
   primary_key: `NHTSA ID`
+
+  rename:
+    Subject_old is Subject
+    Manufacturer_old is Manufacturer
 
   dimension:
     #(doc) Direct link to the NHTSA recall page
@@ -49,23 +25,17 @@ extend {
     recall_year is `Report Received Date`.year
 
     #(index_values) n=-1
-    #(filter) {"type": "Retrieval"}
-    #(doc) Short description of the recall issue
-    recall_subject is Subject
+    Subject is Subject_old
 
     #(index_values) n=-1
-    #(filter) {"type": "Star"}
-    #(doc) Manufacturer name
-    manufacturer is Manufacturer
+    Manufacturer is Manufacturer_old
 
     #(index_values) n=-1
-    #(filter) {"type": "Star"}
     #(doc) Vehicle component affected (e.g. STEERING, AIR BAGS, TIRES)
     component is Component
 
-    #(filter) {"type": "Boolean"}
     #(doc) Whether 100,000+ vehicles/units are potentially affected
-    is_major_recall is ifnull(`Potentially Affected`, 0) > 100000
+    `Major Recall` is ifnull(`Potentially Affected`, 0) > 100000
 
   measure:
     #(doc) Total number of recalls
@@ -107,30 +77,30 @@ extend {
   # line_chart
   view: by_year_manufacturer_line_chart is {
     nest: top_manufacturers is {
-      group_by: manufacturer
+      group_by: Manufacturer
       aggregate: recall_count
       limit: 5
     }
     nest: x is {
-      group_by: manufacturer, recall_year is year(`Report Received Date`)
+      group_by: Manufacturer, recall_year is year(`Report Received Date`)
       aggregate: recall_count
     }
   }
   -> {
-    where: top_manufacturers.manufacturer = x.manufacturer
+    where: top_manufacturers.Manufacturer = x.Manufacturer
     # x
     group_by: x.recall_year
     # y
     aggregate: recall_count is x.recall_count.sum()
     # series
-    group_by: x.manufacturer
+    group_by: x.Manufacturer
     limit: 100000
     order_by: 1, 2
   }
 
   #(doc) Recall count, total affected, and share by manufacturer
   view: by_manufacturer is {
-    group_by: manufacturer
+    group_by: Manufacturer
     aggregate:
       recall_count
       total_affected
@@ -161,8 +131,8 @@ extend {
       recall_date
       `NHTSA ID`
       recall_url
-      manufacturer
-      recall_subject
+      Manufacturer
+      Subject
       `Potentially Affected`
     order_by: recall_date desc
     limit: 10
