@@ -1,0 +1,29 @@
+>>>markdown
+# Aircraft Analysis
+What types of planes to each of the Carriers fly?  Are they long or short flights?  How much of each type are available for sale?  Where do they go?
+>>>malloy
+import {flights} from 'flights.malloy'
+>>>malloy
+# dashboard
+run: flights -> {
+  group_by: carriers.nickname
+  aggregate:
+    aircraft.aircraft_count
+    average_plane_size
+    flight_count
+    average_flight_distance
+    seats_owned
+  nest: by_manufacturer is {
+    group_by: aircraft.aircraft_models.manufacturer
+    aggregate:
+      aircraft.aircraft_count
+      average_plane_size
+      flight_count
+      average_flight_distance
+      seats_owned
+  }
+  nest: routes_by_manufacturer is {
+    group_by: aircraft.aircraft_models.manufacturer
+    nest: top_routes_map
+  }
+}

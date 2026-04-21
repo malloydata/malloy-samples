@@ -1,0 +1,66 @@
+{
+  "frozenConfig": false,
+  "projects": [
+    {
+      "name": "malloy-samples",
+      "packages": [
+        {
+          "name": "auto_recalls",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/auto_recalls"
+        },
+        {
+          "name": "bigquery-ga4",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/bigquery-ga4"
+        },
+        {
+          "name": "bigquery-ga_sessions",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/bigquery-ga_sessions"
+        },
+        {
+          "name": "bigquery-hackernews",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/bigquery-hackernews"
+        },
+        {
+          "name": "bigquery-the_met",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/bigquery-the_met"
+        },
+        {
+          "name": "cubed_data",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/cubed_data"
+        },
+        {
+          "name": "ecommerce",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/ecommerce"
+        },
+        {
+          "name": "faa",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/faa"
+        },
+        {
+          "name": "ga4",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/ga4"
+        },
+        {
+          "name": "imdb",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/imdb"
+        },
+        {
+          "name": "names",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/names"
+        },
+        {
+          "name": "patterns",
+          "location": "https://github.com/credibledata/malloy-samples/tree/main/patterns"
+        }
+      ],
+      "connections": [
+        {
+          "name": "bigquery",
+          "type": "bigquery",
+          "bigqueryConnection": {}
+        }
+      ]
+    }
+  ]
+}
+

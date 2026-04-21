@@ -1,0 +1,92 @@
+##! experimental.access_modifiers
+
+#(doc) FAA airport facilities database. Use for airport counts by state, region, and facility type.
+source: airports is duckdb.table('data/airports.parquet')
+include {
+  #(doc) Internal FAA identifier
+  public: id
+  #(doc) Airport code (e.g. SFO, LAX)
+  #(index_values) n=-1
+  public: code
+  #(doc) FAA site number
+  public: site_number
+  #(doc) Facility type: AIRPORT, HELIPORT, SEAPLANE BASE, etc.
+  #(index_values) n=-1
+  public: fac_type
+  #(doc) Facility use: PU (public) or PR (private)
+  public: fac_use
+  #(doc) FAA region
+  #(index_values) n=-1
+  public: faa_region
+  #(doc) FAA district office
+  public: faa_dist
+  #(doc) City where airport is located
+  #(index_values) n=-1
+  public: city
+  #(doc) County
+  public: county
+  #(doc) State (null for non-US territories)
+  #(index_values) n=-1
+  public: state
+  #(doc) Full airport name
+  #(index_values) n=-1
+  public: full_name
+  #(doc) Ownership type: PU (public) or PR (private)
+  public: own_type
+  #(doc) Latitude
+  public: latitude
+  #(doc) Longitude
+  public: longitude
+  #(doc) Elevation in feet
+  public: elevation
+  #(doc) Aeronautical chart
+  public: aero_cht
+  #(doc) Distance from central business district
+  public: cbd_dist
+  #(doc) Direction from central business district
+  public: cbd_dir
+  #(doc) Activation date
+  public: act_date
+  internal: cert
+  internal: fed_agree
+  internal: cust_intl
+  internal: c_ldg_rts
+  #(doc) Joint use agreement
+  public: joint_use
+  #(doc) Military landing rights
+  public: mil_rts
+  #(doc) Has control tower: Y or N
+  public: cntl_twr
+  #(doc) Major airport: Y or N
+  public: major
+}
+extend {
+  primary_key: code
+
+  measure:
+    #(doc) Total number of airports
+    airport_count is count()
+
+  #(doc) Airport count by state
+  view: by_state is {
+    where: state is not null
+    group_by: state
+    aggregate: airport_count
+  }
+
+  #(doc) Airport count by facility type
+  view: by_facility_type is {
+    group_by: fac_type
+    aggregate: airport_count
+  }
+
+  #(doc) Regional dashboard showing airport distribution by state and facility type
+  view: airports_by_region_dashboard is {
+    group_by: faa_region
+    aggregate: airport_count
+    nest:
+      # shape_map
+      by_state
+      by_facility_type
+  }
+}

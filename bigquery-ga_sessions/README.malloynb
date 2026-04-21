@@ -1,0 +1,10 @@
+>>>markdown
+# Analyzing GA Session Data with Malloy
+
+This notebook imports a Malloy model from `./ga_sessions.malloy` and builds a dashboard to show GA session data from many different slices.
+
+The model also makes use of tags for rendering, showing some of the elements as bar charts via the `# bar_chart` tag.
+>>>malloy
+import 'ga_sessions.malloy'
+>>>malloy
+run: sessions_dashboard

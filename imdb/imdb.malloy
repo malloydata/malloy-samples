@@ -1,17 +1,49 @@
-// Information courtesy of IMDb (https://www.imdb.com).
-// Used with permission. 
-// For personal / educational use only
-//
-//  Github: https://github.com/lloydtabb/imdb_fiddle
-//  About Fiddles: https://github.com/lloydtabb/malloy_fiddle_dist/
+##! experimental.access_modifiers
 
-source: people is duckdb.table('data/names.parquet') extend {
-// cast, crew, everyone involved in movies
+// Information courtesy of IMDb (https://www.imdb.com).
+// Used with permission.
+// For personal / educational use only
+
+#(doc) People in the film industry — actors, directors, composers, crew.
+source: people is duckdb.table('data/names.parquet')
+include {
+  #(doc) Person identifier (e.g. nm0000001)
+  public: nconst
+  #(doc) Full name
+  #(index_values) n=-1
+  public: primaryName
+  #(doc) Birth year
+  # number="####"
+  public: birthYear
+  #(doc) Death year (null if living)
+  # number="####"
+  public: deathYear
+  #(doc) Primary professions (comma-separated)
+  public: primaryProfession
+}
+extend {
   primary_key: nconst
 }
 
-source: principals is duckdb.table('data/principals.parquet') extend {
-// a mapping table that links people to movies, along with their job on that movie.
+#(doc) Mapping of people to titles — links cast and crew to the movies they worked on.
+source: principals is duckdb.table('data/principals.parquet')
+include {
+  #(doc) Title identifier FK
+  public: tconst
+  #(doc) Credit ordering position
+  public: ordering
+  #(doc) Person identifier FK
+  public: nconst
+  #(doc) Job category: actor, actress, director, producer, writer, composer, etc.
+  #(index_values) n=-1
+  public: category
+  #(doc) Specific job title
+  public: job
+  #(doc) Character names played (array)
+  public: characters
+}
+extend {
+  #(doc) The person who held this role
   join_one: people is people on nconst = people.nconst
 }
 
@@ -21,60 +53,122 @@ query: genre_movie_map is duckdb.table('data/titles.parquet') -> {
     genre is genres.value
 }
 
-source: movies is duckdb.table('data/titles.parquet') extend {
-// all the movies
+#(doc) Movie and TV titles from IMDb (filtered to titles with 10K+ ratings). Use for popularity analysis, genre trends, cast/crew exploration, and filmography research.
+source: movies is duckdb.table('data/titles.parquet')
+include {
+  #(doc) Title identifier (e.g. tt0117500)
+  public: tconst
+  #(doc) Display title
+  #(index_values) n=-1
+  public: primaryTitle
+  #(doc) Original language title
+  public: originalTitle
+  #(doc) Adult content flag: 0 or 1
+  public: isAdult
+  #(doc) Release year
+  # number="####"
+  public: startYear
+  #(doc) End year (for TV series)
+  # number="####"
+  public: endYear
+  #(doc) Runtime in minutes
+  public: runtimeMinutes
+  #(doc) Genre tags (array)
+  public: genres
+  #(doc) IMDb average user rating (0-10)
+  public: averageRating
+  #(doc) Number of user votes — proxy for popularity
+  public: numVotes
+  #(doc) Director person IDs (array)
+  public: directors
+  #(doc) Writer person IDs (array)
+  public: writers
+}
+extend {
   join_many: principals on tconst = principals.tconst
   join_many: principals2 is principals on tconst = principals2.tconst
   join_many: genre_movie_map on tconst = genre_movie_map.tconst
   primary_key: tconst
 
   measure:
+    #(doc) Distinct title count
     title_count is count(tconst)
+
+    #(doc) Total row count (before deduplication)
     row_count is count()
-    # format="#,###""
-    total_ratings is sum(numVotes/1000.0)
+
+    #(doc) Aggregate popularity score (sum of votes in thousands)
+    # number=auto
+    total_ratings is sum(numVotes / 1000.0)
+
+    #(doc) Average IMDb rating across titles
     average_rating is averageRating.avg()
+
+    #(doc) Share of titles as a percentage
     # percent
-    percent_of_titles is title_count/all(title_count)
+    percent_of_titles is title_count / nullif(all(title_count), 0)
 
   dimension:
+    #(doc) Movie poster thumbnail
     # image {width="150px"}
-    movie_image is concat('https://artifacts.flyxit.com/flyx-artifacts/',tconst,'.jpg')
+    movie_image is concat('https://artifacts.flyxit.com/flyx-artifacts/', tconst, '.jpg')
+
+    #(doc) Link to IMDb title page
     # link
-    movie_url is concat('https://www.imdb.com/title/',tconst)
+    movie_url is concat('https://www.imdb.com/title/', tconst)
+
+    #(doc) Genre from the genres array
+    #(index_values) n=-1
     genre is genres.value
+
+    #(doc) Genre via the cross-join map (for matrix queries)
     genre2 is genre_movie_map.genre
+
+    #(doc) Job category of the first principals join
     job is principals.category
+
+    #(doc) Job category of the second principals join (for co-starring queries)
     job2 is principals2.category
+
+    #(doc) Person name from the first principals join
     name is principals.people.primaryName
+
+    #(doc) Person name from the second principals join (for co-starring queries)
     name2 is principals2.people.primaryName
 
+    #(doc) Release year (alias for startYear)
+    # number="####"
+    production_year is startYear
+
+  #(doc) Title listing with poster, year, and vote count
   view: by_title is {
-    group_by: 
-      # image {width="30px" }
+    group_by:
+      # image {width="30px"}
       movie_image
       primaryTitle, startYear, numVotes
     order_by: 4 desc
   }
 
+  #(doc) Movie poster grid with ratings
   # list
   view: movie_grid is {
-    # image{ width="30px"}
+    # image {width="30px"}
     # href=movie_url
-    group_by: 
+    group_by:
       movie_image
-      # hidden 
+      # hidden
       movie_url
     aggregate: total_ratings
   }
 
-  # bar_chart
+  #(doc) Genre distribution with average release year
   view: genre_and_time is {
     group_by: genre is genre2
     aggregate: title_count
     aggregate: avg_year is startYear.avg()
   }
 
+  #(doc) Title count trend by release year
   # line_chart
   view: by_year is {
     group_by: startYear
@@ -82,6 +176,7 @@ source: movies is duckdb.table('data/titles.parquet') extend {
     order_by: startYear desc
   }
 
+  #(doc) People ranked by aggregate popularity
   view: by_name is {
     group_by:
       principals.people.primaryName, principals.nconst
@@ -90,6 +185,7 @@ source: movies is duckdb.table('data/titles.parquet') extend {
       title_count
   }
 
+  #(doc) Title count by job category
   view: by_job_category is {
     group_by: job
     aggregate: title_count
@@ -98,12 +194,14 @@ source: movies is duckdb.table('data/titles.parquet') extend {
   # list
   view: job_list is by_job_category
 
+  #(doc) Title list ranked by popularity
   # list
   view: title_list is {
     group_by: primaryTitle
     aggregate: total_ratings
   }
 
+  #(doc) Frequent collaborators — people who share the most titles
   view: works_with is {
     group_by: principals2.people.primaryName
     aggregate:
@@ -117,50 +215,49 @@ source: movies is duckdb.table('data/titles.parquet') extend {
     limit: 10
   }
 
-
+  #(doc) Genre breakdown with title count and popularity
   view: by_genre is {
     group_by: genre is genres.value
-    aggregate: 
-      title_count, 
+    aggregate:
+      title_count
       total_ratings
       percent_of_titles
-
   }
 
+  #(doc) Top 5 directors by aggregate popularity
   # list_detail
-  view: top_directors is  {
+  view: top_directors is {
     limit: 5
     where: job = 'director'
     group_by: name
     aggregate: total_ratings
   }
 
-    # list_detail
-  view: top_actors is  {
+  #(doc) Top 5 actors by aggregate popularity
+  # list_detail
+  view: top_actors is {
     limit: 5
     where: job = 'actor'
     group_by: name
     aggregate: total_ratings
   }
 
+  #(doc) Detailed title dashboard with posters, genres, and full cast/crew breakdown
   # dashboard
   view: titles_dashboard is {
-    group_by: 
+    group_by:
       movie_image
-      production_year is startYear
+      production_year
       primaryTitle
       runtimeMinutes
-      movie_url 
+      movie_url
     nest:
       genre_list is by_genre
       by_cast is by_job_category + {
         # list
-        nest: names is by_name + {limit: 200}
+        nest: names is by_name + { limit: 200 }
       }
     limit: 20
     order_by: 2 desc
   }
 }
-
-// example query
-run: movies -> by_name

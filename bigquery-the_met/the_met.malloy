@@ -1,0 +1,114 @@
+##! experimental.access_modifiers
+
+#(doc) The Metropolitan Museum of Art object catalog from BigQuery. Over 470K objects spanning 5000+ years of art history with classification, department, artist, and image data.
+source: met_objects is bigquery.table('bigquery-public-data.the_met.objects') extend {
+  where: object_begin_date < 2031 & > -8000
+
+  #(doc) Object images from the Met's digital collection
+  join_one: images is bigquery.table('bigquery-public-data.the_met.images')
+    extend { primary_key: object_id }
+    with object_id
+
+  measure:
+    #(doc) Total objects in the collection
+    # number=auto
+    object_count is count()
+
+    #(doc) Total images available
+    # number=auto
+    image_count is images.count()
+
+  dimension:
+    #(doc) Century of the object's creation (e.g. 1800, 1900)
+    object_era is floor(object_begin_date / 100) * 100
+
+    #(doc) Thumbnail image URL
+    # image
+    image_thumb is replace(images.original_image_url, 'original', 'web-thumb')
+
+  #(doc) Object count by classification type (e.g. Paintings, Prints, Photographs)
+  # list_detail
+  view: by_classification is {
+    group_by: classification
+    aggregate: object_count
+  }
+
+  #(doc) Object count by museum department
+  view: by_department is {
+    group_by: department
+    aggregate: object_count
+  }
+
+  #(doc) Artists ranked by object and image count
+  view: by_artist is {
+    group_by: artist_display_name
+    aggregate: object_count, image_count
+  }
+
+  #(doc) Object count by creation year
+  view: by_object_date is {
+    group_by: object_begin_date
+    aggregate: object_count
+  }
+
+  #(doc) Object count by century
+  # bar_chart
+  view: by_object_era is {
+    order_by: 1 desc
+    group_by: object_era
+    aggregate: object_count
+  }
+
+  #(doc) Image listing with title and URL
+  view: image_list is {
+    group_by:
+      images.title
+      images.original_image_url
+      image_thumb
+  }
+
+  #(doc) Object count by country of origin
+  # list_detail
+  view: by_country is {
+    group_by: country
+    aggregate: object_count
+  }
+
+  #(doc) Random sample of 20 object thumbnails
+  # list
+  view: random_image_list is {
+    limit: 20
+    where: image_thumb is not null
+    group_by:
+      image_thumb
+      x is 1
+  }
+
+  #(doc) Collection overview with department-level drill-downs by country, era, classification, and images
+  view: over_view_dashboard is {
+    aggregate: object_count
+    nest: department_dashboard is {
+      group_by: department
+      aggregate: object_count, image_count
+      nest: by_country
+      nest: by_object_era
+      nest: by_classification
+      nest: random_image_list
+    }
+  }
+
+  #(doc) Photography department dashboard (post-1900) with artist breakdown and images
+  view: department_dashboard is {
+    where: department = 'Photographs' and object_begin_date > 1900
+    aggregate:
+      artist_count is count(artist_display_name)
+      object_count
+      image_count
+    nest: by_artist is {
+      limit: 30
+      group_by: artist_display_name
+      aggregate: object_count
+      nest: random_image_list
+    }
+  }
+}
