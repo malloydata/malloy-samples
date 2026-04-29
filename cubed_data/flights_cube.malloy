@@ -1,6 +1,6 @@
 ##! experimental{composite_sources}
 
-source: flights_cubed is duckdb.table('flights_cubed.parquet')
+source: flights_cubed is duckdb.table('cubed_data/flights_cubed.parquet')
 
 source: `cube:` is flights_cubed extend { where: agg_level = '' except: `origin`,`dep_date`,`destination`,`carrier`,`tail_num` }
 source: `cube:carrier` is flights_cubed extend { where: agg_level = 'carrier' except: `dep_date`,`tail_num`,`destination`,`origin` }

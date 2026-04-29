@@ -1,4 +1,4 @@
-source: names is duckdb.table('usa_names.parquet') extend {
+source: names is duckdb.table('names/usa_names.parquet') extend {
   rename: year_born is `year`
   measure: population is `number`.sum()
   dimension: decade is floor(year_born/10)*10

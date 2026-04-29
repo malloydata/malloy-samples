@@ -4,7 +4,7 @@ We can add 'views' to our semantic model that are reusable. As we've seen earlie
 
 Clicking 'Run Query' above the view will run the query for you and show you the results.
 >>>malloy
-source: names2 is duckdb.table('usa_names.parquet') extend {
+source: names2 is duckdb.table('names/usa_names.parquet') extend {
   rename: year_born is `year`   // 'year' is a malloy reserved word
   rename: population is `number`  // 'number' is a malloy reserve word.
 
