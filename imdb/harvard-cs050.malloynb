@@ -4,11 +4,11 @@ Harvard's beginnning computer science class teaches a section on SQL.  The class
 
 Below is the semantic data model used to answer all the questions
 >>>malloy
-source: people is duckdb.table('data/names.parquet')
-source: principals is duckdb.table('data/principals.parquet') extend {
+source: people is duckdb.table('imdb/data/names.parquet')
+source: principals is duckdb.table('imdb/data/principals.parquet') extend {
   join_one: people is people on nconst = people.nconst
 }
-source: movies is duckdb.table('data/titles.parquet') extend {
+source: movies is duckdb.table('imdb/data/titles.parquet') extend {
   join_many: principals on tconst = principals.tconst
   join_many: principals2 is principals on tconst = principals2.tconst
   measure:
