@@ -17,7 +17,7 @@ COPY (
       count(tail_num) as _plane_count,
       count(*) as _flight_count,
       GROUPING_ID(dep_date, carrier, origin, destination, tail_num) as gid
-    FROM '../data/flights.parquet'
+    FROM 'data/flights.parquet'
     GROUP BY cube (dep_date, carrier, origin, destination, tail_num)
   )
   SELECT 
@@ -32,7 +32,7 @@ COPY (
   FROM cube_table
 ) to 'flights_cubed.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
 >>>malloy
-source: flights_cubed is duckdb.table('./flights_cubed.parquet') extend {
+source: flights_cubed is duckdb.table('cubed_data/flights_cubed.parquet') extend {
     measure: row_count is count()
 }
 >>>malloy

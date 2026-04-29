@@ -13,7 +13,7 @@ The dataset is a single table with 5 columns:
 ## The semantic data model
 In order to analyze this data, we're going to rename a couple of columns and build some reusable calculations.  `total_population` is a measure and can be used in an `aggregate:` calculation.  Decade is computed from year, and can be used in a `group_by:` or `select:`.  Click on 'Schema' to see the data that is provided.
 >>>malloy
-source: names is duckdb.table('usa_names.parquet') extend {
+source: names is duckdb.table('names/usa_names.parquet') extend {
   rename: year_born is `year`   // 'year' is a reserved keyword in Malloy
   rename: population is `number`  // 'number' is a reserved keyword in Malloy
 

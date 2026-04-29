@@ -12,7 +12,6 @@ This script produces three files.  Files are downloaded from https://datasets.im
 * names.parquet - information about the people that worked on the movies.
 
 This script is designed to run locally (not from the web version).  Clone the repository and launch VSCode
-
 >>>markdown
 ## Raw Data Definitions
 Define sources for all the raw data.
@@ -30,7 +29,7 @@ source: raw_titles is duckdb.sql("""
 		SELECT * FROM
 		read_csv_auto(
 			-- 'https://datasets.imdbws.com/title.basics.tsv.gz'
-			'data/title.basics.tsv.gz'
+			'imdb/data/title.basics.tsv.gz'
 			, all_varchar=true, delim='\t', quote='',header=True)
 	""")
 
@@ -38,7 +37,7 @@ source: raw_principals is duckdb.sql("""
 		SELECT * FROM
 		read_csv_auto(
 			-- 'https://datasets.imdbws.com/title.principals.tsv.gz'
-			'data/title.principals.tsv.gz'
+			'imdb/data/title.principals.tsv.gz'
 			, all_varchar=true, delim='\t', quote='',header=True)
 	""")
 
@@ -46,7 +45,7 @@ source: raw_ratings is duckdb.sql("""
 		SELECT * FROM
 		read_csv_auto(
 			-- 'https://datasets.imdbws.com/title.ratings.tsv.gz'
-			'data/title.ratings.tsv.gz'
+			'imdb/data/title.ratings.tsv.gz'
 			, all_varchar=true, delim='\t', quote='',header=True)
 	""")
 
@@ -54,14 +53,14 @@ source: raw_crew is duckdb.sql("""
 		SELECT * FROM
 		read_csv_auto(
 			-- 'https://datasets.imdbws.com/title.crew.tsv.gz'
-			'data/title.crew.tsv.gz'
+			'imdb/data/title.crew.tsv.gz'
 			, all_varchar=true, delim='\t', quote='',header=True)
 	""")
 source: raw_names is duckdb.sql(""" 
 		SELECT * FROM
 		read_csv_auto(
 			-- 'https://datasets.imdbws.com/name.basics.tsv.gz'
-			'data/name.basics.tsv.gz'
+			'imdb/data/name.basics.tsv.gz'
 			, all_varchar=true, delim='\t', quote='',header=True)
 	""")
 >>>markdown
@@ -96,7 +95,6 @@ copy %{
     }
 }%  to 'data/titles.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
 
-
 >>>markdown
 ## Build principals.parquet
 
@@ -121,7 +119,6 @@ copy
     }
   }%
  to 'principals.parquet' (FORMAT 'parquet', CODEC 'ZSTD')
-
 
 
 >>>markdown

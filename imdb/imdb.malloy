@@ -5,23 +5,23 @@
 //  Github: https://github.com/lloydtabb/imdb_fiddle
 //  About Fiddles: https://github.com/lloydtabb/malloy_fiddle_dist/
 
-source: people is duckdb.table('data/names.parquet') extend {
+source: people is duckdb.table('imdb/data/names.parquet') extend {
 // cast, crew, everyone involved in movies
   primary_key: nconst
 }
 
-source: principals is duckdb.table('data/principals.parquet') extend {
+source: principals is duckdb.table('imdb/data/principals.parquet') extend {
 // a mapping table that links people to movies, along with their job on that movie.
   join_one: people is people on nconst = people.nconst
 }
 
-query: genre_movie_map is duckdb.table('data/titles.parquet') -> {
+query: genre_movie_map is duckdb.table('imdb/data/titles.parquet') -> {
   group_by:
     tconst
     genre is genres.value
 }
 
-source: movies is duckdb.table('data/titles.parquet') extend {
+source: movies is duckdb.table('imdb/data/titles.parquet') extend {
 // all the movies
   join_many: principals on tconst = principals.tconst
   join_many: principals2 is principals on tconst = principals2.tconst
