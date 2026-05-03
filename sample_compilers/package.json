@@ -1,0 +1,21 @@
+{
+  "name": "mallo",
+  "version": "0.0.1",
+  "description": "A sample project containing scripts that compile Malloy, such as in nodejs",
+  "main": "compile_malloy_duckdb.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "node compile_malloy_duckdb.js"
+  },
+  "homepage": "https://github.com/malloydata/malloy-samples#readme",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@malloydata/db-duckdb": "^0.0.236",
+    "@malloydata/malloy": "^0.0.236"
+  }
+}
