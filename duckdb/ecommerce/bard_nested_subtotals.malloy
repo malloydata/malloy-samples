@@ -1,0 +1,111 @@
+// Bard's answer to the nested subtotals question.
+// Prompt:
+// 
+// I want help writing a SQL query. I have a database with the two tables:
+// 
+// CREATE TABLE order_items (
+//   created_at timestamp,
+//   sale_price decimal,
+//   inventory_item_id integer
+// );
+// 
+// CREATE TABLE inventory_items (
+//   id integer,
+//   product_department varchar,
+//   product_category varchar,
+//   created_at timestamp
+// );
+// 
+// The date range of data in the order_items table is from 1/1/2021 to 12/31/2022.
+// I want to calculate year-over-year revenue and year-over-year revenue growth with these tables.
+// I also want to calculate for each product_department, year-over-year revenue and revenue growth, as well as the contribution % of that product_department to overall revenue growth.
+
+sql: bard_nested_subtotals is {
+    select:
+    """
+    WITH order_items AS (
+    SELECT
+        created_at,
+        sale_price,
+        inventory_item_id
+    FROM 'order_items.parquet'
+    ),
+    inventory_items AS (
+    SELECT
+        id,
+        product_department,
+        product_category,
+        created_at AS inventory_items_created_at
+    FROM 'inventory_items.parquet'
+    )
+    SELECT
+    year,
+    product_department,
+    product_category,
+    revenue,
+    revenue_growth,
+    contribution_percent
+    FROM (
+    SELECT
+        EXTRACT(YEAR FROM created_at) AS year,
+        inventory_items.product_department,
+        inventory_items.product_category,
+        SUM(sale_price) AS revenue,
+        (SUM(sale_price) - LAG(SUM(sale_price)) OVER (ORDER BY year, product_department, product_category)) / LAG(SUM(sale_price)) OVER (ORDER BY year, product_department, product_category) * 100 AS revenue_growth,
+        SUM(sale_price) / SUM(revenue) OVER (PARTITION BY year) AS contribution_percent
+    FROM order_items
+    LEFT JOIN inventory_items ON inventory_items.id = order_items.inventory_item_id
+    GROUP BY
+        year,
+        product_department,
+        product_category
+    ) AS year_over_year_revenue
+    ORDER BY
+    year,
+    product_department,
+    product_category
+    """
+    connection: "duckdb"
+}
+
+// This is the SQL I wrote to answer the same question:
+sql: handwritten_nested_subtotals is {
+    select:
+    """
+    WITH sales_by_department_and_category AS (
+        SELECT
+            b.product_department
+            , b.product_category
+            , sum(case when date_trunc('year', a.created_at) = '2021-01-01' then a.sale_price else 0 end) as sales_2021
+            , sum(case when date_trunc('year', a.created_at) = '2022-01-01' then a.sale_price else 0 end) as sales_2022
+        FROM 'order_items.parquet' a
+        LEFT JOIN 'inventory_items.parquet' b on a.inventory_item_id = b.id
+        group by 1,2
+    )
+    SELECT
+        sum(sales_2022) over (partition by 1) as total_sales_2022
+        , sum(sales_2022) over (partition by 1) - sum(sales_2021) over (partition by 1) as total_sales_growth
+        , sum(sales_2022) over (partition by 1) / sum(sales_2021) over (partition by 1) - 1 as total_sales_yoy
+        , '-' as _
+
+        , product_department
+        , sum(sales_2022) over (partition by product_department) as department_sales_2022
+        , sum(sales_2022) over (partition by product_department) - sum(sales_2021) over (partition by product_department) as department_sales_growth
+        , sum(sales_2022) over (partition by product_department) / sum(sales_2021) over (partition by product_department) - 1 as department_sales_yoy
+        , (sum(sales_2022) over (partition by product_department) - sum(sales_2021) over (partition by product_department)) /
+            (sum(sales_2022) over (partition by 1) - sum(sales_2021) over (partition by 1))
+            as department_sales_contribution
+        , '-' as __
+
+        , product_category
+        , sales_2022 as category_sales_2022
+        , sales_2022 - sales_2021 as category_sales_growth
+        , sales_2022 / sales_2021 - 1 as category_sales_yoy
+        , (sales_2022 - sales_2021) / 
+            (sum(sales_2022) over (partition by product_department) - sum(sales_2021) over (partition by product_department))
+            as category_sales_contribution
+    FROM sales_by_department_and_category
+    ORDER BY product_department, category_sales_growth DESC
+    """
+    connection: "duckdb"
+}
