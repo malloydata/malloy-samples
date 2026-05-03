@@ -39,7 +39,7 @@
   "homepage": "https://github.com/malloydata/malloy-samples#readme",
   "dependencies": {
     "@malloydata/db-bigquery": "0.0.244",
-    "@malloydata/db-duckdb": "0.0.244",
+    "@malloydata/db-duckdb": "0.0.335",
     "@malloydata/malloy": "0.0.244",
     "@malloydata/malloy-sql": "0.0.244",
     "@types/jest": "^29.2.5",
