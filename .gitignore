@@ -4,3 +4,6 @@ node_modules
 .DS_Store
 tmp
 *.tsv.gz
+
+# OMOP sample data is generated on-demand by omop/scripts/setup.sh
+omop/data/

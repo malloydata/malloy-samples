@@ -22,6 +22,7 @@
  */
 
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import {BigQueryConnection} from '@malloydata/db-bigquery';
 import {compileMalloy} from './utils/malloy';
@@ -29,7 +30,27 @@ import {compileMSQL} from './utils/msql';
 
 const SAMPLE_PROJECT_ROOT = path.join(__dirname, '..', 'bigquery');
 
-describe('BigQuery', () => {
+// BigQuery samples are optional. Skip the suite when no credentials are
+// available so contributors without GCP access can still run `npm test`.
+// Recognized credentials:
+//   - GOOGLE_APPLICATION_CREDENTIALS env var (set by CI / google-github-actions/auth)
+//   - BIGQUERY_KEY env var (legacy)
+//   - ~/.config/gcloud/application_default_credentials.json (from `gcloud auth application-default login`)
+const adcPath = path.join(
+  os.homedir(),
+  '.config',
+  'gcloud',
+  'application_default_credentials.json'
+);
+const hasBigQueryCreds = !!(
+  process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+  process.env.BIGQUERY_KEY ||
+  fs.existsSync(adcPath)
+);
+
+const describeBigQuery = hasBigQueryCreds ? describe : describe.skip;
+
+describeBigQuery('BigQuery', () => {
   let modelsFound = false;
   for (const dir of fs.readdirSync(SAMPLE_PROJECT_ROOT)) {
     const projectPath = path.join(SAMPLE_PROJECT_ROOT, dir);
